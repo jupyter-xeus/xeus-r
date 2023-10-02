@@ -1,0 +1,8 @@
+name: xeus-r
+channels:
+  - conda-forge
+dependencies:
+  - xeus-r=0.1.0
+  - notebook
+  - ipywidgets>=7.6
+  - jupyterlab=3

@@ -1,0 +1,7 @@
+name: xeus-r-docs
+
+channels:
+  - conda-forge
+
+dependencies:
+  - breathe
