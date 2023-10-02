@@ -25,8 +25,8 @@ html_static_path = ['_static']
 source_suffix = '.rst'
 master_doc = 'index'
 project = 'xeus-r'
-copyright = '2023, Romain François'
-author = 'Romain François'
+copyright = '2023, QuantStack'
+author = 'QuantStack'
 
 html_logo = 'quantstack-white.svg'
 
@@ -34,4 +34,4 @@ exclude_patterns = []
 highlight_language = 'c++'
 pygments_style = 'sphinx'
 todo_include_todos = False
-htmlhelp_basename = 'Romain Françoisdoc'
+htmlhelp_basename = 'xeus-rdoc'

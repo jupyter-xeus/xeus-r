@@ -1,5 +1,5 @@
 /***************************************************************************
-* Copyright (c) 2023, Romain François                                  
+* Copyright (c) 2023, QuantStack
 *                                                                          
 * Distributed under the terms of the GNU General Public License v3.                 
 *                                                                          
