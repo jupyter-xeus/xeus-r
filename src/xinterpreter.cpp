@@ -29,7 +29,7 @@ namespace xeus_r
     }
 
     nl::json interpreter::execute_request_impl(int execution_counter, // Typically the cell number
-                                                      const  std::string & code, // Code to execute
+                                                      const  std::string & /* code */, // Code to execute
                                                       bool /*silent*/,
                                                       bool /*store_history*/,
                                                       nl::json /*user_expressions*/,
@@ -71,7 +71,7 @@ namespace xeus_r
         // you can for example initialize an engine here or redirect output.
     }
 
-    nl::json interpreter::is_complete_request_impl(const std::string& code)
+    nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
     {
         // Insert code here to validate the ``code``
         // and use `create_is_complete_reply` with the corresponding status
