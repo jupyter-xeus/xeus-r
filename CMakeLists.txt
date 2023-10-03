@@ -66,6 +66,7 @@ endif ()
 if (NOT TARGET xeus AND NOT TARGET xeus-static)
     find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 endif ()
+find_package(R REQUIRED)
 
 # Flags
 # =====
@@ -88,7 +89,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
     endif ()
 endif ()
 
-
+include_directories(${R_INCLUDE_DIR} SYSTEM)
 
 # Source files
 # ============

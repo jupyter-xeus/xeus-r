@@ -18,6 +18,8 @@
 
 #include "xeus-r/xinterpreter.hpp"
 
+#include "R_ext/Constants.h"
+
 namespace nl = nlohmann;
 
 namespace xeus_r
@@ -41,7 +43,7 @@ namespace xeus_r
         // as third argument.
         // Replace "Hello World !!" by what you want to be displayed under the execution cell
         nl::json pub_data;
-        pub_data["text/plain"] = "Hello World !!";
+        pub_data["text/plain"] = M_PI;
 
         // If silent is set to true, do not publish anything!
         // Otherwise:
