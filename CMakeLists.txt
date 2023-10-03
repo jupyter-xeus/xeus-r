@@ -200,7 +200,8 @@ macro(xeus_r_create_target target_name linkage output_name)
                                PUBLIC
                                $<BUILD_INTERFACE:${XEUS_R_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>
-                               ${R_INCLUDE_DIR})
+                               ${R_INCLUDE_DIR}
+                               ${R_RCPP_CXXFLAGS})
 
     if (XEUS_R_USE_SHARED_XEUS)
         set(XEUS_R_XEUS_TARGET xeus)
