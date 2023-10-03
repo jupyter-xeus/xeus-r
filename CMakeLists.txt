@@ -195,7 +195,8 @@ macro(xeus_r_create_target target_name linkage output_name)
     target_include_directories(${target_name}
                                PUBLIC
                                $<BUILD_INTERFACE:${XEUS_R_INCLUDE_DIR}>
-                               $<INSTALL_INTERFACE:include>)
+                               $<INSTALL_INTERFACE:include>
+                               ${R_INCLUDE_DIR})
 
     if (XEUS_R_USE_SHARED_XEUS)
         set(XEUS_R_XEUS_TARGET xeus)
