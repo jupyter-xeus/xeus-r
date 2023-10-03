@@ -1,9 +1,9 @@
 # ![xeus-r](docs/source/xeus-logo.svg)
 
-[![Build Status](https://github.com/romainfrancois/xeus-r/actions/workflows/main.yml/badge.svg)](https://github.com/romainfrancois/xeus-r/actions/workflows/main.yml)
+[![Build Status](https://github.com/jupyter-xeus/xeus-r/actions/workflows/main.yml/badge.svg)](https://github.com/jupyter-xeus/xeus-r/actions/workflows/main.yml)
 
 [![Documentation Status](http://readthedocs.org/projects/xeus-r/badge/?version=latest)](https://xeus-rreadthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/romainfrancois/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb)
 
 `xeus-r` is a Jupyter kernel for R based on the native implementation of the
 Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
@@ -56,7 +56,7 @@ make && make install
 To try out xeus-r interactively in your web browser, just click on the binder link:
 (Once Conda Package is Ready)
 
-[![Binder](binder-logo.svg)](https://mybinder.org/v2/gh/romainfrancois/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb) -->
+[![Binder](binder-logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb) -->
 
 
 
