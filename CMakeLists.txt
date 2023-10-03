@@ -68,6 +68,12 @@ if (NOT TARGET xeus AND NOT TARGET xeus-static)
 endif ()
 find_package(R REQUIRED)
 
+message(STATUS "R_INCLUDE_DIR    = ${R_INCLUDE_DIR}")
+message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
+message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
+message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
+message(STATUS "R_RCPP_CXXFLAGS  = ${R_RCPP_CXXFLAGS}")
+
 # Flags
 # =====
 include(CheckCXXCompilerFlag)
@@ -209,7 +215,8 @@ macro(xeus_r_create_target target_name linkage output_name)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
     endif ()
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
-        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
     
 endmacro()
 

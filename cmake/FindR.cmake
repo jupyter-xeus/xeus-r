@@ -7,6 +7,7 @@
 #
 # Defines the following:
 #  R_COMMAND           - Path to R command
+#  R_SCRIPT_COMMAND    - Path to RScript command
 #  R_HOME              - Path to 'R home', as reported by R
 #  R_INCLUDE_DIR       - Path to R include directory
 #  R_LIBRARY_BASE      - Path to R library
@@ -14,6 +15,8 @@
 #  R_LIBRARY_LAPACK    - Path to Rlapack / lapack library
 #  R_LIBRARY_READLINE  - Path to readline library
 #  R_LIBRARIES         - Array of: R_LIBRARY_BASE, R_LIBRARY_BLAS, R_LIBRARY_LAPACK, R_LIBRARY_BASE [, R_LIBRARY_READLINE]
+#  R_LDFLAGS           - R CMD config --ldflags
+#  R_RCPP_CXXFLAGS     - Rscript -e "Rcpp::CxxFlags()"
 #
 # Variable search order:
 #   1. Attempt to locate and set R_COMMAND
@@ -36,6 +39,7 @@ endif()
 set(TEMP_CMAKE_FIND_APPBUNDLE ${CMAKE_FIND_APPBUNDLE})
 set(CMAKE_FIND_APPBUNDLE "NEVER")
 find_program(R_COMMAND R DOC "R executable.")
+find_program(R_SCRIPT_COMMAND Rscript DOC "Rscript executable.")
 set(CMAKE_FIND_APPBUNDLE ${TEMP_CMAKE_FIND_APPBUNDLE})
 
 if(R_COMMAND)
@@ -47,12 +51,20 @@ if(R_COMMAND)
                   COMMAND ${R_COMMAND} RHOME
                   OUTPUT_VARIABLE R_ROOT_DIR
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  # deprecated
+
   set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
   
-  # /deprecated
-  # the following command does nothing currently, but will be used when deprecated code is removed
-  set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_COMMAND} CMD config --ldflags
+                  OUTPUT_VARIABLE R_LDFLAGS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
+
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_SCRIPT_COMMAND} -e "Rcpp:::CxxFlags()"
+                  OUTPUT_VARIABLE R_RCPP_CXXFLAGS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_RCPP_CXXFLAGS ${R_RCPP_CXXFLAGS} CACHE PATH "Rscript -e 'Rcpp::CxxFlags()'")
 
   find_path(R_INCLUDE_DIR R.h
             HINTS ${R_ROOT_DIR} ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
