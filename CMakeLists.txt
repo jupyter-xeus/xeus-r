@@ -89,8 +89,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
     endif ()
 endif ()
 
-include_directories(${R_INCLUDE_DIR} SYSTEM)
-
 # Source files
 # ============
 
