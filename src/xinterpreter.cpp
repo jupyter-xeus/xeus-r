@@ -33,8 +33,8 @@ namespace xeus_r
     }
 
     nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
-                                               const std::string & code, // Code to execute
-                                               bool silent,
+                                               const std::string & /*code*/, // Code to execute
+                                               bool /*silent*/,
                                                bool /*store_history*/,
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
