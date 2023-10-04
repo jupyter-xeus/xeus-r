@@ -16,7 +16,6 @@
 #  R_LIBRARY_READLINE  - Path to readline library
 #  R_LIBRARIES         - Array of: R_LIBRARY_BASE, R_LIBRARY_BLAS, R_LIBRARY_LAPACK, R_LIBRARY_BASE [, R_LIBRARY_READLINE]
 #  R_LDFLAGS           - R CMD config --ldflags
-#  R_RCPP_CXXFLAGS     - Rscript -e "Rcpp::CxxFlags()"
 #
 # Variable search order:
 #   1. Attempt to locate and set R_COMMAND
@@ -59,12 +58,6 @@ if(R_COMMAND)
                   OUTPUT_VARIABLE R_LDFLAGS
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
-
-  execute_process(WORKING_DIRECTORY .
-                  COMMAND ${R_SCRIPT_COMMAND} -e "Rcpp:::CxxFlags()"
-                  OUTPUT_VARIABLE R_RCPP_CXXFLAGS
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(R_RCPP_CXXFLAGS ${R_RCPP_CXXFLAGS} CACHE PATH "Rscript -e 'Rcpp::CxxFlags()'")
 
   find_path(R_INCLUDE_DIR R.h
             HINTS ${R_ROOT_DIR} ${R_ROOT_DIR}/bin/${R_LIB_ARCH}

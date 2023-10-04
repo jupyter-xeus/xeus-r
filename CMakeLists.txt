@@ -72,7 +72,6 @@ message(STATUS "R_INCLUDE_DIR    = ${R_INCLUDE_DIR}")
 message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
 message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
 message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
-message(STATUS "R_RCPP_CXXFLAGS  = ${R_RCPP_CXXFLAGS}")
 
 # Flags
 # =====

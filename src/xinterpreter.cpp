@@ -32,12 +32,12 @@ namespace xeus_r
         xeus::register_interpreter(this);
     }
 
-    nl::json interpreter::execute_request_impl(int execution_counter, // Typically the cell number
-                                                      const  std::string & /* code */, // Code to execute
-                                                      bool /*silent*/,
-                                                      bool /*store_history*/,
-                                                      nl::json /*user_expressions*/,
-                                                      bool /*allow_stdin*/)
+    nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
+                                               const std::string & code, // Code to execute
+                                               bool silent,
+                                               bool /*store_history*/,
+                                               nl::json /*user_expressions*/,
+                                               bool /*allow_stdin*/)
     {
         // Use this method for publishing the execution result to the client,
         // this method takes the ``execution_counter`` as first argument,
