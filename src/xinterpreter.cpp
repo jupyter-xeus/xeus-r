@@ -21,14 +21,16 @@
 #define R_NO_REMAP
 #include "R.h"
 #include "Rinternals.h"
+#include "Rembedded.h"
 
 namespace nl = nlohmann;
 
 namespace xeus_r
 {
  
-    interpreter::interpreter()
+    interpreter::interpreter(int argc, char* argv[])
     {
+        Rf_initEmbeddedR(argc, argv);
         xeus::register_interpreter(this);
     }
 
@@ -131,6 +133,7 @@ namespace xeus_r
     }
 
     void interpreter::shutdown_request_impl() {
+        Rf_endEmbeddedR(0);
         std::cout << "Bye!!" << std::endl;
     }
 

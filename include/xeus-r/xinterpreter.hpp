@@ -31,8 +31,8 @@ namespace xeus_r
     class XEUS_R_API interpreter : public xeus::xinterpreter
     {
     public:
-
-        interpreter();
+        interpreter() = delete;
+        interpreter(int argc, char* argv[]);
         virtual ~interpreter() = default;
 
     protected:
