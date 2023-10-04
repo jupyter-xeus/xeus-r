@@ -22,6 +22,7 @@
 #include "R.h"
 #include "Rinternals.h"
 #include "Rembedded.h"
+#include "R_ext/Parse.h"
 
 namespace nl = nlohmann;
 
@@ -80,12 +81,27 @@ namespace xeus_r
         // you can for example initialize an engine here or redirect output.
     }
 
-    nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
+    nl::json interpreter::is_complete_request_impl(const std::string& code)
     {
-        // Insert code here to validate the ``code``
-        // and use `create_is_complete_reply` with the corresponding status
-        // "unknown", "incomplete", "invalid", "complete"
-        return xeus::create_is_complete_reply("complete"/*status*/, "   "/*indent*/);
+        SEXP s_code = PROTECT(Rf_mkString(code.c_str()));
+        ParseStatus status;
+
+        // Currently ignore the result of R_ParseVector, and only care about status
+        R_ParseVector(s_code, -1, &status, R_NilValue);
+        UNPROTECT(1); // s_code
+
+        switch(status) {
+            case PARSE_EOF:
+            case PARSE_NULL:
+            case PARSE_OK:
+                return xeus::create_is_complete_reply("complete", "");
+
+            case PARSE_INCOMPLETE:
+                return xeus::create_is_complete_reply("incomplete", "  ");
+
+            case PARSE_ERROR:
+                return xeus::create_is_complete_reply("invalid", "  ");
+        }
     }
 
     nl::json interpreter::complete_request_impl(const std::string&  code,
