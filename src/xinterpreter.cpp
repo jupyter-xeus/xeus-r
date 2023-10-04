@@ -18,6 +18,10 @@
 
 #include "xeus-r/xinterpreter.hpp"
 
+#define R_NO_REMAP
+#include "R.h"
+#include "Rinternals.h"
+
 namespace nl = nlohmann;
 
 namespace xeus_r
@@ -28,12 +32,12 @@ namespace xeus_r
         xeus::register_interpreter(this);
     }
 
-    nl::json interpreter::execute_request_impl(int execution_counter, // Typically the cell number
-                                                      const  std::string & /* code */, // Code to execute
-                                                      bool /*silent*/,
-                                                      bool /*store_history*/,
-                                                      nl::json /*user_expressions*/,
-                                                      bool /*allow_stdin*/)
+    nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
+                                               const std::string & /*code*/, // Code to execute
+                                               bool /*silent*/,
+                                               bool /*store_history*/,
+                                               nl::json /*user_expressions*/,
+                                               bool /*allow_stdin*/)
     {
         // Use this method for publishing the execution result to the client,
         // this method takes the ``execution_counter`` as first argument,
@@ -41,7 +45,10 @@ namespace xeus_r
         // as third argument.
         // Replace "Hello World !!" by what you want to be displayed under the execution cell
         nl::json pub_data;
-        pub_data["text/plain"] = "Hello World !!";
+
+        SEXP msg = PROTECT(Rf_mkString("bonjour"));
+        pub_data["text/plain"] = CHAR(STRING_ELT(msg, 0));
+        UNPROTECT(1);
 
         // If silent is set to true, do not publish anything!
         // Otherwise:

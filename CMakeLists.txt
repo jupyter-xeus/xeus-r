@@ -66,6 +66,12 @@ endif ()
 if (NOT TARGET xeus AND NOT TARGET xeus-static)
     find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 endif ()
+find_package(R REQUIRED)
+
+message(STATUS "R_INCLUDE_DIR    = ${R_INCLUDE_DIR}")
+message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
+message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
+message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
 
 # Flags
 # =====
@@ -87,8 +93,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
         message(FATAL_ERROR "Unsupported compiler -- xeus requires C++17 support!")
     endif ()
 endif ()
-
-
 
 # Source files
 # ============
@@ -194,7 +198,8 @@ macro(xeus_r_create_target target_name linkage output_name)
     target_include_directories(${target_name}
                                PUBLIC
                                $<BUILD_INTERFACE:${XEUS_R_INCLUDE_DIR}>
-                               $<INSTALL_INTERFACE:include>)
+                               $<INSTALL_INTERFACE:include>
+                               ${R_INCLUDE_DIR})
 
     if (XEUS_R_USE_SHARED_XEUS)
         set(XEUS_R_XEUS_TARGET xeus)
@@ -209,7 +214,8 @@ macro(xeus_r_create_target target_name linkage output_name)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
     endif ()
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
-        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
     
 endmacro()
 
@@ -243,7 +249,7 @@ if (XEUS_R_BUILD_EXECUTABLE)
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
     xeus_r_set_kernel_options(xr)
-    target_link_libraries(xr PRIVATE xeus-zmq)
+    target_link_libraries(xr PRIVATE xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
 endif()
 
 

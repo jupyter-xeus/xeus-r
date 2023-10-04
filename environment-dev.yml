@@ -11,6 +11,7 @@ dependencies:
   - nlohmann_json
   - cppzmq
   - xtl
+  - r-base
   # Test dependencies
   - pytest
   - jupyter_kernel_test>=0.4.3

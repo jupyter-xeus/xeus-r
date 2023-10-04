@@ -29,6 +29,8 @@
 #include "xeus-r/xinterpreter.hpp"
 #include "xeus-r/xeus_r_config.hpp"
 
+#define R_NO_REMAP
+#include "Rembedded.h"
 
 #ifdef __GNUC__
 void handler(int sig)
@@ -104,10 +106,11 @@ int main(int argc, char* argv[])
 
     auto context = xeus::make_context<zmq::context_t>();
 
+    Rf_initEmbeddedR(argc, argv);
+
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xeus_r::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xeus_r::interpreter());
-
 
     std::string connection_filename = extract_filename(argc, argv);
 
