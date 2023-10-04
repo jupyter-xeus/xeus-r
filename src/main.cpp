@@ -106,7 +106,6 @@ int main(int argc, char* argv[])
 
     auto context = xeus::make_context<zmq::context_t>();
 
-    setenv("R_HOME", "/Users/romainfrancois/miniforge3/lib/R", 1);
     Rf_initEmbeddedR(argc, argv);
 
     // Instantiating the xeus xinterpreter
