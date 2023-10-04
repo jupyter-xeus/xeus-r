@@ -97,6 +97,40 @@ namespace xeus_r
                 return xeus::create_is_complete_reply("complete", "");
 
             case PARSE_INCOMPLETE:
+                /*
+                    // if instead of R_NilValue in the R_ParseVector() call, 
+                    // we use an environment, we might be able to 
+                    // retrieve information about the parse tree 
+                    // from which we can derive some heuristic about indentation for the 
+                    // next line 
+
+                    > srcfile <- new.env()
+                    > parse(text = "for(i in 1:3){", srcfile = srcfile)
+                    Erreur dans parse(text = "for(i in 1:3){", srcfile = srcfile) :
+                    2:0: fin d'entrée inattendue
+                    1: for(i in 1:3){
+                    ^
+                    > srcfile$parseData
+                        [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
+                    [1,]    1    1    1    1    1    1    1    1    1     1     1     1     1
+                    [2,]    1    4    5    7   10   10   11   12   12    13    10     4    14
+                    [3,]    1    1    1    1    1    1    1    1    1     1     1     1     1
+                    [4,]    3    4    5    8   10   10   11   12   12    13    12    13    14
+                    [5,]    1    1    1    1    1    0    1    1    0     1     0     0     1
+                    [6,]  270   40  263  271  261   79   58  261   79    41    79    82   123
+                    [7,]    1    2    3    4    5    6    7    8    9    10    11    13    14
+                    [8,]    0   13   13   13    6   11   11    9   11    13    13     0     0
+                    attr(,"tokens")
+                    [1] "FOR"       "'('"       "SYMBOL"    "IN"        "NUM_CONST" "expr"
+                    [7] "':'"       "NUM_CONST" "expr"      "')'"       "expr"      "forcond"
+                    [13] "'{'"
+                    attr(,"text")
+                    [1] "for" "("   "i"   "in"  "1"   ""    ":"   "3"   ""    ")"   ""    ""
+                    [13] "{"
+                    attr(,"class")
+                    [1] "parseData"
+                */
+        
                 return xeus::create_is_complete_reply("incomplete", "  ");
 
             case PARSE_ERROR:
