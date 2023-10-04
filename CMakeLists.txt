@@ -250,7 +250,7 @@ if (XEUS_R_BUILD_EXECUTABLE)
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
     xeus_r_set_kernel_options(xr)
-    target_link_libraries(xr PRIVATE xeus-zmq)
+    target_link_libraries(xr PRIVATE xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
 endif()
 
 
