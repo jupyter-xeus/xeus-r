@@ -57,7 +57,6 @@ if(R_COMMAND)
                   COMMAND ${R_COMMAND} CMD config --ldflags
                   OUTPUT_VARIABLE R_LDFLAGS
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  string(STRIP ${R_LDFLAGS} R_LDFLAGS)
   set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
 
   find_path(R_INCLUDE_DIR R.h
