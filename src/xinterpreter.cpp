@@ -18,7 +18,9 @@
 
 #include "xeus-r/xinterpreter.hpp"
 
-#include "R_ext/Constants.h"
+#define R_NO_REMAP
+#include "R.h"
+#include "Rinternals.h"
 
 namespace nl = nlohmann;
 
@@ -43,7 +45,10 @@ namespace xeus_r
         // as third argument.
         // Replace "Hello World !!" by what you want to be displayed under the execution cell
         nl::json pub_data;
-        pub_data["text/plain"] = M_PI;
+
+        SEXP msg = PROTECT(Rf_mkString("bonjour"));
+        pub_data["text/plain"] = CHAR(STRING_ELT(msg, 0));
+        UNPROTECT(1);
 
         // If silent is set to true, do not publish anything!
         // Otherwise:
