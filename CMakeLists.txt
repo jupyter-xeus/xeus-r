@@ -68,10 +68,14 @@ if (NOT TARGET xeus AND NOT TARGET xeus-static)
 endif ()
 find_package(R REQUIRED)
 
-message(STATUS "R_INCLUDE_DIR    = ${R_INCLUDE_DIR}")
-message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
-message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
-message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
+message(STATUS "R_INCLUDE_DIR       = ${R_INCLUDE_DIR}")
+message(STATUS "R_LDFLAGS           = ${R_LDFLAGS}")
+message(STATUS "R_LIBRARY_BLAS      = ${R_LIBRARY_BLAS}")
+message(STATUS "R_LIBRARY_LAPACK    = ${R_LIBRARY_LAPACK}")
+message(STATUS "R_RCPP_INCLUDE_DIR     = ${R_RCPP_INCLUDE_DIR}")
+message(STATUS "R_RCPP_LDFLAGS      = ${R_RCPP_LDFLAGS}")
+message(STATUS "R_RINSIDE_INCLUDE_DIR  = ${R_RINSIDE_INCLUDE_DIR}")
+message(STATUS "R_RINSIDE_LDFLAGS   = ${R_RINSIDE_LDFLAGS}")
 
 # Flags
 # =====
@@ -85,7 +89,6 @@ endif ()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
     
-
     CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
     if (HAS_CPP_17_FLAG)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
@@ -199,7 +202,10 @@ macro(xeus_r_create_target target_name linkage output_name)
                                PUBLIC
                                $<BUILD_INTERFACE:${XEUS_R_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>
-                               ${R_INCLUDE_DIR})
+                               ${R_INCLUDE_DIR}
+                               ${R_RCPP_INCLUDE_DIR}
+                               ${R_RINSIDE_INCLUDE_DIR}
+                               )
 
     if (XEUS_R_USE_SHARED_XEUS)
         set(XEUS_R_XEUS_TARGET xeus)
@@ -215,7 +221,7 @@ macro(xeus_r_create_target target_name linkage output_name)
     endif ()
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
 
-    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_RCPP_LDFLAGS} ${R_RINSIDE_LDFLAGS})
     
 endmacro()
 
@@ -249,7 +255,7 @@ if (XEUS_R_BUILD_EXECUTABLE)
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
     xeus_r_set_kernel_options(xr)
-    target_link_libraries(xr PRIVATE xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    target_link_libraries(xr PRIVATE xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_RCPP_LDFLAGS} ${R_RINSIDE_LDFLAGS})
 endif()
 
 

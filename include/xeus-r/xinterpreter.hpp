@@ -23,6 +23,7 @@
 #include "xeus_r_config.hpp"
 #include "xeus/xinterpreter.hpp"
 
+#include "RInside.h"
 
 namespace nl = nlohmann;
 
@@ -58,6 +59,8 @@ namespace xeus_r
 
         void shutdown_request_impl() override;
 
+    private:
+        RInside R;
     };
 }
 

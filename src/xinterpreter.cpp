@@ -18,6 +18,8 @@
 
 #include "xeus-r/xinterpreter.hpp"
 
+#include "RInside.h"
+
 #define R_NO_REMAP
 #include "R.h"
 #include "Rinternals.h"
@@ -64,9 +66,8 @@ SEXP try_parse(const std::string& code, int execution_counter) {
 
 }
 
-    interpreter::interpreter(int argc, char* argv[])
+    interpreter::interpreter(int argc, char* argv[]) : R(argc, argv)
     {
-        Rf_initEmbeddedR(argc, argv);
         xeus::register_interpreter(this);
     }
 
@@ -90,7 +91,7 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         }
 
         UNPROTECT(1); // parsed
-        
+
         // echo the code for now
         nl::json pub_data;
         pub_data["text/plain"] = code;
@@ -159,7 +160,6 @@ SEXP try_parse(const std::string& code, int execution_counter) {
     }
 
     void interpreter::shutdown_request_impl() {
-        Rf_endEmbeddedR(0);
         std::cout << "Bye!!" << std::endl;
     }
 

@@ -16,6 +16,10 @@
 #  R_LIBRARY_READLINE  - Path to readline library
 #  R_LIBRARIES         - Array of: R_LIBRARY_BASE, R_LIBRARY_BLAS, R_LIBRARY_LAPACK, R_LIBRARY_BASE [, R_LIBRARY_READLINE]
 #  R_LDFLAGS           - R CMD config --ldflags
+#  R_RCPP_INCLUDE_DIR  - Path to Rcpp include directory
+#  R_RCPP_LDFLAGS      - Rscript -e "Rcpp:::LdFlags()"
+#  R_RINSIDE_INCLUDE_DIR  - Rscript -e "RInside:::CxxFlags()"
+#  R_RINSIDE_LDFLAGS      - Rscript -e "RInside:::LdFlags()"
 #
 # Variable search order:
 #   1. Attempt to locate and set R_COMMAND
@@ -58,6 +62,30 @@ if(R_COMMAND)
                   OUTPUT_VARIABLE R_LDFLAGS
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
+
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_SCRIPT_COMMAND} -e "cat(tools::file_path_as_absolute(base::system.file('include', package = 'Rcpp')))"
+                  OUTPUT_VARIABLE R_RCPP_INCLUDE_DIR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_RCPP_INCLUDE_DIR ${R_RCPP_INCLUDE_DIR} CACHE PATH "Rcpp include directory")
+
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_SCRIPT_COMMAND} -e "Rcpp:::LdFlags()"
+                  OUTPUT_VARIABLE R_RCPP_LDFLAGS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_RCPP_LDFLAGS ${R_RCPP_LDFLAGS} CACHE PATH "Rcpp:::LdFlags()")
+
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_SCRIPT_COMMAND} -e "cat(tools::file_path_as_absolute(base::system.file('include', package = 'RInside')))"
+                  OUTPUT_VARIABLE R_RINSIDE_INCLUDE_DIR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_RINSIDE_INCLUDE_DIR ${R_RINSIDE_INCLUDE_DIR} CACHE PATH "RInside include directory")
+
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_SCRIPT_COMMAND} -e "RInside:::LdFlags()"
+                  OUTPUT_VARIABLE R_RINSIDE_LDFLAGS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_RINSIDE_LDFLAGS ${R_RINSIDE_LDFLAGS} CACHE PATH "RInside:::LdFlags()")
 
   find_path(R_INCLUDE_DIR R.h
             HINTS ${R_ROOT_DIR} ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
