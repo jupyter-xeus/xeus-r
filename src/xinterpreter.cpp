@@ -22,12 +22,48 @@
 #include "R.h"
 #include "Rinternals.h"
 #include "Rembedded.h"
+#include "R_ext/Parse.h"
 
-namespace nl = nlohmann;
+namespace xeus_r {
 
-namespace xeus_r
-{
- 
+namespace {
+
+SEXP try_parse(const std::string& code, int execution_counter) {
+    // call in R:
+    // > tryCatch(parse(text = <code>, srcfile = "<cell [<execution_counter>]"), error = identity)
+    //
+    // the assumption is that this either gives:
+    // - and error when the code can't be parsed for some reason
+    // - the parsed expressions, as a EXPRSXP vector
+    //
+    SEXP smb_tryCatch = Rf_install("tryCatch");
+    SEXP smb_identity = Rf_install("identity");
+    SEXP smb_parse    = Rf_install("parse");
+    SEXP smb_text     = Rf_install("text");
+    SEXP smb_error    = Rf_install("error");
+    SEXP smb_srcfile  = Rf_install("srcfile");
+    
+    SEXP str_code = PROTECT(Rf_mkString(code.c_str()));
+    
+    std::stringstream ss;
+    ss << "<cell [" << execution_counter << "]>";
+
+    SEXP str_cell = PROTECT(Rf_mkString(ss.str().c_str()));
+    SEXP call_parse = PROTECT(Rf_lang3(smb_parse, str_code, str_cell));
+    SET_TAG(CDR(call_parse), smb_text);
+    SET_TAG(CDDR(call_parse), smb_srcfile);
+
+    SEXP call_tryCatch = PROTECT(Rf_lang3(smb_tryCatch, call_parse, smb_identity));
+    SET_TAG(CDDR(call_tryCatch), smb_error);
+
+    SEXP parsed = Rf_eval(call_tryCatch, R_BaseEnv);
+
+    UNPROTECT(4);
+    return parsed;
+}
+
+}
+
     interpreter::interpreter(int argc, char* argv[])
     {
         Rf_initEmbeddedR(argc, argv);
@@ -35,19 +71,40 @@ namespace xeus_r
     }
 
     nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
-                                               const std::string & /*code*/, // Code to execute
+                                               const std::string & code, // Code to execute
                                                bool /*silent*/,
                                                bool /*store_history*/,
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
+
+        nl::json kernel_res;
+
+        SEXP parsed = PROTECT(try_parse(code, execution_counter));
+        if (Rf_inherits(parsed, "error")) {
+            auto err_msg = CHAR(STRING_ELT(VECTOR_ELT(parsed, 0),0));
+            publish_execution_error("ParseError", err_msg, {err_msg});
+
+            UNPROTECT(1); // parsed
+            return xeus::create_error_reply();
+        }
+
+        UNPROTECT(1); // parsed
+        
+        // echo the code for now
+        nl::json pub_data;
+        pub_data["text/plain"] = code;
+        publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+        return xeus::create_successful_reply(/*payload, user_expressions*/);
+
+        // graveyard
+
         // Use this method for publishing the execution result to the client,
         // this method takes the ``execution_counter`` as first argument,
         // the data to publish (mime type data) as second argument and metadata
         // as third argument.
         // Replace "Hello World !!" by what you want to be displayed under the execution cell
-        nl::json pub_data;
-
+        
         SEXP msg = PROTECT(Rf_mkString("bonjour"));
         pub_data["text/plain"] = CHAR(STRING_ELT(msg, 0));
         UNPROTECT(1);
