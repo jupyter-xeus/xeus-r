@@ -41,4 +41,7 @@ share/jupyter/kernels/xr/kernel.json
 # Build directory
 build/
 
+# vscode
+.vscode
+
 bld
