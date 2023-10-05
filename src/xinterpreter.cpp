@@ -89,12 +89,17 @@ SEXP try_parse(const std::string& code, int execution_counter) {
             return xeus::create_error_reply();
         }
 
-        UNPROTECT(1); // parsed
+        // TODO: wrap in a tryCatch
+        // TODO: eval not just the first, but all
+        SEXP out = PROTECT(Rf_eval(VECTOR_ELT(parsed, 0), R_GlobalEnv));
         
         // echo the code for now
         nl::json pub_data;
-        pub_data["text/plain"] = code;
+        pub_data["text/plain"] = REAL(out)[0];
         publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+
+        UNPROTECT(2); // parsed, out
+        
         return xeus::create_successful_reply(/*payload, user_expressions*/);
     }
 
