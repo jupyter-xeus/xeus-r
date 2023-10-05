@@ -96,37 +96,6 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         pub_data["text/plain"] = code;
         publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
         return xeus::create_successful_reply(/*payload, user_expressions*/);
-
-        // graveyard
-
-        // Use this method for publishing the execution result to the client,
-        // this method takes the ``execution_counter`` as first argument,
-        // the data to publish (mime type data) as second argument and metadata
-        // as third argument.
-        // Replace "Hello World !!" by what you want to be displayed under the execution cell
-        
-        SEXP msg = PROTECT(Rf_mkString("bonjour"));
-        pub_data["text/plain"] = CHAR(STRING_ELT(msg, 0));
-        UNPROTECT(1);
-
-        // If silent is set to true, do not publish anything!
-        // Otherwise:
-        // Publish the execution result
-        publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
-
-        // You can also use this method for publishing errors to the client, if the code
-        // failed to execute
-        // publish_execution_error(error_name, error_value, error_traceback);
-        publish_execution_error("TypeError", "123", {"!@#$", "*(*"});
-
-        // Use publish_stream to publish a stream message or error:
-        publish_stream("stdout", "I am publishing a message");
-        publish_stream("stderr", "Error!");
-
-        // Use Helpers that create replies to the server to be returned
-        return xeus::create_successful_reply(/*payload, user_expressions*/);
-        // Or in case of error:
-        //return xeus::create_error_reply(evalue, ename, trace_back);
     }
 
     void interpreter::configure_impl()
