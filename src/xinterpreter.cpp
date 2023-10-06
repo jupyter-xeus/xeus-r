@@ -19,12 +19,26 @@
 #include "xeus-r/xinterpreter.hpp"
 
 #define R_NO_REMAP
+#define R_INTERFACE_PTRS
+
 #include "R.h"
 #include "Rinternals.h"
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
+#include "Rinterface.h"
 
 namespace xeus_r {
+
+static interpreter* p_interpreter = nullptr;
+
+void WriteConsoleEx(const char *buf, int buflen, int otype) {
+    std::string output(buf, buflen);
+    if (otype == 1) {
+        p_interpreter->publish_stream("stderr", output);
+    } else {
+        p_interpreter->publish_stream("stdout", output);
+    }
+}
 
 namespace {
 
@@ -67,7 +81,15 @@ SEXP try_parse(const std::string& code, int execution_counter) {
     interpreter::interpreter(int argc, char* argv[])
     {
         Rf_initEmbeddedR(argc, argv);
+
+        R_Outputfile = NULL;
+        R_Consolefile = NULL;
+
+        ptr_R_WriteConsole = nullptr;
+        ptr_R_WriteConsoleEx = WriteConsoleEx;
+        
         xeus::register_interpreter(this);
+        p_interpreter = this;
     }
 
     nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
@@ -95,8 +117,8 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         
         // echo the code for now
         nl::json pub_data;
-        pub_data["text/plain"] = REAL(out)[0];
-        publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+        pub_data["text/plain"] = "bonjour"; // REAL(out)[0];
+        // publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
 
         UNPROTECT(2); // parsed, out
         
