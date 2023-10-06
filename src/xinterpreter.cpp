@@ -132,10 +132,10 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                 capture_stream.str("");
                 ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
                 SEXP value = VECTOR_ELT(result, 0);
-                
+
                 R_ToplevelExec([](void* value) {
                     Rf_PrintValue((SEXP)value);
-                }, (void*)value );
+                }, (void*)value);
                 
                 ptr_R_WriteConsoleEx = WriteConsoleEx;
                 
