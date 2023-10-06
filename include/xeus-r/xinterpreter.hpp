@@ -35,6 +35,8 @@ namespace xeus_r
         interpreter(int argc, char* argv[]);
         virtual ~interpreter() = default;
 
+        std::stringstream capture_stream;
+
     protected:
 
         void configure_impl() override;

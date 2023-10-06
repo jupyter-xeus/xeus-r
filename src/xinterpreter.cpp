@@ -27,6 +27,8 @@
 #include "R_ext/Parse.h"
 #include "Rinterface.h"
 
+extern Rboolean R_Visible;
+
 namespace xeus_r {
 
 static interpreter* p_interpreter = nullptr;
@@ -37,6 +39,15 @@ void WriteConsoleEx(const char *buf, int buflen, int otype) {
         p_interpreter->publish_stream("stderr", output);
     } else {
         p_interpreter->publish_stream("stdout", output);
+    }
+}
+
+void capture_WriteConsoleEx(const char *buf, int buflen, int otype) {
+    std::string output(buf, buflen);
+    if (otype == 1) {
+        // do nothing
+    } else {
+        p_interpreter->capture_stream << output;
     }
 }
 
@@ -99,9 +110,6 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
-
-        nl::json kernel_res;
-
         SEXP parsed = PROTECT(try_parse(code, execution_counter));
         if (Rf_inherits(parsed, "error")) {
             auto err_msg = CHAR(STRING_ELT(VECTOR_ELT(parsed, 0),0));
@@ -111,14 +119,33 @@ SEXP try_parse(const std::string& code, int execution_counter) {
             return xeus::create_error_reply();
         }
 
-        // TODO: wrap in a tryCatch
-        // TODO: eval not just the first, but all
-        SEXP out = PROTECT(Rf_eval(VECTOR_ELT(parsed, 0), R_GlobalEnv));
-        
-        // echo the code for now
-        nl::json pub_data;
-        pub_data["text/plain"] = "bonjour"; // REAL(out)[0];
-        // publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+        R_xlen_t n = XLENGTH(parsed);
+        int ErrorOccurred;
+        SEXP smb_withVisible = Rf_install("withVisible");
+            
+        for (R_xlen_t i = 0; i < n; i++) {
+            SEXP expr   = PROTECT(Rf_lang2(smb_withVisible, VECTOR_ELT(parsed, i)));
+            SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
+            bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
+
+            if (!ErrorOccurred && visible) {
+                capture_stream.str("");
+                ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
+                SEXP value = VECTOR_ELT(result, 0);
+                
+                R_ToplevelExec([](void* value) {
+                    Rf_PrintValue((SEXP)value);
+                }, (void*)value );
+                
+                ptr_R_WriteConsoleEx = WriteConsoleEx;
+                
+                nl::json pub_data;
+                pub_data["text/plain"] = capture_stream.str();
+                publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+            }
+
+            UNPROTECT(2); // expr, result
+        }
 
         UNPROTECT(2); // parsed, out
         
