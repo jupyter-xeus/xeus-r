@@ -110,6 +110,7 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
+        // First we need to parse the code
         SEXP parsed = PROTECT(try_parse(code, execution_counter));
         if (Rf_inherits(parsed, "error")) {
             auto err_msg = CHAR(STRING_ELT(VECTOR_ELT(parsed, 0),0));
@@ -124,24 +125,44 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         SEXP smb_withVisible = Rf_install("withVisible");
             
         for (R_xlen_t i = 0; i < n; i++) {
+            // wrap the call in a `withVisible()` so that we can figure out 
+            // its visibility. It seems we cannot use the internal R way of 
+            // doing this with the R_Visible extern variable :shrug:
             SEXP expr   = PROTECT(Rf_lang2(smb_withVisible, VECTOR_ELT(parsed, i)));
             SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
-            bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
 
-            if (!ErrorOccurred && visible) {
-                capture_stream.str("");
-                ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
-                SEXP value = VECTOR_ELT(result, 0);
+            if (!ErrorOccurred) {
+                // We get a list of two things: 
+                // 1) the result: can be any R object
+                SEXP value = PROTECT(VECTOR_ELT(result, 0));
 
-                R_ToplevelExec([](void* value) {
-                    Rf_PrintValue((SEXP)value);
-                }, (void*)value);
+                // 2) whether it is visible: a scalar LGLSXP
+                bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
+
+                if (visible) {
+                    // the code did not generate an uncaught error and 
+                    // the rsult is visible, so we need to display it
+                    //
+                    // For now, this means print() it which we do by 
+                    // calling the internal print() function Rf_PrintValue
+                    // and intercept what would be printed in the console
+                    // using capture_WriteConsoleEx instead of the regular 
+                    // WriteConsoleEx
+                    capture_stream.str("");
+                    ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
+                    R_ToplevelExec([](void* value) {
+                        Rf_PrintValue((SEXP)value);
+                    }, (void*)value);
+                    
+                    // restore the normal printing to the console
+                    ptr_R_WriteConsoleEx = WriteConsoleEx;
+                    
+                    nl::json pub_data;
+                    pub_data["text/plain"] = capture_stream.str();
+                    publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+                }
                 
-                ptr_R_WriteConsoleEx = WriteConsoleEx;
-                
-                nl::json pub_data;
-                pub_data["text/plain"] = capture_stream.str();
-                publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+                UNPROTECT(1); // value
             }
 
             UNPROTECT(2); // expr, result
