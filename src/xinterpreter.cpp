@@ -114,7 +114,7 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         SEXP parsed = PROTECT(try_parse(code, execution_counter));
         if (Rf_inherits(parsed, "error")) {
             auto err_msg = CHAR(STRING_ELT(VECTOR_ELT(parsed, 0),0));
-            publish_execution_error("ParseError", err_msg, {err_msg});
+            publish_execution_error("ParseError", err_msg, {code});
 
             UNPROTECT(1); // parsed
             return xeus::create_error_reply();
