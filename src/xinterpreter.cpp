@@ -120,54 +120,87 @@ SEXP try_parse(const std::string& code, int execution_counter) {
             return xeus::create_error_reply();
         }
 
+        R_xlen_t i = 0;
         R_xlen_t n = XLENGTH(parsed);
-        int ErrorOccurred;
-        SEXP smb_withVisible = Rf_install("withVisible");
-            
-        for (R_xlen_t i = 0; i < n; i++) {
-            // wrap the call in a `withVisible()` so that we can figure out 
-            // its visibility. It seems we cannot use the internal R way of 
-            // doing this with the R_Visible extern variable :shrug:
-            SEXP expr   = PROTECT(Rf_lang2(smb_withVisible, VECTOR_ELT(parsed, i)));
+        
+        // first evaluate all expressions but the last
+        for (; i < n - 1; i++) {
+            SEXP expr = VECTOR_ELT(parsed, i);
+
+            int ErrorOccurred;
             SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
 
-            if (!ErrorOccurred) {
-                // We get a list of two things: 
-                // 1) the result: can be any R object
-                SEXP value = PROTECT(VECTOR_ELT(result, 0));
+            if (ErrorOccurred) {
+                // the error has been printed as part of stderr, at least until we
+                // figure out a way to handle it and propagate it with publish_execution_error()
+                // so there is nothing further to do
 
-                // 2) whether it is visible: a scalar LGLSXP
-                bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
+                UNPROTECT(2); // result, expr
 
-                if (visible) {
-                    // the code did not generate an uncaught error and 
-                    // the rsult is visible, so we need to display it
-                    //
-                    // For now, this means print() it which we do by 
-                    // calling the internal print() function Rf_PrintValue
-                    // and intercept what would be printed in the console
-                    // using capture_WriteConsoleEx instead of the regular 
-                    // WriteConsoleEx
-                    capture_stream.str("");
-                    ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
-                    R_ToplevelExec([](void* value) {
-                        Rf_PrintValue((SEXP)value);
-                    }, (void*)value);
-                    
-                    // restore the normal printing to the console
-                    ptr_R_WriteConsoleEx = WriteConsoleEx;
-                    
-                    nl::json pub_data;
-                    pub_data["text/plain"] = capture_stream.str();
-                    publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
-                }
-                
-                UNPROTECT(1); // value
+                // TODO: replace with some sort of traceback with publish_execution_error()
+                UNPROTECT(2); // out, parsed
+                return xeus::create_successful_reply(/*payload, user_expressions*/);
             }
 
-            UNPROTECT(2); // expr, result
+        }
+        
+        // for the last expression, we *might* need to print the result
+        // so we wrap the call in a `withVisible()` so that we can figure out 
+        // its visibility. It seems we cannot use the internal R way of 
+        // doing this with the R_Visible extern variable :shrug:
+        // 
+        // The downside of this is that this injects a `withVisible()` call
+        // in the call stack (#10). So we need to deal with it later, e.g.
+        // when dealing with the traceback 
+        SEXP smb_withVisible = Rf_install("withVisible");
+        SEXP expr = PROTECT(Rf_lang2(smb_withVisible, VECTOR_ELT(parsed, i)));
+            
+        int ErrorOccurred;
+        SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
+
+        if (ErrorOccurred) {
+            // the error has been printed as part of stderr, at least until we
+            // figure out a way to handle it and propagate it with publish_execution_error()
+            // so there is nothing further to do
+
+            UNPROTECT(2); // result, expr
+        } else {
+            // there was no error - so print the result if it is visible
+            // We get a list of two things: 
+            // 1) the result: can be any R object
+            SEXP value = PROTECT(VECTOR_ELT(result, 0));
+
+            // 2) whether it is visible: a scalar LGLSXP
+            bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
+
+            if (visible) {
+                // the code did not generate an uncaught error and 
+                // the result is visible, so we need to display it
+                //
+                // For now, this means print() it which we do by 
+                // calling the internal print() function Rf_PrintValue
+                // and intercept what would be printed in the console
+                // using capture_WriteConsoleEx instead of the regular 
+                // WriteConsoleEx
+                capture_stream.str("");
+                ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
+                R_ToplevelExec([](void* value) {
+                    Rf_PrintValue((SEXP)value);
+                }, (void*)value);
+                
+                // restore the normal printing to the console
+                ptr_R_WriteConsoleEx = WriteConsoleEx;
+                
+                nl::json pub_data;
+                pub_data["text/plain"] = capture_stream.str();
+                publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
+            }
+            
+            UNPROTECT(3); // value, result, expr
+        
         }
 
+        
         UNPROTECT(2); // parsed, out
         
         return xeus::create_successful_reply(/*payload, user_expressions*/);
