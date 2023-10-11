@@ -45,7 +45,7 @@ void WriteConsoleEx(const char *buf, int buflen, int otype) {
 void capture_WriteConsoleEx(const char *buf, int buflen, int otype) {
     std::string output(buf, buflen);
     if (otype == 1) {
-        // do nothing
+        p_interpreter->capture_stream << output;
     } else {
         p_interpreter->capture_stream << output;
     }
@@ -110,6 +110,8 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
+        // TODO: maybe .xeus_try_catch() could just receive code and we deal with parsing on the R side 
+        
         // First we need to parse the code
         SEXP parsed = PROTECT(try_parse(code, execution_counter));
         if (Rf_inherits(parsed, "error")) {
@@ -120,98 +122,43 @@ SEXP try_parse(const std::string& code, int execution_counter) {
             return xeus::create_error_reply();
         }
 
-        R_xlen_t i = 0;
-        R_xlen_t n = XLENGTH(parsed);
-        
-        // first evaluate all expressions but the last
-        for (; i < n - 1; i++) {
-            SEXP expr = VECTOR_ELT(parsed, i);
+        SEXP smb_xeus_try_catch = Rf_install(".xeus_try_catch");
+        SEXP call_xeus_try_catch = PROTECT(Rf_lang2(smb_xeus_try_catch, parsed));
+        SEXP result = PROTECT(Rf_eval(call_xeus_try_catch, R_GlobalEnv));
 
-            int ErrorOccurred;
-            SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
-
-            if (ErrorOccurred) {
-                // the error has been printed as part of stderr, at least until we
-                // figure out a way to handle it and propagate it with publish_execution_error()
-                // so there is nothing further to do
-
-                UNPROTECT(2); // result, expr
-
-                // TODO: replace with some sort of traceback with publish_execution_error()
-                UNPROTECT(2); // out, parsed
-                return xeus::create_successful_reply(/*payload, user_expressions*/);
-            }
-
-        }
-        
-        // for the last expression, we *might* need to print the result
-        // so we wrap the call in a `withVisible()` so that we can figure out 
-        // its visibility. It seems we cannot use the internal R way of 
-        // doing this with the R_Visible extern variable :shrug:
-        // 
-        // The downside of this is that this injects a `withVisible()` call
-        // in the call stack (#10). So we need to deal with it later, e.g.
-        // when dealing with the traceback 
-        SEXP smb_withVisible = Rf_install("withVisible");
-        SEXP expr = PROTECT(Rf_lang2(smb_withVisible, VECTOR_ELT(parsed, i)));
+        if (Rf_inherits(result, "xeus_error")) {
+            // This was an error
             
-        int ErrorOccurred;
-        SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
+            // SEXP condition = VECTOR_ELT(result, 0);
+            // SEXP calls = VECTOR_ELT(result, 1);
 
-        if (ErrorOccurred) {
-            // the error has been printed as part of stderr, at least until we
-            // figure out a way to handle it and propagate it with publish_execution_error()
-            // so there is nothing further to do
-
-            UNPROTECT(2); // result, expr
+            // do something with condition and calls
+            publish_execution_error("EvalError", "ouch ouch", {"ouch", "aie"});
         } else {
-            // there was no error - so print the result if it is visible
-            // We get a list of two things: 
-            // 1) the result: can be any R object
-            SEXP value = PROTECT(VECTOR_ELT(result, 0));
-
-            // 2) whether it is visible: a scalar LGLSXP
+            // handle visibility
+            SEXP value = VECTOR_ELT(result, 0);
             bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
-
             if (visible) {
-                // the code did not generate an uncaught error and 
-                // the result is visible, so we need to display it
-                //
-                // For now, this means print() it which we do by 
-                // calling the internal print() function Rf_PrintValue
-                // and intercept what would be printed in the console
-                // using capture_WriteConsoleEx instead of the regular 
-                // WriteConsoleEx
                 capture_stream.str("");
                 ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
-                R_ToplevelExec([](void* value) {
-                    Rf_PrintValue((SEXP)value);
-                }, (void*)value);
-                
-                // restore the normal printing to the console
+                Rf_PrintValue(value);
                 ptr_R_WriteConsoleEx = WriteConsoleEx;
-                
+
                 nl::json pub_data;
                 pub_data["text/plain"] = capture_stream.str();
                 publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
             }
-            
-            UNPROTECT(3); // value, result, expr
-        
         }
 
-        
-        UNPROTECT(2); // parsed, out
-        
+        UNPROTECT(3);
         return xeus::create_successful_reply(/*payload, user_expressions*/);
     }
 
     void interpreter::configure_impl()
     {
-        // `configure_impl` allows you to perform some operations
-        // after the custom_interpreter creation and before executing any request.
-        // This is optional, but can be useful;
-        // you can for example initialize an engine here or redirect output.
+        // TODO: .xeus_try_catch or something similar belongs in a package
+        const char* try_catch = ".xeus_try_catch <- function(expr) {.xeus_sys_calls <- NULL; tryCatch(withCallingHandlers(withVisible(eval(expr)), error = function(condition){sys_calls <- sys.calls();sys_calls <- sys_calls[seq(10, length(sys_calls) - 2)];.xeus_sys_calls <<- sys_calls}), error = function(condition) { structure(list(condition = condition, calls = .xeus_sys_calls), class = 'xeus_error')})}";
+        R_ParseEvalString(try_catch, R_GlobalEnv);
     }
 
     nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
