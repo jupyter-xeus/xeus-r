@@ -110,8 +110,6 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
-        // TODO: maybe .xeus_try_catch() could just receive code and we deal with parsing on the R side 
-        
         // First we need to parse the code
         SEXP parsed = PROTECT(try_parse(code, execution_counter));
         if (Rf_inherits(parsed, "error")) {
