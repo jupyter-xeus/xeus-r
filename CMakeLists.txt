@@ -215,7 +215,11 @@ macro(xeus_r_create_target target_name linkage output_name)
     endif ()
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
 
-    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    if (WIN32 OR CYGWIN)
+        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LIBRARIES})
+    else ()
+        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    endif ()
     
 endmacro()
 
