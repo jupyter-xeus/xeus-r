@@ -55,7 +55,7 @@ namespace {
 
 SEXP try_parse(const std::string& code, int execution_counter) {
     // call in R:
-    // > tryCatch(parse(text = <code>, srcfile = "<cell [<execution_counter>]"), error = identity)
+    // > tryCatch(parse(text = <code>, srcfile = srcfilecopy("cell[<execution_counter>]", <code>), error = identity)
     //
     // the assumption is that this either gives:
     // - and error when the code can't be parsed for some reason
@@ -67,14 +67,16 @@ SEXP try_parse(const std::string& code, int execution_counter) {
     SEXP smb_text     = Rf_install("text");
     SEXP smb_error    = Rf_install("error");
     SEXP smb_srcfile  = Rf_install("srcfile");
+    SEXP smb_srcfilecopy = Rf_install("srcfilecopy");
     
     SEXP str_code = PROTECT(Rf_mkString(code.c_str()));
     
     std::stringstream ss;
-    ss << "<cell [" << execution_counter << "]>";
+    ss << "cell[" << execution_counter << "]";
 
     SEXP str_cell = PROTECT(Rf_mkString(ss.str().c_str()));
-    SEXP call_parse = PROTECT(Rf_lang3(smb_parse, str_code, str_cell));
+    SEXP call_srcfilecopy = PROTECT(Rf_lang3(smb_srcfilecopy, str_cell, str_code));
+    SEXP call_parse = PROTECT(Rf_lang3(smb_parse, str_code, call_srcfilecopy));
     SET_TAG(CDR(call_parse), smb_text);
     SET_TAG(CDDR(call_parse), smb_srcfile);
 
@@ -83,8 +85,23 @@ SEXP try_parse(const std::string& code, int execution_counter) {
 
     SEXP parsed = Rf_eval(call_tryCatch, R_BaseEnv);
 
-    UNPROTECT(4);
+    UNPROTECT(5);
     return parsed;
+}
+
+std::string red_text(const std::string& text)
+{
+    return "\033[0;31m" + text + "\033[0m";
+}
+
+std::string green_text(const std::string& text)
+{
+    return "\033[0;32m" + text + "\033[0m";
+}
+
+std::string blue_text(const std::string& text)
+{
+    return "\033[0;34m" + text + "\033[0m";
 }
 
 }
@@ -125,13 +142,50 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         SEXP result = PROTECT(Rf_eval(call_xeus_try_catch, R_GlobalEnv));
 
         if (Rf_inherits(result, "xeus_error")) {
-            // This was an error
+            // TODO: this can be done in .xeus_try_catch when the function will be hosted in a package
+            SEXP condition = VECTOR_ELT(result, 0);
+            std::string klass = CHAR(STRING_ELT(Rf_getAttrib(condition, R_ClassSymbol), 0));
             
-            // SEXP condition = VECTOR_ELT(result, 0);
-            // SEXP calls = VECTOR_ELT(result, 1);
+            SEXP smb_conditionMessage = Rf_install("conditionMessage");
+            SEXP call_conditionMessage = PROTECT(Rf_lang2(smb_conditionMessage, condition));
 
-            // do something with condition and calls
-            publish_execution_error("EvalError", "ouch ouch", {"ouch", "aie"});
+            int ErrorOccured;
+            SEXP msg = PROTECT(R_tryEvalSilent(call_conditionMessage, R_GlobalEnv, &ErrorOccured));
+            std::string error_value;
+            if (ErrorOccured) {
+                error_value = "Error";
+            } else {
+                // FIXME: this assumes this is a length 1 character vector
+                error_value = CHAR(STRING_ELT(msg, 0));
+            }
+            
+            SEXP stack = VECTOR_ELT(result, 2);
+            R_xlen_t n = XLENGTH(stack);
+            std::vector<std::string> trace_back;
+            
+            std::size_t first_frame_size(75);
+            std::string delimiter(first_frame_size, '-');
+            std::string traceback_msg("Traceback (most recent call last)");
+            std::string first_frame_padding(first_frame_size - traceback_msg.size() - klass.size(), ' ');
+
+            std::stringstream first_frame;
+            first_frame << red_text(delimiter) << "\n"
+                        << red_text(klass) << first_frame_padding << traceback_msg;
+            
+            trace_back.push_back(first_frame.str());
+
+            for (R_xlen_t i = 0; i < n; i++) {
+                trace_back.push_back(CHAR(STRING_ELT(stack, i)));
+            }
+
+            std::stringstream last_frame;
+            last_frame << red_text(klass) << ": " << error_value << "\n"
+                       << red_text(delimiter);
+            trace_back.push_back(last_frame.str());
+
+            UNPROTECT(2); // msg, call_conditionMessage
+
+            publish_execution_error("EvaluationError", error_value, std::move(trace_back));
         } else {
             // handle visibility
             SEXP value = VECTOR_ELT(result, 0);
@@ -155,7 +209,10 @@ SEXP try_parse(const std::string& code, int execution_counter) {
     void interpreter::configure_impl()
     {
         // TODO: .xeus_try_catch or something similar belongs in a package
-        const char* try_catch = ".xeus_try_catch <- function(expr) {.xeus_sys_calls <- NULL; tryCatch(withCallingHandlers(withVisible(eval(expr)), error = function(condition){sys_calls <- sys.calls();sys_calls <- sys_calls[seq(10, length(sys_calls) - 2)];.xeus_sys_calls <<- sys_calls}), error = function(condition) { structure(list(condition = condition, calls = .xeus_sys_calls), class = 'xeus_error')})}";
+        //       - rework traceback() instead of using capture.output(), better handle file names and line number
+        //       - better handle tail of calls, e.g. in the case of rlang::abort()
+        //       
+        const char* try_catch = ".xeus_try_catch <- function(expr) {.xeus_sys_calls <- NULL; tryCatch(withCallingHandlers(withVisible(eval(expr, globalenv())), error = function(condition){sys_calls <- sys.calls(); sys_calls <- sys_calls[seq(10, length(sys_calls))];.xeus_sys_calls <<- sys_calls}), error = function(condition) { structure(list(condition = condition, calls = .xeus_sys_calls, stack = capture.output(traceback(.xeus_sys_calls, max.lines = 1L)) ), class = 'xeus_error')})}";
         R_ParseEvalString(try_catch, R_GlobalEnv);
     }
 
