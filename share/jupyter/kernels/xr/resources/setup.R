@@ -8,7 +8,7 @@ local({
 
   here <- file.path(
     dirname(Sys.which("xr")),
-    "..", "share", "jupyter", "kernels", "xr", "R"
+    "..", "share", "jupyter", "kernels", "xr", "resources"
   )
 
   files <- setdiff(list.files(here), "setup.R")
