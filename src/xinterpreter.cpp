@@ -214,9 +214,9 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         SEXP dir_xr = Rf_eval(call, R_GlobalEnv);
         
         std::stringstream ss;
-        ss << CHAR(STRING_ELT(dir_xr, 0)) << "/../share/jupyter/kernels/xr/R/xeus-r.R";
-
+        ss << CHAR(STRING_ELT(dir_xr, 0)) << "/../share/jupyter/kernels/xr/R/setup.R";
         SEXP xeus_R_code_path = PROTECT(Rf_mkString(ss.str().c_str()));
+        
         SEXP sym_source = Rf_install("source");
         SEXP call_source = PROTECT(Rf_lang2(sym_source, xeus_R_code_path));
         SEXP result = Rf_eval(call_source, R_GlobalEnv);
