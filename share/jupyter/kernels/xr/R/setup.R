@@ -11,10 +11,10 @@ local({
     "..", "share", "jupyter", "kernels", "xr", "R"
   )
 
-  xeus_source <- function(...) {
-    sys.source(file.path(here, ...), envir = xeus_env)
-  }
+  files <- setdiff(list.files(here), "setup.R")
 
-  xeus_source("hello.R")
+  for (f in files) {
+    sys.source(file.path(here, f), envir = xeus_env)
+  }
 
 })
