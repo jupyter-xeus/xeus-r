@@ -14,6 +14,18 @@ handle_warning <- function(w) {
   publish_stream("stderr", msg)
 }
 
+handle_error <- function(e) {
+  sys_calls <- sys.calls()
+  stack <- capture.output(traceback(sys_calls, max.lines = 1L))
+
+  evalue <- paste(conditionMessage(e), collapse = "\n")
+  trace_back <- c(
+    "Traceback (most recent call last)", 
+    stack
+  )
+  publish_execution_error(ename = "ERROR", evalue = evalue, trace_back)
+}
+
 publish_execution_error <- function(ename, evalue, trace_back) {
   invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
 }
