@@ -26,10 +26,15 @@
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
 #include "Rinterface.h"
+#include "xeus-r/rtools.hpp"
 
 namespace xeus_r {
 
 static interpreter* p_interpreter = nullptr;
+
+interpreter* get_interpreter() {
+    return p_interpreter;
+}
 
 void WriteConsoleEx(const char *buf, int buflen, int otype) {
     std::string output(buf, buflen);
@@ -90,6 +95,7 @@ SEXP try_parse(const std::string& code, int execution_counter) {
     interpreter::interpreter(int argc, char* argv[])
     {
         Rf_initEmbeddedR(argc, argv);
+        register_r_routines();
 
         R_Outputfile = NULL;
         R_Consolefile = NULL;
@@ -108,98 +114,13 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
-        // First we need to parse the code
-        SEXP parsed = PROTECT(try_parse(code, execution_counter));
-        if (Rf_inherits(parsed, "error")) {
-            auto err_msg = CHAR(STRING_ELT(VECTOR_ELT(parsed, 0),0));
-            publish_execution_error("ParseError", err_msg, {err_msg});
+        SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
+        SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_counter));
 
-            UNPROTECT(1); // parsed
-            return xeus::create_error_reply();
-        }
+        SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_);
 
-        R_xlen_t i = 0;
-        R_xlen_t n = XLENGTH(parsed);
-        
-        // first evaluate all expressions but the last
-        for (; i < n - 1; i++) {
-            SEXP expr = VECTOR_ELT(parsed, i);
+        UNPROTECT(2);
 
-            int ErrorOccurred;
-            SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
-
-            if (ErrorOccurred) {
-                // the error has been printed as part of stderr, at least until we
-                // figure out a way to handle it and propagate it with publish_execution_error()
-                // so there is nothing further to do
-
-                UNPROTECT(2); // result, expr
-
-                // TODO: replace with some sort of traceback with publish_execution_error()
-                UNPROTECT(2); // out, parsed
-                return xeus::create_successful_reply(/*payload, user_expressions*/);
-            }
-
-        }
-        
-        // for the last expression, we *might* need to print the result
-        // so we wrap the call in a `withVisible()` so that we can figure out 
-        // its visibility. It seems we cannot use the internal R way of 
-        // doing this with the R_Visible extern variable :shrug:
-        // 
-        // The downside of this is that this injects a `withVisible()` call
-        // in the call stack (#10). So we need to deal with it later, e.g.
-        // when dealing with the traceback 
-        SEXP smb_withVisible = Rf_install("withVisible");
-        SEXP expr = PROTECT(Rf_lang2(smb_withVisible, VECTOR_ELT(parsed, i)));
-            
-        int ErrorOccurred;
-        SEXP result = PROTECT(R_tryEval(expr, R_GlobalEnv, &ErrorOccurred));
-
-        if (ErrorOccurred) {
-            // the error has been printed as part of stderr, at least until we
-            // figure out a way to handle it and propagate it with publish_execution_error()
-            // so there is nothing further to do
-
-            UNPROTECT(2); // result, expr
-        } else {
-            // there was no error - so print the result if it is visible
-            // We get a list of two things: 
-            // 1) the result: can be any R object
-            SEXP value = PROTECT(VECTOR_ELT(result, 0));
-
-            // 2) whether it is visible: a scalar LGLSXP
-            bool visible = LOGICAL(VECTOR_ELT(result, 1))[0];
-
-            if (visible) {
-                // the code did not generate an uncaught error and 
-                // the result is visible, so we need to display it
-                //
-                // For now, this means print() it which we do by 
-                // calling the internal print() function Rf_PrintValue
-                // and intercept what would be printed in the console
-                // using capture_WriteConsoleEx instead of the regular 
-                // WriteConsoleEx
-                capture_stream.str("");
-                ptr_R_WriteConsoleEx = capture_WriteConsoleEx;
-                R_ToplevelExec([](void* value) {
-                    Rf_PrintValue((SEXP)value);
-                }, (void*)value);
-                
-                // restore the normal printing to the console
-                ptr_R_WriteConsoleEx = WriteConsoleEx;
-                
-                nl::json pub_data;
-                pub_data["text/plain"] = capture_stream.str();
-                publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
-            }
-            
-            UNPROTECT(3); // value, result, expr
-        }
-
-        
-        UNPROTECT(2); // parsed, out
-        
         return xeus::create_successful_reply(/*payload, user_expressions*/);
     }
 
