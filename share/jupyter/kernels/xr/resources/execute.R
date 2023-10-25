@@ -1,0 +1,40 @@
+.xeus_publish_stream <- function(name, text) {
+  invisible(.Call("xeusr_publish_stream", name, text, PACKAGE = "(embedding)"))
+}
+
+.xeus.handle_message <- function(msg) {
+  .xeus_publish_stream("stderr", conditionMessage(msg))
+}
+
+.xeus.handle_warning <- function(w) {
+  call <- conditionCall(w)
+  call <- if (is.null(call)) '' else sprintf(' in %s', deparse(call)[[1]])
+  msg <- sprintf('Warning message%s:\n%s\n', call, dQuote(conditionMessage(w)))
+
+  .xeus_publish_stream("stderr", msg)
+}
+
+.xeus.publish_execution_error <- function(ename, evalue, trace_back) {
+  invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
+}
+
+.xeus_try_catch <- function(expr) {
+  .xeus_sys_calls <- NULL; 
+  tryCatch(
+    withCallingHandlers(
+      withVisible(eval(expr, globalenv())),
+      error = function(condition){
+        sys_calls <- sys.calls()
+        sys_calls <- sys_calls[seq(10, length(sys_calls))]
+        .xeus_sys_calls <<- sys_calls
+      }
+    ), 
+    error = function(condition) { 
+      structure(list(
+        condition = condition, 
+        calls = .xeus_sys_calls, 
+        stack = capture.output(traceback(.xeus_sys_calls, max.lines = 1L))
+      ), class = 'xeus_error')
+    }
+  )
+}

@@ -61,6 +61,9 @@ namespace xeus_r
         void shutdown_request_impl() override;
 
     };
+
+    interpreter* get_interpreter();
+    void register_r_routines();
 }
 
 #ifdef __GNUC__

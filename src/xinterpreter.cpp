@@ -31,6 +31,10 @@ namespace xeus_r {
 
 static interpreter* p_interpreter = nullptr;
 
+interpreter* get_interpreter() {
+    return p_interpreter;
+}
+
 void WriteConsoleEx(const char *buf, int buflen, int otype) {
     std::string output(buf, buflen);
     if (otype == 1) {
@@ -90,6 +94,7 @@ SEXP try_parse(const std::string& code, int execution_counter) {
     interpreter::interpreter(int argc, char* argv[])
     {
         Rf_initEmbeddedR(argc, argv);
+        register_r_routines();
 
         R_Outputfile = NULL;
         R_Consolefile = NULL;

@@ -104,6 +104,7 @@ set(XEUS_R_HEADERS
 
 set(XEUS_R_SRC
     src/xinterpreter.cpp
+    src/routines.cpp
 )
 
 set(XEUS_R_MAIN_SRC
