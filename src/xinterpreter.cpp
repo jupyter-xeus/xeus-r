@@ -27,8 +27,6 @@
 #include "R_ext/Parse.h"
 #include "Rinterface.h"
 
-extern Rboolean R_Visible;
-
 namespace xeus_r {
 
 static interpreter* p_interpreter = nullptr;
@@ -197,7 +195,6 @@ SEXP try_parse(const std::string& code, int execution_counter) {
             }
             
             UNPROTECT(3); // value, result, expr
-        
         }
 
         
@@ -208,10 +205,22 @@ SEXP try_parse(const std::string& code, int execution_counter) {
 
     void interpreter::configure_impl()
     {
-        // `configure_impl` allows you to perform some operations
-        // after the custom_interpreter creation and before executing any request.
-        // This is optional, but can be useful;
-        // you can for example initialize an engine here or redirect output.
+        SEXP sym_Sys_which = Rf_install("Sys.which");
+        SEXP sym_dirname = Rf_install("dirname");
+        SEXP str_xr = Rf_mkString("xr");
+        SEXP call_Sys_which = PROTECT(Rf_lang2(sym_Sys_which, str_xr));
+        SEXP call = PROTECT(Rf_lang2(sym_dirname, call_Sys_which));
+        SEXP dir_xr = Rf_eval(call, R_GlobalEnv);
+        
+        std::stringstream ss;
+        ss << CHAR(STRING_ELT(dir_xr, 0)) << "/../share/jupyter/kernels/xr/resources/setup.R";
+        SEXP setup_R_code_path = PROTECT(Rf_mkString(ss.str().c_str()));
+
+        SEXP sym_source = Rf_install("source");
+        SEXP call_source = PROTECT(Rf_lang2(sym_source, setup_R_code_path));
+        Rf_eval(call_source, R_GlobalEnv);
+
+        UNPROTECT(4);
     }
 
     nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
