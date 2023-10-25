@@ -1,24 +1,24 @@
-.xeus_publish_stream <- function(name, text) {
+publish_stream <- function(name, text) {
   invisible(.Call("xeusr_publish_stream", name, text, PACKAGE = "(embedding)"))
 }
 
-.xeus.handle_message <- function(msg) {
-  .xeus_publish_stream("stderr", conditionMessage(msg))
+handle_message <- function(msg) {
+  publish_stream("stderr", conditionMessage(msg))
 }
 
-.xeus.handle_warning <- function(w) {
+handle_warning <- function(w) {
   call <- conditionCall(w)
   call <- if (is.null(call)) '' else sprintf(' in %s', deparse(call)[[1]])
   msg <- sprintf('Warning message%s:\n%s\n', call, dQuote(conditionMessage(w)))
 
-  .xeus_publish_stream("stderr", msg)
+  publish_stream("stderr", msg)
 }
 
-.xeus.publish_execution_error <- function(ename, evalue, trace_back) {
+publish_execution_error <- function(ename, evalue, trace_back) {
   invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
 }
 
-.xeus_try_catch <- function(expr) {
+try_catch <- function(expr) {
   .xeus_sys_calls <- NULL; 
   tryCatch(
     withCallingHandlers(
