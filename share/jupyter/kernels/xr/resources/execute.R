@@ -37,7 +37,9 @@ handle_value <- function(execution_counter) function(obj, visible) {
   publish_execution_result(execution_counter, data)
 }
 
-handle_graphics <- function()
+handle_graphics <- function(plotobj) {
+  
+}
 
 publish_execution_error <- function(ename, evalue, trace_back) {
   invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
@@ -78,12 +80,11 @@ execute <- function(code, execution_counter) {
     value = handle_value(execution_counter)
   )
 
-  # TODO: handle parsing error
-  evaluate(
+  evaluate::evaluate(
     code,
     envir = globalenv(),
     output_handler = output_handler,
     stop_on_error = 1L
   )
-  
+
 }
