@@ -20,7 +20,10 @@ handle_error <- function(e) {
 
   evalue <- paste(conditionMessage(e), collapse = "\n")
   trace_back <- c(
-    "Traceback (most recent call last)", 
+    cli::col_red("--- Error"),
+    evalue, 
+    "",
+    cli::col_red("--- Traceback (most recent call last)"), 
     stack
   )
   publish_execution_error(ename = "ERROR", evalue = evalue, trace_back)
@@ -41,7 +44,7 @@ handle_graphics <- function(plotobj) {
   
 }
 
-publish_execution_error <- function(ename, evalue, trace_back) {
+publish_execution_error <- function(ename, evalue, trace_back = character()) {
   invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
 }
 
@@ -49,28 +52,17 @@ publish_execution_result <- function(execution_count, data, metadata = NULL) {
   invisible(.Call("xeusr_publish_execution_result", as.integer(execution_count), jsonlite::toJSON(data), jsonlite::toJSON(metadata)))
 }
 
-try_catch <- function(expr) {
-  .xeus_sys_calls <- NULL; 
-  tryCatch(
-    withCallingHandlers(
-      withVisible(eval(expr, globalenv())),
-      error = function(condition){
-        sys_calls <- sys.calls()
-        sys_calls <- sys_calls[seq(10, length(sys_calls))]
-        .xeus_sys_calls <<- sys_calls
-      }
-    ), 
-    error = function(condition) { 
-      structure(list(
-        condition = condition, 
-        calls = .xeus_sys_calls, 
-        stack = capture.output(traceback(.xeus_sys_calls, max.lines = 1L))
-      ), class = 'xeus_error')
+execute <- function(code, execution_counter) {
+  parsed <- tryCatch(
+    parse(text = code, srcfile = glue::glue("[{execution_counter}]")), 
+    error = function(e) {
+      msg <- paste(conditionMessage(e), collapse = "\n")
+      publish_execution_error("PARSE ERROR", msg)
+      e
     }
   )
-}
+  if (inherits(parsed, "error")) return()
 
-execute <- function(code, execution_counter) {
   output_handler <- evaluate::new_output_handler(
     text = function(txt) publish_stream("stdout", txt), 
     graphics = handle_graphics,

@@ -114,16 +114,6 @@ SEXP try_parse(const std::string& code, int execution_counter) {
                                                nl::json /*user_expressions*/,
                                                bool /*allow_stdin*/)
     {
-        // First we need to parse the code
-        SEXP parsed = PROTECT(try_parse(code, execution_counter));
-        if (Rf_inherits(parsed, "error")) {
-            auto err_msg = CHAR(STRING_ELT(VECTOR_ELT(parsed, 0),0));
-            publish_execution_error("ParseError", err_msg, {err_msg});
-
-            UNPROTECT(1); // parsed
-            return xeus::create_error_reply();
-        }
-
         SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
         SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_counter));
 
