@@ -100,6 +100,7 @@ endif ()
 set(XEUS_R_HEADERS
     include/xeus-r/xeus_r_config.hpp
     include/xeus-r/xinterpreter.hpp
+    include/xeus-r/rtools.hpp
 )
 
 set(XEUS_R_SRC
