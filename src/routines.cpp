@@ -5,6 +5,7 @@
 #include "R_ext/Rdynload.h"
 
 #include "xeus-r/xinterpreter.hpp"
+#include "nlohmann/json.hpp"
 
 namespace xeus_r {
 namespace routines {
@@ -32,14 +33,27 @@ SEXP publish_execution_error(SEXP ename_, SEXP evalue_, SEXP trace_back_) {
     return R_NilValue;
 }
 
+SEXP publish_execution_result(SEXP execution_count_, SEXP data_, SEXP metadata_) {
+    int execution_count = INTEGER_ELT(execution_count_, 0);
+    auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
+    auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
+    
+    xeus_r::get_interpreter()->publish_execution_result(
+        execution_count, std::move(data), std::move(metadata)
+    );
+
+    return R_NilValue;
+}
+
 }
 
 void register_r_routines() {
     DllInfo *info = R_getEmbeddingDllInfo();
 
     static const R_CallMethodDef callMethods[]  = {
-        {"xeusr_publish_stream"         , (DL_FUNC) &routines::publish_stream         , 2},
-        {"xeusr_publish_execution_error", (DL_FUNC) &routines::publish_execution_error, 3},
+        {"xeusr_publish_stream"          , (DL_FUNC) &routines::publish_stream          , 2},
+        {"xeusr_publish_execution_error" , (DL_FUNC) &routines::publish_execution_error , 3},
+        {"xeusr_publish_execution_result", (DL_FUNC) &routines::publish_execution_result, 3},
         {NULL, NULL, 0}
     };
 

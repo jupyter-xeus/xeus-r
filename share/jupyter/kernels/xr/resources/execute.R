@@ -26,8 +26,25 @@ handle_error <- function(e) {
   publish_execution_error(ename = "ERROR", evalue = evalue, trace_back)
 }
 
+handle_value <- function(execution_counter) function(obj, visible) {
+  if (!visible) return()
+
+  # only doing text-plain for now
+  data <- list(
+    "text/plain" = capture.output(print(obj))
+  )
+  
+  publish_execution_result(execution_counter, data)
+}
+
+handle_graphics <- function()
+
 publish_execution_error <- function(ename, evalue, trace_back) {
   invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
+}
+
+publish_execution_result <- function(execution_count, data, metadata = NULL) {
+  invisible(.Call("xeusr_publish_execution_result", as.integer(execution_count), jsonlite::toJSON(data), jsonlite::toJSON(metadata)))
 }
 
 try_catch <- function(expr) {
@@ -49,4 +66,24 @@ try_catch <- function(expr) {
       ), class = 'xeus_error')
     }
   )
+}
+
+execute <- function(code, execution_counter) {
+  output_handler <- evaluate::new_output_handler(
+    text = function(txt) publish_stream("stdout", txt), 
+    graphics = handle_graphics,
+    message = handle_message, 
+    warning = handle_warning, 
+    error = handle_error, 
+    value = handle_value(execution_counter)
+  )
+
+  # TODO: handle parsing error
+  evaluate(
+    code,
+    envir = globalenv(),
+    output_handler = output_handler,
+    stop_on_error = 1L
+  )
+  
 }
