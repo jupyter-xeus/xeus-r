@@ -6,6 +6,10 @@ get_os <- function() {
     )
 }
 
+namedlist <- function() {
+    `names<-`(list(), character())
+}
+
 # borrowed from IRkernel
 plot_builds_upon <- function(prev, current) {
     if (is.null(prev)) {

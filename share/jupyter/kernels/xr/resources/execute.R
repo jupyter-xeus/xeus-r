@@ -42,6 +42,7 @@ handle_graphics <- function(plot) {
   attr(plot, ".xeusr_width")  <- getOption('repr.plot.width' , repr::repr_option_defaults$repr.plot.width)
   attr(plot, ".xeusr_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
   attr(plot, ".xeusr_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
+  attr(plot, ".xeusr_ppi")    <- attr(plot, ".xeusr_res") / getOption('jupyter.plot_scale', 2)
   
   if (!plot_builds_upon(last_plot, plot)) {
     send_plot(last_plot)
@@ -51,22 +52,31 @@ handle_graphics <- function(plot) {
 }
 
 send_plot <- function(plot) {
-  # TODO: handle more mime types, e.g. IRkernel uses the jupyter.plot_mimetypes option
   w <- attr(plot, '.xeusr_width')
   h <- attr(plot, '.xeusr_height')
   res <- attr(plot, ".xeusr_res")
-        
-  metadata <- list(
-    'image/png' = list(
-      width  = w * res, 
-      height = h * res
-    )
-  )
-  
-  formats <- list(
-    'image/png' = repr::mime2repr[['image/png']](plot, width = w, height = h, res = res)
-  )
-  
+  ppi <- attr(plot, ".xeusr_ppi")
+
+  formats <- namedlist()
+  metadata <- namedlist()
+
+  for (mime in getOption('jupyter.plot_mimetypes')) {
+    formats[[mime]] <- repr::mime2repr[[mime]](plot, width = w, height = h, res = res)
+
+    if (!identical(mime, 'text/plain')) {
+      metadata[[mime]] <- list(
+          width  = w * ppi,
+          height = h * ppi
+      )
+    }
+
+    # Isolating SVGs (putting them in an iframe) avoids strange
+    # interactions with CSS on the page.
+    if (identical(mime, 'image/svg+xml')) {
+      metadata[[mime]]$isolated <- TRUE
+    }
+
+  }
   display_data(formats, metadata)
 }
 
@@ -100,7 +110,7 @@ execute <- function(code, execution_counter) {
   )
 
   if (!is.null(last_plot)) {
-    send_plot(last_plot)
+    tryCatch(send_plot(last_plot), error = handle_error)
   }
 
 }
