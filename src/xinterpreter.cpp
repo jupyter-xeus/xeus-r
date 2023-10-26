@@ -142,6 +142,8 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         Rf_eval(call_source, R_GlobalEnv);
 
         UNPROTECT(4);
+
+        r::invoke_xeusr_fn("init");
     }
 
     nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)

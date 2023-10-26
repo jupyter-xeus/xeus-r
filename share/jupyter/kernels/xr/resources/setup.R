@@ -1,12 +1,5 @@
 local({
 
-  options("cli.num_colors" = 256L)
-  
-  # TODO: get inspiration from IRkernel::init_null_device
-  options(device = function(filename = NULL, ...) {
-    pdf(filename, ...)
-  })
-
   xeus_env <- if ("tools:xeusr" %in% search()) {
     asEnvironment("tools:xeusr")
   } else {
