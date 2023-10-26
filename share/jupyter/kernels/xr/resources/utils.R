@@ -10,6 +10,12 @@ namedlist <- function() {
     `names<-`(list(), character())
 }
 
+set_last_value <- function(obj) {
+    unlockBinding(".Last.value", .BaseNamespaceEnv)
+    assign(".Last.value", obj, .BaseNamespaceEnv)
+    lockBinding(".Last.value", .BaseNamespaceEnv)
+}
+
 # borrowed from IRkernel
 plot_builds_upon <- function(prev, current) {
     if (is.null(prev)) {

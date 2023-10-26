@@ -28,6 +28,7 @@ handle_error <- function(e) {
 }
 
 handle_value <- function(execution_counter) function(obj, visible) {
+  set_last_value(obj)
   if (!visible) return()
 
   # only doing text-plain for now
