@@ -216,10 +216,9 @@ SEXP try_parse(const std::string& code, int execution_counter) {
         const std::string  language_pygments_lexer = "";
         const std::string  language_codemirror_mode = "";
         const std::string  language_nbconvert_exporter = "";
-        const std::string  banner = "xr";const bool         debugger = false;
-        
+        const std::string  banner = "xr";
+        const bool         debugger = false;
         const nl::json     help_links = nl::json::array();
-
 
         return xeus::create_info_reply(
             protocol_version,

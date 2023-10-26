@@ -33,7 +33,7 @@ handle_value <- function(execution_counter) function(obj, visible) {
 
   # only doing text-plain for now
   data <- list(
-    "text/plain" = capture.output(print(obj))
+    "text/plain" = paste(capture.output(print(obj)), collapse = "\n")
   )
   
   publish_execution_result(execution_counter, data)

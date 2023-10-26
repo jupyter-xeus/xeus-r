@@ -10,6 +10,14 @@
 namespace xeus_r {
 namespace routines {
 
+SEXP kernel_info_request() {
+    auto info = xeus_r::get_interpreter()->kernel_info_request();
+    SEXP out = PROTECT(Rf_mkString(info.dump(4).c_str()));
+    Rf_classgets(out, Rf_mkString("json"));
+    UNPROTECT(1);
+    return out;
+}
+
 SEXP publish_stream(SEXP name_, SEXP text_) {
     auto name = CHAR(STRING_ELT(name_, 0));
     auto text = CHAR(STRING_ELT(text_, 0));
@@ -62,6 +70,7 @@ void register_r_routines() {
     DllInfo *info = R_getEmbeddingDllInfo();
 
     static const R_CallMethodDef callMethods[]  = {
+        {"xeusr_kernel_info_request"     , (DL_FUNC) &routines::kernel_info_request     , 0},
         {"xeusr_publish_stream"          , (DL_FUNC) &routines::publish_stream          , 2},
         {"xeusr_publish_execution_error" , (DL_FUNC) &routines::publish_execution_error , 3},
         {"xeusr_publish_execution_result", (DL_FUNC) &routines::publish_execution_result, 3},

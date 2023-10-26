@@ -1,5 +1,7 @@
 local({
 
+  attachNamespace("jsonlite")
+
   xeus_env <- if ("tools:xeusr" %in% search()) {
     asEnvironment("tools:xeusr")
   } else {
