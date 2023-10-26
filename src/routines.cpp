@@ -64,6 +64,18 @@ SEXP display_data(SEXP js_data, SEXP js_metadata){
     return R_NilValue;
 }
 
+SEXP update_display_data(SEXP js_data, SEXP js_metadata){
+    auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
+    auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
+    
+    xeus_r::get_interpreter()->update_display_data(
+        std::move(data), std::move(metadata), /* transient = */ nl::json::object()
+    );
+
+    return R_NilValue;
+}
+
+
 }
 
 void register_r_routines() {
@@ -75,6 +87,7 @@ void register_r_routines() {
         {"xeusr_publish_execution_error" , (DL_FUNC) &routines::publish_execution_error , 3},
         {"xeusr_publish_execution_result", (DL_FUNC) &routines::publish_execution_result, 3},
         {"xeusr_display_data"            , (DL_FUNC) &routines::display_data            , 2},
+        {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
 
         {NULL, NULL, 0}
     };
