@@ -1,6 +1,4 @@
-publish_stream <- function(name, text) {
-  invisible(.Call("xeusr_publish_stream", name, text, PACKAGE = "(embedding)"))
-}
+last_plot <- NULL
 
 handle_message <- function(msg) {
   publish_stream("stderr", conditionMessage(msg))
@@ -40,16 +38,34 @@ handle_value <- function(execution_counter) function(obj, visible) {
   publish_execution_result(execution_counter, data)
 }
 
-handle_graphics <- function(plotobj) {
+handle_graphics <- function(plot) {
+  attr(plot, ".xeusr_width")  <- getOption('repr.plot.width' , repr::repr_option_defaults$repr.plot.width)
+  attr(plot, ".xeusr_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
+  attr(plot, ".xeusr_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
   
+  # TODO: borrow IRkernel::plot_builds_upon so that multiple plots can be sent
+
+  last_plot <<- plot
 }
 
-publish_execution_error <- function(ename, evalue, trace_back = character()) {
-  invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
-}
-
-publish_execution_result <- function(execution_count, data, metadata = NULL) {
-  invisible(.Call("xeusr_publish_execution_result", as.integer(execution_count), jsonlite::toJSON(data), jsonlite::toJSON(metadata)))
+send_plot <- function(plot) {
+  # TODO: handle more mime types, e.g. IRkernel uses the jupyter.plot_mimetypes option
+  w <- attr(plot, '.xeusr_width')
+  h <- attr(plot, '.xeusr_height')
+  res <- attr(plot, ".xeusr_res")
+        
+  metadata <- list(
+    'image/png' = list(
+      width  = w * res, 
+      height = h * res
+    )
+  )
+  
+  formats <- list(
+    'image/png' = repr::mime2repr[['image/png']](plot, width = w, height = h, res = res)
+  )
+  
+  display_data(formats, metadata)
 }
 
 execute <- function(code, execution_counter) {
@@ -72,11 +88,17 @@ execute <- function(code, execution_counter) {
     value = handle_value(execution_counter)
   )
 
+  last_plot <<- NULL
+
   evaluate::evaluate(
     code,
     envir = globalenv(),
     output_handler = output_handler,
     stop_on_error = 1L
   )
+
+  if (!is.null(last_plot)) {
+    send_plot(last_plot)
+  }
 
 }
