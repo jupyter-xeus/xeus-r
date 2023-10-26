@@ -10,7 +10,7 @@ init_device_option <- function() {
     options(device = null_device)
 }
 
-init <- function() {
+configure <- function() {
   options("cli.num_colors" = 256L)
   init_device_option()
 }
