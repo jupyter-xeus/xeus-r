@@ -43,7 +43,9 @@ handle_graphics <- function(plot) {
   attr(plot, ".xeusr_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
   attr(plot, ".xeusr_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
   
-  # TODO: borrow IRkernel::plot_builds_upon so that multiple plots can be sent
+  if (!plot_builds_upon(last_plot, plot)) {
+    send_plot(last_plot)
+  }
 
   last_plot <<- plot
 }
