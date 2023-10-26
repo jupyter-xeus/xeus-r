@@ -1,6 +1,4 @@
-publish_stream <- function(name, text) {
-  invisible(.Call("xeusr_publish_stream", name, text, PACKAGE = "(embedding)"))
-}
+last_plot <- NULL
 
 handle_message <- function(msg) {
   publish_stream("stderr", conditionMessage(msg))
@@ -40,16 +38,46 @@ handle_value <- function(execution_counter) function(obj, visible) {
   publish_execution_result(execution_counter, data)
 }
 
-handle_graphics <- function(plotobj) {
+handle_graphics <- function(plot) {
+  attr(plot, ".xeusr_width")  <- getOption('repr.plot.width' , repr::repr_option_defaults$repr.plot.width)
+  attr(plot, ".xeusr_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
+  attr(plot, ".xeusr_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
+  attr(plot, ".xeusr_ppi")    <- attr(plot, ".xeusr_res") / getOption('jupyter.plot_scale', 2)
   
+  if (!plot_builds_upon(last_plot, plot)) {
+    send_plot(last_plot)
+  }
+
+  last_plot <<- plot
 }
 
-publish_execution_error <- function(ename, evalue, trace_back = character()) {
-  invisible(.Call("xeusr_publish_execution_error", ename, evalue, trace_back))
-}
+send_plot <- function(plot) {
+  w <- attr(plot, '.xeusr_width')
+  h <- attr(plot, '.xeusr_height')
+  res <- attr(plot, ".xeusr_res")
+  ppi <- attr(plot, ".xeusr_ppi")
 
-publish_execution_result <- function(execution_count, data, metadata = NULL) {
-  invisible(.Call("xeusr_publish_execution_result", as.integer(execution_count), jsonlite::toJSON(data), jsonlite::toJSON(metadata)))
+  formats <- namedlist()
+  metadata <- namedlist()
+
+  for (mime in getOption('jupyter.plot_mimetypes')) {
+    formats[[mime]] <- repr::mime2repr[[mime]](plot, width = w, height = h, res = res)
+
+    if (!identical(mime, 'text/plain')) {
+      metadata[[mime]] <- list(
+          width  = w * ppi,
+          height = h * ppi
+      )
+    }
+
+    # Isolating SVGs (putting them in an iframe) avoids strange
+    # interactions with CSS on the page.
+    if (identical(mime, 'image/svg+xml')) {
+      metadata[[mime]]$isolated <- TRUE
+    }
+
+  }
+  display_data(formats, metadata)
 }
 
 execute <- function(code, execution_counter) {
@@ -72,11 +100,17 @@ execute <- function(code, execution_counter) {
     value = handle_value(execution_counter)
   )
 
+  last_plot <<- NULL
+
   evaluate::evaluate(
     code,
     envir = globalenv(),
     output_handler = output_handler,
     stop_on_error = 1L
   )
+
+  if (!is.null(last_plot)) {
+    tryCatch(send_plot(last_plot), error = handle_error)
+  }
 
 }

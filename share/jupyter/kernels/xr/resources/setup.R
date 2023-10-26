@@ -1,7 +1,5 @@
 local({
 
-  options("cli.num_colors" = 256L)
-
   xeus_env <- if ("tools:xeusr" %in% search()) {
     asEnvironment("tools:xeusr")
   } else {
