@@ -17,7 +17,7 @@ local({
     "..", "share", "jupyter", "kernels", "xr", "resources"
   )
 
-  files <- setdiff(list.files(here), "setup.R")
+  files <- setdiff(list.files(here), c("setup.R", "routines.R"))
 
   xeus_env$.xeus_call <- function(fn, ...) {
     get(fn, envir = xeus_private_env)(...)
@@ -26,5 +26,6 @@ local({
   for (f in files) {
     sys.source(file.path(here, f), envir = xeus_private_env)
   }
+  sys.source(file.path(here, "routines.R"), envir = xeus_env)
 
 })

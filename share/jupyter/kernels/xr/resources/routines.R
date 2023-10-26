@@ -12,5 +12,5 @@ publish_stream <- function(name, text) {
 }
 
 display_data <- function(data = NULL, metadata = NULL) {
-  .Call("xeusr_display_data", jsonlite::toJSON(data), jsonlite::toJSON(metadata), PACKAGE = "(embedding)")
+  invisible(.Call("xeusr_display_data", jsonlite::toJSON(data), jsonlite::toJSON(metadata), PACKAGE = "(embedding)"))
 }
