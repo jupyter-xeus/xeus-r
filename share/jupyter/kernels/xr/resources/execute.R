@@ -14,6 +14,7 @@ handle_warning <- function(w) {
 
 handle_error <- function(e) {
   sys_calls <- sys.calls()
+  sys_calls <- head(tail(sys_calls, -16), -3)
   stack <- capture.output(traceback(sys_calls, max.lines = 1L))
 
   evalue <- paste(conditionMessage(e), collapse = "\n")
