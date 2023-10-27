@@ -1,7 +1,5 @@
 local({
 
-  attachNamespace("jsonlite")
-
   xeus_env <- if ("tools:xeusr" %in% search()) {
     asEnvironment("tools:xeusr")
   } else {
@@ -21,7 +19,7 @@ local({
 
   files <- setdiff(list.files(here), c("setup.R", "routines.R"))
 
-  xeus_env$.xeus_call <- function(fn, ...) {
+  xeus_env[[".xeus_call"]] <- function(fn, ...) {
     get(fn, envir = xeus_private_env)(...)
   }
 

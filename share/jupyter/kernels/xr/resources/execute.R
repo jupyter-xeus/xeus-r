@@ -31,12 +31,15 @@ handle_value <- function(execution_counter) function(obj, visible) {
   set_last_value(obj)
   if (!visible) return()
 
-  # only doing text-plain for now
-  data <- list(
-    "text/plain" = paste(capture.output(print(obj)), collapse = "\n")
-  )
-  
-  publish_execution_result(execution_counter, data)
+  # always include text/plain
+  mimetypes <- if (getOption('jupyter.rich_display')) {
+    c("text/plain", setdiff(getOption("jupyter.display_mimetypes"), "text/plain"))
+  } else {
+    "text/plain"  
+  }
+    
+  bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
+  display_data(bundle$data, bundle$metadata)
 }
 
 handle_graphics <- function(plot) {
@@ -58,11 +61,11 @@ send_plot <- function(plot) {
   res <- attr(plot, ".xeusr_res")
   ppi <- attr(plot, ".xeusr_ppi")
 
-  formats <- namedlist()
+  data <- namedlist()
   metadata <- namedlist()
 
   for (mime in getOption('jupyter.plot_mimetypes')) {
-    formats[[mime]] <- repr::mime2repr[[mime]](plot, width = w, height = h, res = res)
+    data[[mime]] <- repr::mime2repr[[mime]](plot, width = w, height = h, res = res)
 
     if (!identical(mime, 'text/plain')) {
       metadata[[mime]] <- list(
@@ -78,7 +81,7 @@ send_plot <- function(plot) {
     }
 
   }
-  display_data(formats, metadata)
+  display_data(data, metadata)
 }
 
 execute <- function(code, execution_counter) {

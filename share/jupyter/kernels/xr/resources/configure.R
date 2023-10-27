@@ -13,10 +13,21 @@ init_options <- function() {
     device = get_null_device(), 
     cli.num_colors = 256L, 
     jupyter.plot_mimetypes = c('text/plain', 'image/png'), 
-    jupyter.plot_scale = 2
+    jupyter.plot_scale = 2, 
+
+    jupyter.rich_display = TRUE,
+    jupyter.base_display_func = display_data, 
+    jupyter.clear_output_func = clear_output
   )
 }
 
 configure <- function() {
+  attachNamespace("jsonlite")
+  attachNamespace("IRdisplay")
+
+  setMethod(jsonlite:::asJSON, "shiny.tag", function(x, ...) {
+    jsonlite:::asJSON(as.character(x), ...)
+  })
+
   init_options()
 }
