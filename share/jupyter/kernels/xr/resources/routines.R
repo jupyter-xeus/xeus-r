@@ -22,3 +22,7 @@ update_display_data <- function(data = NULL, metadata = NULL) {
 kernel_info_request <- function() {
     .Call("xeusr_kernel_info_request", PACKAGE = "(embedding)")
 }
+
+clear_output <- function(wait = FALSE) {
+    invisible(.Call("xeusr_clear_output", isTRUE(wait), PACKAGE = "(embedding)"))
+}

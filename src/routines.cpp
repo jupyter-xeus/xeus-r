@@ -75,6 +75,12 @@ SEXP update_display_data(SEXP js_data, SEXP js_metadata){
     return R_NilValue;
 }
 
+SEXP clear_output(SEXP wait_) {
+    bool wait = LOGICAL_ELT(wait_, 0) == TRUE;
+    xeus_r::get_interpreter()->clear_output(wait);
+    return R_NilValue;
+}
+
 
 }
 
@@ -88,6 +94,7 @@ void register_r_routines() {
         {"xeusr_publish_execution_result", (DL_FUNC) &routines::publish_execution_result, 3},
         {"xeusr_display_data"            , (DL_FUNC) &routines::display_data            , 2},
         {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
+        {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
 
         {NULL, NULL, 0}
     };
