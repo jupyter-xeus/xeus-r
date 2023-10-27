@@ -13,19 +13,33 @@ handle_warning <- function(w) {
 }
 
 handle_error <- function(e) {
-  sys_calls <- sys.calls()
-  sys_calls <- head(tail(sys_calls, -16), -3)
-  stack <- capture.output(traceback(sys_calls, max.lines = 1L))
+  if (inherits(e, "rlang_error") && isNamespaceLoaded("rlang")) {
+    
+    # TODO: trim the .xeus_call > ... > evaluate > ... portion
+    assign("last_error", e, rlang:::the)
 
-  evalue <- paste(conditionMessage(e), collapse = "\n")
-  trace_back <- c(
-    cli::col_red("--- Error"),
-    evalue, 
-    "",
-    cli::col_red("--- Traceback (most recent call last)"), 
-    stack
-  )
-  publish_execution_error(ename = "ERROR", evalue = evalue, trace_back)
+    trace_back <- c(
+      format(e, backtrace = FALSE), 
+      "",
+      cli::col_red("--- Traceback"), 
+      format(e$trace)
+    )
+    publish_execution_error(ename = "ERROR", evalue = "", trace_back)
+  } else {
+    sys_calls <- sys.calls()
+    sys_calls <- head(tail(sys_calls, -16), -3)
+    stack <- capture.output(traceback(sys_calls, max.lines = 1L))
+
+    evalue <- paste(conditionMessage(e), collapse = "\n")
+    trace_back <- c(
+      cli::col_red("--- Error"),
+      evalue, 
+      "",
+      cli::col_red("--- Traceback (most recent call last)"), 
+      stack
+    )
+    publish_execution_error(ename = "ERROR", evalue = evalue, trace_back)
+  }
 }
 
 handle_value <- function(execution_counter) function(obj, visible) {
