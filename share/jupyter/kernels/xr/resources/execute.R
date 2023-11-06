@@ -129,7 +129,7 @@ send_plot <- function(plot) {
   display_data(data, metadata)
 }
 
-execute <- function(code, execution_counter) {
+execute <- function(code, execution_counter, silent = FALSE) {
   parsed <- tryCatch(
     parse(text = code), 
     error = function(e) {
@@ -140,14 +140,18 @@ execute <- function(code, execution_counter) {
   )
   if (inherits(parsed, "error")) return()
 
-  output_handler <- evaluate::new_output_handler(
-    text = function(txt) publish_stream("stdout", txt), 
-    graphics = handle_graphics,
-    message = handle_message, 
-    warning = handle_warning, 
-    error = handle_error, 
-    value = handle_value(execution_counter)
-  )
+  output_handler <- if (silent) {
+    evaluate::new_output_handler()
+  } else {
+    evaluate::new_output_handler(
+      text = function(txt) publish_stream("stdout", txt), 
+      graphics = handle_graphics,
+      message = handle_message, 
+      warning = handle_warning, 
+      error = handle_error, 
+      value = handle_value(execution_counter)
+    )  
+  }
 
   last_plot <<- NULL
 
@@ -160,7 +164,7 @@ execute <- function(code, execution_counter) {
     filename = filename
   )
 
-  if (!is.null(last_plot)) {
+  if (!silent && !is.null(last_plot)) {
     tryCatch(send_plot(last_plot), error = handle_error)
   }
 
