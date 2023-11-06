@@ -21,7 +21,7 @@ trim_rlang_error <- function(e) {
 
   # remove the first node - i.e. the .xeus_call() > ...
   trace <- trace[seq(which(trace$parent == 0)[2], nrow(trace)), ]
-  trace <- trace[trace$visible, ]
+  # trace <- trace[trace$visible, ]
 
   # adjust the parent column
   n <- nrow(trace)
