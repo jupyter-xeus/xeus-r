@@ -19,6 +19,12 @@ init_options <- function() {
     jupyter.base_display_func = display_data, 
     jupyter.clear_output_func = clear_output
   )
+
+  repos <- getOption('repos')
+  if (identical(repos, c(CRAN = '@CRAN@'))) {
+    repos[['CRAN']] <- 'https://cran.r-project.org'
+    options(repos = repos)
+  }
 }
 
 configure <- function() {
