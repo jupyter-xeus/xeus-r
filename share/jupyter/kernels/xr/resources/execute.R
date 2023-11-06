@@ -131,7 +131,7 @@ send_plot <- function(plot) {
 
 execute <- function(code, execution_counter) {
   parsed <- tryCatch(
-    parse(text = code, srcfile = glue::glue("[{execution_counter}]")), 
+    parse(text = code), 
     error = function(e) {
       msg <- paste(conditionMessage(e), collapse = "\n")
       publish_execution_error("PARSE ERROR", msg)
@@ -151,11 +151,13 @@ execute <- function(code, execution_counter) {
 
   last_plot <<- NULL
 
+  filename <- glue::glue("[{execution_counter}]")
   evaluate::evaluate(
     code,
     envir = globalenv(),
     output_handler = output_handler,
-    stop_on_error = 1L
+    stop_on_error = 1L, 
+    filename = filename
   )
 
   if (!is.null(last_plot)) {
