@@ -54,44 +54,6 @@ void capture_WriteConsoleEx(const char *buf, int buflen, int otype) {
     }
 }
 
-namespace {
-
-SEXP try_parse(const std::string& code, int execution_counter) {
-    // call in R:
-    // > tryCatch(parse(text = <code>, srcfile = "<cell [<execution_counter>]"), error = identity)
-    //
-    // the assumption is that this either gives:
-    // - and error when the code can't be parsed for some reason
-    // - the parsed expressions, as a EXPRSXP vector
-    //
-    SEXP smb_tryCatch = Rf_install("tryCatch");
-    SEXP smb_identity = Rf_install("identity");
-    SEXP smb_parse    = Rf_install("parse");
-    SEXP smb_text     = Rf_install("text");
-    SEXP smb_error    = Rf_install("error");
-    SEXP smb_srcfile  = Rf_install("srcfile");
-    
-    SEXP str_code = PROTECT(Rf_mkString(code.c_str()));
-    
-    std::stringstream ss;
-    ss << "<cell [" << execution_counter << "]>";
-
-    SEXP str_cell = PROTECT(Rf_mkString(ss.str().c_str()));
-    SEXP call_parse = PROTECT(Rf_lang3(smb_parse, str_code, str_cell));
-    SET_TAG(CDR(call_parse), smb_text);
-    SET_TAG(CDDR(call_parse), smb_srcfile);
-
-    SEXP call_tryCatch = PROTECT(Rf_lang3(smb_tryCatch, call_parse, smb_identity));
-    SET_TAG(CDDR(call_tryCatch), smb_error);
-
-    SEXP parsed = Rf_eval(call_tryCatch, R_BaseEnv);
-
-    UNPROTECT(4);
-    return parsed;
-}
-
-}
-
     interpreter::interpreter(int argc, char* argv[])
     {
         Rf_initEmbeddedR(argc, argv);
