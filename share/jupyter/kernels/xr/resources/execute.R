@@ -12,13 +12,43 @@ handle_warning <- function(w) {
   publish_stream("stderr", msg)
 }
 
+trim_rlang_error <- function(e) {
+  trace <- e$trace
+  if (is.null(trace) && !is.null(e$parent)) {
+    trace <- e$parent$trace
+  }
+  if (is.null(trace)) return(e)
+
+  # remove the first node - i.e. the .xeus_call() > ...
+  trace <- trace[seq(which(trace$parent == 0)[2], nrow(trace)), ]
+  trace <- trace[trace$visible, ]
+
+  # adjust the parent column
+  n <- nrow(trace)
+  parent <- trace$parent
+  root <- 0
+  node <- 0
+  for (i in 1:n) {
+    if (parent[i] == 0) {
+      root <- i
+      node <- root
+    } else {
+      parent[i] <- node
+      node <- node + 1
+    }
+  }
+  trace$parent <- parent
+  e$trace <- trace
+  e
+}
+
 handle_error <- function(e) {
   if (inherits(e, "rlang_error") && isNamespaceLoaded("rlang")) {
-    
-    # TODO: trim the .xeus_call > ... > evaluate > ... portion
+    e <- trim_rlang_error(e)
     assign("last_error", e, rlang:::the)
 
     trace_back <- c(
+      cli::col_red("--- Error"),
       format(e, backtrace = FALSE), 
       "",
       cli::col_red("--- Traceback"), 
