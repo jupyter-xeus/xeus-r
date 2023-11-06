@@ -88,10 +88,10 @@ handle_value <- function(execution_counter) function(obj, visible) {
 }
 
 handle_graphics <- function(plot) {
-  attr(plot, ".xeusr_width")  <- getOption('repr.plot.width' , repr::repr_option_defaults$repr.plot.width)
-  attr(plot, ".xeusr_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
-  attr(plot, ".xeusr_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
-  attr(plot, ".xeusr_ppi")    <- attr(plot, ".xeusr_res") / getOption('jupyter.plot_scale', 2)
+  attr(plot, ".irkernel_width")  <- getOption('repr.plot.width' , repr::repr_option_defaults$repr.plot.width)
+  attr(plot, ".irkernel_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
+  attr(plot, ".irkernel_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
+  attr(plot, ".irkernel_ppi")    <- attr(plot, ".irkernel_res") / getOption('jupyter.plot_scale', 2)
   
   if (!plot_builds_upon(last_plot, plot)) {
     send_plot(last_plot)
@@ -101,10 +101,10 @@ handle_graphics <- function(plot) {
 }
 
 send_plot <- function(plot) {
-  w <- attr(plot, '.xeusr_width')
-  h <- attr(plot, '.xeusr_height')
-  res <- attr(plot, ".xeusr_res")
-  ppi <- attr(plot, ".xeusr_ppi")
+  w <- attr(plot, '.irkernel_width')
+  h <- attr(plot, '.irkernel_height')
+  res <- attr(plot, ".irkernel_res")
+  ppi <- attr(plot, ".irkernel_ppi")
 
   data <- namedlist()
   metadata <- namedlist()
