@@ -59,7 +59,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd test
-          pytest .  --reruns 5
+          R_HOME=`R RHOME` pytest .  --reruns 5
 
   win:
     
