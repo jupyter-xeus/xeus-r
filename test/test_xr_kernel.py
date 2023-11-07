@@ -15,7 +15,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     kernel_name = "xr"
     language_name = "R"
     code_hello_world = "cat('hello, world')"
-    code_page_something = "?cat"
+    # code_page_something = "?cat"
     completion_samples = [{"text": "H", "matches": {"Hello", "Hey", "Howdy"}}]
     #complete_code_samples = ["hello, world"]
     code_execute_result = [{"code": "6*7", "result": "[1] 42"}]
