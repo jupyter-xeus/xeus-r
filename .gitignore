@@ -43,5 +43,6 @@ build/
 
 # vscode
 .vscode
+__pycache__
 
 bld
