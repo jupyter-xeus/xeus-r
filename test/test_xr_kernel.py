@@ -7,27 +7,6 @@
 #############################################################################
 
 
-##########################################################################################
-# TODO
-# Please remove fake test and uncomment the code lines underneath it in order to enable
-# the actual tests (to be modified/adapted)
-#########################################################################################
-# These tests examples (to be modified) check that the given code "hello, world" would be
-# published as text stdout stream message and "error" as stderr
-# Other tests are performed during the initialization of `jupyter_kernel_test.KernelTests`
-# and inside the `execute_helper` function based on the given variables defined within
-# the class
-#########################################################################################
-#                               TO BE REMOVED                                           #
-#########################################################################################
-
-import unittest
-
-class TestFake(unittest.TestCase):
-
-    def test_fake(self):
-        pass
-
 #########################################################################################
 #                            TO UNCOMMENT AND ADAPT                                     #
 #########################################################################################
