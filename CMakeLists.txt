@@ -26,20 +26,6 @@ set(${PROJECT_NAME}_VERSION
     ${XEUS_R_VERSION_MAJOR}.${XEUS_R_VERSION_MINOR}.${XEUS_R_VERSION_PATCH})
 message(STATUS "Building xeus-r v${${PROJECT_NAME}_VERSION}")
 
-# Configuration
-# =============
-
-include(GNUInstallDirs)
-
-if (NOT DEFINED XEUS_R_KERNELSPEC_PATH)
-    set(XEUS_R_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
-endif ()
-
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json"
-)
-
 # Build options
 # =============
 
@@ -68,10 +54,26 @@ if (NOT TARGET xeus AND NOT TARGET xeus-static)
 endif ()
 find_package(R REQUIRED)
 
+message(STATUS "R_HOME           = ${R_HOME}")
 message(STATUS "R_INCLUDE_DIR    = ${R_INCLUDE_DIR}")
 message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
 message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
 message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
+
+# Configuration
+# =============
+
+include(GNUInstallDirs)
+
+if (NOT DEFINED XEUS_R_KERNELSPEC_PATH)
+    set(XEUS_R_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
+endif ()
+
+configure_file (
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json"
+)
+
 
 # Flags
 # =====

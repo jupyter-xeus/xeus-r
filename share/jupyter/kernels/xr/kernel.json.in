@@ -6,6 +6,6 @@
       "{connection_file}"
   ],
   "language": "R",
-  "metadata": {"debugger": false
-  }
+  "metadata": {"debugger": false},
+  "env": {"R_HOME": "@R_HOME@"}
 }

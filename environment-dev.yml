@@ -11,7 +11,7 @@ dependencies:
   - nlohmann_json
   - cppzmq
   - xtl
-  - r-base
+  - r-base >=4
   # Run dependencies
   - r-evaluate
   - r-jsonlite
@@ -21,6 +21,6 @@ dependencies:
   - r-IRdisplay
   # Test dependencies
   - pytest
-  - jupyter_kernel_test>=0.4.3
+  - jupyter_kernel_test >=0.4.3
   - nbval
   - pytest-rerunfailures
