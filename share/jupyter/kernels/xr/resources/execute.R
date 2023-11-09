@@ -1,4 +1,5 @@
 last_plot <- NULL
+last_visible <- TRUE
 
 handle_message <- function(msg) {
   publish_stream("stderr", conditionMessage(msg))
@@ -73,18 +74,8 @@ handle_error <- function(e) {
 }
 
 handle_value <- function(execution_counter) function(obj, visible) {
-  set_last_value(obj)
+  set_last_value(obj, visible)
   if (!visible) return()
-
-  # always include text/plain
-  mimetypes <- if (getOption('jupyter.rich_display')) {
-    c("text/plain", setdiff(getOption("jupyter.display_mimetypes"), "text/plain"))
-  } else {
-    "text/plain"  
-  }
-    
-  bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
-  display_data(bundle$data, bundle$metadata)
 }
 
 handle_graphics <- function(plot) {
@@ -154,6 +145,7 @@ execute <- function(code, execution_counter, silent = FALSE) {
   }
 
   last_plot <<- NULL
+  last_visible <<- FALSE
 
   filename <- glue::glue("[{execution_counter}]")
   evaluate::evaluate(
@@ -166,6 +158,13 @@ execute <- function(code, execution_counter, silent = FALSE) {
 
   if (!silent && !is.null(last_plot)) {
     tryCatch(send_plot(last_plot), error = handle_error)
+  }
+
+  if (isTRUE(last_visible)) {
+    obj <- .Last.value
+
+    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = "text/plain")
+    publish_execution_result(execution_counter, bundle$data, bundle$metadata)
   }
 
 }
