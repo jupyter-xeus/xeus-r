@@ -12,6 +12,7 @@ dependencies:
   - cppzmq
   - xtl
   - r-base
+  # Run dependencies
   - r-evaluate
   - r-jsonlite
   - r-glue
