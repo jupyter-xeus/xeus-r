@@ -163,7 +163,13 @@ execute <- function(code, execution_counter, silent = FALSE) {
   if (isTRUE(last_visible)) {
     obj <- .Last.value
 
-    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = "text/plain")
+    mimetypes <- if (getOption('jupyter.rich_display')) {
+      c("text/plain", setdiff(getOption("jupyter.display_mimetypes"), "text/plain"))
+    } else {
+      "text/plain"  
+    }
+
+    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
     publish_execution_result(execution_counter, bundle$data, bundle$metadata)
   }
 
