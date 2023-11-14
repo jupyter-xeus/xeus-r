@@ -81,6 +81,15 @@ SEXP clear_output(SEXP wait_) {
     return R_NilValue;
 }
 
+SEXP is_complete_request(SEXP code_) {
+    std::string code = CHAR(STRING_ELT(code_, 0));
+    auto is_complete = xeus_r::get_interpreter()->is_complete_request(code);
+
+    SEXP out = PROTECT(Rf_mkString(is_complete.dump(4).c_str()));
+    Rf_classgets(out, Rf_mkString("json"));
+    UNPROTECT(1);
+    return out;
+}
 
 }
 
@@ -95,6 +104,7 @@ void register_r_routines() {
         {"xeusr_display_data"            , (DL_FUNC) &routines::display_data            , 2},
         {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
         {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
+        {"xeusr_is_complete_request"     , (DL_FUNC) &routines::is_complete_request     , 1},
 
         {NULL, NULL, 0}
     };

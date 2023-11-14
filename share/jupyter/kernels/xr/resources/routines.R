@@ -26,3 +26,7 @@ kernel_info_request <- function() {
 clear_output <- function(wait = FALSE) {
     invisible(.Call("xeusr_clear_output", isTRUE(wait), PACKAGE = "(embedding)"))
 }
+
+is_complete_request <- function(code) {
+  .Call("xeusr_is_complete_request", code, PACKAGE = "(embedding)")
+}

@@ -128,6 +128,7 @@ nl::json interpreter::is_complete_request_impl(const std::string& code)
             return xeus::create_is_complete_reply("incomplete", "");
 
         case PARSE_ERROR:
+            Rprintf("invalid");
             return xeus::create_is_complete_reply("invalid", "");
     }
 }
