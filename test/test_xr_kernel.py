@@ -30,11 +30,15 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     code_hello_world = "cat('hello, world')"
     # code_page_something = "?cat"
     completion_samples = [{"text": "H", "matches": {"Hello", "Hey", "Howdy"}}]
-    #complete_code_samples = ["hello, world"]
     code_execute_result = [{"code": "6*7", "result": "[1] 42"}]
-    #incomplete_code_samples = ["incomplete"]
-    #invalid_code_samples = ["invalid"]
     #code_inspect_sample = "print"
+
+    #invalid_code_samples = ["invalid"]
+    
+    complete_code_samples = ["fun()", "1 + 2", "a %>% b"]
+    incomplete_code_samples = ["fun(", "1 + "]
+    # invalid_code_samples = ["fun())", "a |> b"]
+    
 
     def test_stdout(self):
         self.flush_channels()
