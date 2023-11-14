@@ -51,11 +51,12 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         data = output_msgs[0]['content']['data']
         self.assertEqual(data['text/plain'], ['[1] 42'])
 
-    #def test_stderr(self):
-        #self.flush_channels()
-        #reply, output_msgs = self.execute_helper(code="error")
-        #self.assertEqual(output_msgs[0]["msg_type"], "stream")
-        #self.assertEqual(output_msgs[0]["content"]["name"], "stderr")
+    def test_stderr(self):
+        self.flush_channels()
+        reply, output_msgs = self.execute_helper(code="cat('ouch', file = stderr())")
+        self.assertEqual(output_msgs[0]["msg_type"], "stream")
+        self.assertEqual(output_msgs[0]["content"]["name"], "stderr")
+        self.assertEqual(output_msgs[0]["content"]["text"], "ouch")
 
 #########################################################################################
 #########################################################################################
