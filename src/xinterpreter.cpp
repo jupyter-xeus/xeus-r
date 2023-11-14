@@ -109,27 +109,56 @@ void interpreter::configure_impl()
     r::invoke_xeusr_fn("configure");
 }
 
-nl::json interpreter::is_complete_request_impl(const std::string& code)
+nl::json interpreter::is_complete_request_impl(const std::string& code_)
 {
-    SEXP s_code = PROTECT(Rf_mkString(code.c_str()));
-    ParseStatus status;
+    // initially code holds the string, but then it is being 
+    // replaced by incomplete, invalid or complete either in the 
+    // body handler or the error handler
+    SEXP code = PROTECT(Rf_mkString(code_.c_str()));
 
-    // Currently ignore the result of R_ParseVector, and only care about status
-    R_ParseVector(s_code, -1, &status, R_NilValue);
-    UNPROTECT(1); // s_code
+    // we can't simply use an R callback because the R parse(text =)
+    // approach does not distinguish between invalid code and
+    // incomplete: they both just throw an error
+    R_tryCatchError(
+        [](void* void_code) { // body
+            ParseStatus status;
+            SEXP code = reinterpret_cast<SEXP>(void_code);
 
-    switch(status) {
-        case PARSE_EOF:
-        case PARSE_NULL:
-        case PARSE_OK:
-            return xeus::create_is_complete_reply("complete", "");
+            R_ParseVector(code, -1, &status, R_NilValue);
 
-        case PARSE_INCOMPLETE:
-            return xeus::create_is_complete_reply("incomplete", "");
+            switch(status) {
+                case PARSE_INCOMPLETE:
+                    SET_STRING_ELT(code, 0, Rf_mkChar("incomplete"));
+                    break;
+                    
+                case PARSE_ERROR:
+                    SET_STRING_ELT(code, 0, Rf_mkChar("invalid"));
+                    break;
 
-        case PARSE_ERROR:
-            return xeus::create_is_complete_reply("invalid", "");
-    }
+                default:
+                    SET_STRING_ELT(code, 0, Rf_mkChar("complete"));
+            }
+
+            return R_NilValue;
+        }, 
+        reinterpret_cast<void*>(code), 
+
+        [](SEXP, void* void_code) { // handler
+            // some parse error cases are not propagated to PARSE_ERROR
+            // but rather throw an error, so we need to catch it 
+            // and set the result to invalid
+            SEXP code = reinterpret_cast<SEXP>(void_code);
+            SET_STRING_ELT(code, 0, Rf_mkChar("invalid"));
+
+            return R_NilValue;
+        }, 
+        reinterpret_cast<void*>(code)
+    );
+
+    // eventually we just have to extract the string from code (which has been replaced)
+    auto result = xeus::create_is_complete_reply(CHAR(STRING_ELT(code, 0)), "");
+    UNPROTECT(1);
+    return result;
 }
 
 nl::json interpreter::complete_request_impl(const std::string&  code,

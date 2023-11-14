@@ -36,7 +36,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
 
     complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
     incomplete_code_samples = ["fun(", "1 + "]
-    invalid_code_samples = ["fun())"]
+    invalid_code_samples = ["fun())", "a |> b", "a |> b(_)", "a |> b(c(_))"]
 
     def test_stdout(self):
         self.flush_channels()
