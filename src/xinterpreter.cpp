@@ -26,7 +26,7 @@
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
 #include "Rinterface.h"
-#include "xeus-r/rtools.hpp"
+#include "rtools.hpp"
 
 namespace xeus_r {
 
