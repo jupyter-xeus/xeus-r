@@ -35,9 +35,10 @@ class KernelTests(jupyter_kernel_test.KernelTests):
 
     #invalid_code_samples = ["invalid"]
     
-    complete_code_samples = ["fun()", "1 + 2", "a %>% b"]
+    complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
     incomplete_code_samples = ["fun(", "1 + "]
     # invalid_code_samples = ["fun())", "a |> b"]
+    # invalid_code_samples = ["a |> b"]
     
 
     def test_stdout(self):
