@@ -28,10 +28,11 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         return reply, output_msgs
 
     code_hello_world = "cat('hello, world')"
-    # code_page_something = "?cat"
     completion_samples = [{"text": "H", "matches": {"Hello", "Hey", "Howdy"}}]
     code_execute_result = [{"code": "6*7", "result": "[1] 42"}]
-    #code_inspect_sample = "print"
+    
+    # code_page_something = "?cat"
+    # code_inspect_sample = "print"
 
     complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
     incomplete_code_samples = ["fun(", "1 + "]
