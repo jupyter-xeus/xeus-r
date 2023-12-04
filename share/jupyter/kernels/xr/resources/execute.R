@@ -167,8 +167,8 @@ execute <- function(code, execution_counter, silent = FALSE) {
   if (isTRUE(last_visible)) {
     obj <- .Last.value
 
-    # This probably needs to be generalized
-    mimetypes <- if (inherits(obj, c("htmlwidget", "shiny.tag.list"))) {
+    # TODO: This probably needs to be generalized
+    mimetypes <- if (inherits(obj, c("htmlwidget", "shiny.tag.list", "shiny.tag"))) {
       c("text/plain", "text/html")
     } else {
       "text/plain"

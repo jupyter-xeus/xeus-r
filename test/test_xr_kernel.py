@@ -39,6 +39,14 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         self.assertEqual(output_msgs[0]["msg_type"], "stream")
         self.assertEqual(output_msgs[0]["content"]["name"], "stderr")
 
+    def test_htmlwidget(self):
+        self.flush_channels()
+        reply, output_msgs = self.execute_helper(code="library('htmltools'); h1('hello')")
+        data = output_msgs[0]['content']['data']
+        self.assertEqual(len(data), 2, data.keys())
+        self.assertIn("<html>", data["text/html"][0])
+        self.assertIn("<h1>hello</h1>", data["text/html"][0])
+
 #########################################################################################
 #########################################################################################
 
