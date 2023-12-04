@@ -17,7 +17,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
 
     code_hello_world = "cat('hello, world')"
     completion_samples = [{"text": "H", "matches": {"Hello", "Hey", "Howdy"}}]
-    code_execute_result = [{"code": "6*7", "result": "[1] 42"}]
+    code_execute_result = [{"code": "6*7", "result": ["[1] 42"]}]
     
     # code_page_something = "?cat"
     # code_inspect_sample = "print"
