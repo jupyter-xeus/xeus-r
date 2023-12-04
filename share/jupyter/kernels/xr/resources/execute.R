@@ -167,10 +167,14 @@ execute <- function(code, execution_counter, silent = FALSE) {
   if (isTRUE(last_visible)) {
     obj <- .Last.value
 
-    # TODO: some objets should be auto promoted to a different mime bundle
-    #       e.g. html widgets
-
-    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = "text/plain")
+    # This probably needs to be generalized
+    mimetypes <- if (inherits(obj, c("htmlwidget", "shiny.tag.list"))) {
+      c("text/plain", "text/html")
+    } else {
+      "text/plain"
+    }
+    
+    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
     publish_execution_result(execution_counter, bundle$data, bundle$metadata)
   }
 
