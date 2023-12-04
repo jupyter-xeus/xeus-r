@@ -10,7 +10,9 @@ namedlist <- function() {
     `names<-`(list(), character())
 }
 
-set_last_value <- function(obj) {
+set_last_value <- function(obj, visible) {
+    last_visible <<- visible
+
     unlockBinding(".Last.value", .BaseNamespaceEnv)
     assign(".Last.value", obj, .BaseNamespaceEnv)
     lockBinding(".Last.value", .BaseNamespaceEnv)
