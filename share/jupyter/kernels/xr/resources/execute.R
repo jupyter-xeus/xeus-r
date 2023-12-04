@@ -75,7 +75,11 @@ handle_error <- function(e) {
 
 handle_value <- function(execution_counter) function(obj, visible) {
   set_last_value(obj, visible)
-  if (!visible) return()
+
+  if (inherits(obj, "ggplot")) {
+    print(obj)
+  }
+
 }
 
 handle_graphics <- function(plot) {
@@ -163,12 +167,9 @@ execute <- function(code, execution_counter, silent = FALSE) {
   if (isTRUE(last_visible)) {
     obj <- .Last.value
 
-    # mimetypes <- if (getOption('jupyter.rich_display')) {
-    #   c("text/plain", setdiff(getOption("jupyter.display_mimetypes"), "text/plain"))
-    # } else {
-    #   "text/plain"  
-    # }
-    
+    # TODO: some objets should be auto promoted to a different mime bundle
+    #       e.g. html widgets
+
     bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = "text/plain")
     publish_execution_result(execution_counter, bundle$data, bundle$metadata)
   }
