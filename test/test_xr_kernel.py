@@ -16,7 +16,9 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     language_name = "R"
 
     code_hello_world = "cat('hello, world')"
-    completion_samples = [{"text": "H", "matches": {"Hello", "Hey", "Howdy"}}]
+    completion_samples = [
+        {"text": "rnorm(",   "matches": {"n=", "mean=", "sd="}}
+    ]
     code_execute_result = [{"code": "6*7", "result": ["[1] 42"]}]
     
     # code_page_something = "?cat"
