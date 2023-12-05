@@ -46,3 +46,4 @@ build/
 __pycache__
 
 bld
+.virtual_documents/
