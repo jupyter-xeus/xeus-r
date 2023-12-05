@@ -161,36 +161,33 @@ nl::json interpreter::is_complete_request_impl(const std::string& code_)
     return result;
 }
 
-nl::json interpreter::complete_request_impl(const std::string&  code,
-                                                    int cursor_pos)
+nl::json json_from_character_vector(SEXP x) {
+    auto n = XLENGTH(x);
+    std::vector<std::string> vec(n);
+
+    for (decltype(n) i = 0; i < n; i++) {
+        vec[i] = std::string(CHAR(STRING_ELT(x, i)));
+    }
+    return nl::json(vec);
+}
+
+nl::json interpreter::complete_request_impl(const std::string& code, int cursor_pos)
 {
-    // Should be replaced with code performing the completion
-    // and use the returned `matches` to `create_complete_reply`
-    // i.e if the code starts with 'H', it could be the following completion
-    if (code[0] == 'H')
-    {
-    
-        return xeus::create_complete_reply(
-            {
-                std::string("Hello"), 
-                std::string("Hey"), 
-                std::string("Howdy")
-            },          /*matches*/
-            5,          /*cursor_start*/
-            cursor_pos  /*cursor_end*/
-        );
-    }
+    SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
+    SEXP cursor_pos_ = PROTECT(Rf_ScalarInteger(cursor_pos));
 
-    // No completion result
-    else
-    {
+    SEXP result = PROTECT(r::invoke_xeusr_fn("complete", code_, cursor_pos_));
 
-        return xeus::create_complete_reply(
-            nl::json::array(),  /*matches*/
-            cursor_pos,         /*cursor_start*/
-            cursor_pos          /*cursor_end*/
-        );
-    }
+    auto matches = json_from_character_vector(VECTOR_ELT(result, 0));
+    int cursor_start = INTEGER_ELT(VECTOR_ELT(result, 1), 0);
+    int cursor_end = INTEGER_ELT(VECTOR_ELT(result, 1), 1);
+
+    auto reply = xeus::create_complete_reply(
+        matches, cursor_start, cursor_end
+    );
+
+    UNPROTECT(3); // result, cursor_pos_, code_
+    return reply;
 }
 
 nl::json interpreter::inspect_request_impl(const std::string& /*code*/,
