@@ -29,6 +29,7 @@ complete <- function(code, cursor_pos = nchar(code)) {
     start_position <- chars_before_line + info$start
     comps <- utils:::.retrieveCompletions()
 
+    # TODO: use jsonlite::toJSON() here
     list(comps, c(start_position, start_position + nchar(info$token)))
 
 }

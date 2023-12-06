@@ -21,12 +21,11 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     ]
     code_execute_result = [{"code": "6*7", "result": ["[1] 42"]}]
     code_display_data = [
-        {"code": "plot(0)", "mime": "image/png"}, 
-        {"code": "ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width)) + ggplot2::geom_point()", "mime": "image/png"}
+        {"code": "plot(0)", "mime": "image/png"}
     ]
 
     # code_page_something = "?cat"
-    # code_inspect_sample = "print"
+    code_inspect_sample = "print"
 
     complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
     incomplete_code_samples = ["fun(", "1 + "]

@@ -190,16 +190,23 @@ nl::json interpreter::complete_request_impl(const std::string& code, int cursor_
     return reply;
 }
 
-nl::json interpreter::inspect_request_impl(const std::string& /*code*/,
-                                                    int /*cursor_pos*/,
-                                                    int /*detail_level*/)
+nl::json interpreter::inspect_request_impl(const std::string& code, int cursor_pos, int /*detail_level*/)
 {
+
+    SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
+    SEXP cursor_pos_ = PROTECT(Rf_ScalarInteger(cursor_pos));
+
+    SEXP result = PROTECT(r::invoke_xeusr_fn("inspect", code_, cursor_pos_));
+    bool found = LOGICAL_ELT(VECTOR_ELT(result, 0), 0);
+    if (!found) {
+        UNPROTECT(3);
+        return xeus::create_inspect_reply(false);
+    }
+
+    auto data = nl::json::parse(CHAR(STRING_ELT(VECTOR_ELT(result, 1), 0)));
     
-    return xeus::create_inspect_reply(true/*found*/, 
-        {{std::string("text/plain"), std::string("hello!")}}, /*data*/
-        {{std::string("text/plain"), std::string("hello!")}}  /*meta-data*/
-    );
-        
+    UNPROTECT(3); // result, code_, cursor_pos_
+    return xeus::create_inspect_reply(found, data);
 }
 
 void interpreter::shutdown_request_impl() {
