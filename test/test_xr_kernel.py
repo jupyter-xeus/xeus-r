@@ -26,7 +26,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     ]
 
     # code_page_something = "?cat"
-    # code_inspect_sample = "print"
+    code_inspect_sample = "print"
 
     complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
     incomplete_code_samples = ["fun(", "1 + "]
