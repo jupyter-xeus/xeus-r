@@ -75,6 +75,15 @@ std::string extract_filename(int argc, char* argv[])
     return res;
 }
 
+std::unique_ptr<xeus::xlogger> make_file_logger(xeus::xlogger::level log_level) {
+    auto logfile = std::getenv("JUPYTER_LOGFILE");
+    if (logfile == nullptr) {
+        return nullptr;
+    }
+
+    return xeus::make_file_logger(log_level, logfile);
+}
+
 int main(int argc, char* argv[])
 {
     if (should_print_version(argc, argv))
@@ -104,6 +113,8 @@ int main(int argc, char* argv[])
     auto interpreter = xeus_r::make_interpreter(argc, argv);
     auto hist = xeus::make_in_memory_history_manager();
 
+    auto logger = xeus::make_console_logger(xeus::xlogger::full, make_file_logger(xeus::xlogger::full));
+
     std::string connection_filename = extract_filename(argc, argv);
 
     if (!connection_filename.empty())
@@ -114,7 +125,8 @@ int main(int argc, char* argv[])
                              std::move(context),
                              std::move(interpreter),
                              xeus::make_xserver_zmq, 
-                             std::move(hist));
+                             std::move(hist), 
+                             std::move(logger));
 
         std::cout <<
             "Starting xr kernel...\n\n"
