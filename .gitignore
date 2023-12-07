@@ -48,3 +48,4 @@ __pycache__
 bld
 .virtual_documents/
 Untitled*.ipynb
+*.log
