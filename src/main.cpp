@@ -101,21 +101,20 @@ int main(int argc, char* argv[])
 
     auto context = xeus::make_context<zmq::context_t>();
 
-    // Instantiating the xeus xinterpreter
-    using interpreter_ptr = std::unique_ptr<xeus_r::interpreter>;
-    interpreter_ptr interpreter = interpreter_ptr(new xeus_r::interpreter(argc, argv));
+    auto interpreter = xeus_r::make_interpreter(argc, argv);
+    auto hist = xeus::make_in_memory_history_manager();
 
     std::string connection_filename = extract_filename(argc, argv);
 
     if (!connection_filename.empty())
     {
-
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
         xeus::xkernel kernel(config,
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_zmq);
+                             xeus::make_xserver_zmq, 
+                             std::move(hist));
 
         std::cout <<
             "Starting xr kernel...\n\n"

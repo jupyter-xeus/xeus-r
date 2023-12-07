@@ -69,19 +69,26 @@ interpreter::interpreter(int argc, char* argv[])
     p_interpreter = this;
 }
 
+std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]) {
+    return std::unique_ptr<interpreter>(new interpreter(argc, argv));
+}
+
 nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
                                             const std::string & code, // Code to execute
                                             bool silent,
-                                            bool /*store_history*/,
+                                            bool store_history,
                                             nl::json /*user_expressions*/,
                                             bool /*allow_stdin*/)
 {
+    if (store_history) {
+        const_cast<xeus::xhistory_manager&>(get_history_manager()).store_inputs(0, execution_counter, code);
+    }
+
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_counter));
     SEXP silent_ = PROTECT(Rf_ScalarLogical(silent));
 
     SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_, silent_);
-
     UNPROTECT(3);
 
     return xeus::create_successful_reply(/*payload, user_expressions*/);

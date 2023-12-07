@@ -23,7 +23,6 @@
 #include "xeus_r_config.hpp"
 #include "xeus/xinterpreter.hpp"
 
-
 namespace nl = nlohmann;
 
 namespace xeus_r
@@ -64,6 +63,8 @@ namespace xeus_r
 
     interpreter* get_interpreter();
     void register_r_routines();
+
+    std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]);
 }
 
 #ifdef __GNUC__
