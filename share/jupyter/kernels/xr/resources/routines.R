@@ -21,3 +21,7 @@ clear_output <- function(wait = FALSE) {
 is_complete_request <- function(code) {
   .Call("xeusr_is_complete_request", code, PACKAGE = "(embedding)")
 }
+
+cell_options <- function(...) {
+    rlang::local_options(..., .frame = .xeusr_private_env$frame_cell_execute)
+}
