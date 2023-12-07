@@ -13,6 +13,7 @@ dependencies:
   - xtl
   - r-base >=4
   # Run dependencies
+  - r-rlang
   - r-evaluate
   - r-jsonlite
   - r-glue

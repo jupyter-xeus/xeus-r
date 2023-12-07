@@ -154,6 +154,8 @@ execute <- function(code, execution_counter, silent = FALSE) {
   last_visible <<- FALSE
 
   filename <- glue::glue("[{execution_counter}]")
+
+  frame_cell_execute <<- environment()
   evaluate::evaluate(
     code,
     envir = globalenv(),
