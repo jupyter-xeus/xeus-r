@@ -91,6 +91,14 @@ SEXP is_complete_request(SEXP code_) {
     return out;
 }
 
+SEXP xeusr_log(SEXP level_, SEXP msg_) {
+    std::string level = CHAR(STRING_ELT(level_, 0));
+    std::string msg = CHAR(STRING_ELT(msg_, 0));
+
+    // TODO: actually do some logging
+    return R_NilValue;
+}
+
 }
 
 void register_r_routines() {
@@ -105,6 +113,7 @@ void register_r_routines() {
         {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
         {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
         {"xeusr_is_complete_request"     , (DL_FUNC) &routines::is_complete_request     , 1},
+        {"xeusr_log"                     , (DL_FUNC) &routines::xeusr_log               , 2},
 
         {NULL, NULL, 0}
     };
