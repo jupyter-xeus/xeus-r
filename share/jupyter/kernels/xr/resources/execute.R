@@ -179,7 +179,10 @@ execute <- function(code, execution_counter, silent = FALSE) {
     }
     
     bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
-    publish_execution_result(execution_counter, bundle$data, bundle$metadata)
+    
+    structure(class = "execution_result", 
+      list(toJSON(bundle$data), toJSON(bundle$metadata))
+    )
   }
 
 }

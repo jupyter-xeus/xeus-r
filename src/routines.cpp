@@ -26,18 +26,6 @@ SEXP publish_stream(SEXP name_, SEXP text_) {
     return R_NilValue;
 }
 
-SEXP publish_execution_result(SEXP execution_count_, SEXP data_, SEXP metadata_) {
-    int execution_count = INTEGER_ELT(execution_count_, 0);
-    auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
-    auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
-    
-    xeus_r::get_interpreter()->publish_execution_result(
-        execution_count, std::move(data), std::move(metadata)
-    );
-
-    return R_NilValue;
-}
-
 SEXP display_data(SEXP js_data, SEXP js_metadata){
     auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
     auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
@@ -92,7 +80,6 @@ void register_r_routines() {
     static const R_CallMethodDef callMethods[]  = {
         {"xeusr_kernel_info_request"     , (DL_FUNC) &routines::kernel_info_request     , 0},
         {"xeusr_publish_stream"          , (DL_FUNC) &routines::publish_stream          , 2},
-        {"xeusr_publish_execution_result", (DL_FUNC) &routines::publish_execution_result, 3},
         {"xeusr_display_data"            , (DL_FUNC) &routines::display_data            , 2},
         {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
         {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
