@@ -91,7 +91,25 @@ nl::json interpreter::execute_request_impl(int execution_counter,    // Typicall
     SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_, silent_);
     UNPROTECT(3);
 
-    return xeus::create_successful_reply(/*payload, user_expressions*/);
+    if (Rf_inherits(result, "error_reply")) {
+        std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
+        std::string ename = CHAR(STRING_ELT(VECTOR_ELT(result, 1), 0));
+
+        std::vector<std::string> trace_back;
+        if (XLENGTH(result) > 2) {
+            SEXP trace_back_ = VECTOR_ELT(result, 2);
+            auto n = XLENGTH(trace_back_);
+            for (decltype(n) i = 0; i < n; i++) {
+                trace_back.push_back(CHAR(STRING_ELT(trace_back_, i)));
+            }
+        }
+
+        publish_execution_error(evalue, ename, trace_back);
+        return xeus::create_error_reply(evalue, ename, std::move(trace_back));
+    } else {
+        return xeus::create_successful_reply(/*payload, user_expressions*/);
+    }
+    
 }
 
 void interpreter::configure_impl()
