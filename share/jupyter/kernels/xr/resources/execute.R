@@ -1,5 +1,6 @@
 last_plot <- NULL
 last_visible <- TRUE
+last_error <- NULL
 
 handle_message <- function(msg) {
   publish_stream("stderr", conditionMessage(msg))
@@ -55,7 +56,7 @@ handle_error <- function(e) {
       cli::col_red("--- Traceback"), 
       format(e$trace)
     )
-    publish_execution_error(ename = "ERROR", evalue = "", trace_back)
+    last_error <<- structure(list(ename = "ERROR", evalue = "", trace_back), class = "error_reply")
   } else {
     sys_calls <- sys.calls()
     sys_calls <- head(tail(sys_calls, -16), -3)
@@ -69,7 +70,7 @@ handle_error <- function(e) {
       cli::col_red("--- Traceback (most recent call last)"), 
       stack
     )
-    publish_execution_error(ename = "ERROR", evalue = evalue, trace_back)
+    last_error <<- structure(list(ename = "ERROR", evalue = evalue, trace_back), class = "error_reply")
   }
 }
 
@@ -125,16 +126,17 @@ send_plot <- function(plot) {
 }
 
 execute <- function(code, execution_counter, silent = FALSE) {
+  last_error <<- NULL
+  
   parsed <- tryCatch(
     parse(text = code), 
     error = function(e) {
       msg <- paste(conditionMessage(e), collapse = "\n")
-      publish_execution_error("PARSE ERROR", msg)
-      e
+      last_error <<- structure(list(ename = "PARSE ERROR", evalue = msg), class = "error_reply")
     }
   )
-  if (inherits(parsed, "error")) return()
-
+  if (!is.null(last_error)) return(last_error)
+  
   output_handler <- if (silent) {
     evaluate::new_output_handler()
   } else {
@@ -147,7 +149,7 @@ execute <- function(code, execution_counter, silent = FALSE) {
       value = handle_value(execution_counter)
     )  
   }
-
+  
   last_plot <<- NULL
   last_visible <<- FALSE
 
@@ -159,10 +161,12 @@ execute <- function(code, execution_counter, silent = FALSE) {
     stop_on_error = 1L, 
     filename = filename
   )
+  if (!is.null(last_error)) return(last_error)
 
   if (!silent && !is.null(last_plot)) {
     tryCatch(send_plot(last_plot), error = handle_error)
   }
+  if (!is.null(last_error)) return(last_error)
 
   if (isTRUE(last_visible)) {
     obj <- .Last.value
@@ -175,7 +179,10 @@ execute <- function(code, execution_counter, silent = FALSE) {
     }
     
     bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
-    publish_execution_result(execution_counter, bundle$data, bundle$metadata)
+    
+    structure(class = "execution_result", 
+      list(toJSON(bundle$data), toJSON(bundle$metadata))
+    )
   }
 
 }
