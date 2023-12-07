@@ -74,7 +74,7 @@ handle_error <- function(e) {
   }
 }
 
-handle_value <- function(execution_counter) function(obj, visible) {
+handle_value <- function(obj, visible) {
   set_last_value(obj, visible)
 
   if (visible && inherits(obj, "ggplot")) {
@@ -146,7 +146,7 @@ execute <- function(code, execution_counter, silent = FALSE) {
       message = handle_message, 
       warning = handle_warning, 
       error = handle_error, 
-      value = handle_value(execution_counter)
+      value = handle_value
     )  
   }
   
