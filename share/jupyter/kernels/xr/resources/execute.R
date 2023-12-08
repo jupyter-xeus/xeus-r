@@ -79,6 +79,7 @@ handle_value <- function(obj, visible) {
 
   if (visible && inherits(obj, "ggplot")) {
     print(obj)
+    last_visible <<- FALSE
   }
 
 }
