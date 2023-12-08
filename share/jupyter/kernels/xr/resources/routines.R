@@ -31,3 +31,36 @@ View <- function(x, title) {
   IRdisplay::display(x)
   invisible(x)
 }
+
+ns_utils <- asNamespace("utils")
+unlockBinding("print.vignette", ns_utils)
+print.vignette <- function(x, ...) {
+  file <- x$PDF
+  if (nzchar(file) == 0) {
+    warning(gettextf("vignette %s has no PDF/HTML", sQuote(x$Topic)), call. = FALSE, domain = NA)
+    return(invisible(x))
+  }
+
+  ext <- tolower(tools::file_ext(file))
+  if (ext == "pdf") {
+    warning("can't display pdf vignette yet")
+    return(invisible(x))
+  }
+
+  if (ext == "html") {
+    html <- readLines(file.path(x$Dir, "doc", file))
+
+    display_data(
+      data = list(
+        "text/html" = paste(html, collapse = "\n")
+      ), 
+      metadata = list(
+        "text/html" = list(isolated = TRUE)
+      )
+    )
+  }
+
+  invisible(x)
+}
+assign("print.vignette", print.vignette, ns_utils)
+lockBinding("print.vignette", ns_utils)
