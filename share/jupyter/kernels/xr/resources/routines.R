@@ -11,11 +11,11 @@ update_display_data <- function(data = NULL, metadata = NULL) {
 }
 
 kernel_info_request <- function() {
-    .Call("xeusr_kernel_info_request", PACKAGE = "(embedding)")
+  .Call("xeusr_kernel_info_request", PACKAGE = "(embedding)")
 }
 
 clear_output <- function(wait = FALSE) {
-    invisible(.Call("xeusr_clear_output", isTRUE(wait), PACKAGE = "(embedding)"))
+  invisible(.Call("xeusr_clear_output", isTRUE(wait), PACKAGE = "(embedding)"))
 }
 
 is_complete_request <- function(code) {
@@ -23,5 +23,11 @@ is_complete_request <- function(code) {
 }
 
 cell_options <- function(...) {
-    rlang::local_options(..., .frame = .xeusr_private_env$frame_cell_execute)
+  rlang::local_options(..., .frame = .xeusr_private_env$frame_cell_execute)
+}
+
+View <- function(x, title) {
+  if (!missing(title)) IRdisplay::display_text(title)
+  IRdisplay::display(x)
+  invisible(x)
 }
