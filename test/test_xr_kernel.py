@@ -16,6 +16,8 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     language_name = "R"
 
     code_hello_world = "cat('hello, world')"
+    code_stderr = "message('error')"
+
     completion_samples = [
         {"text": "rnorm(",   "matches": {"n=", "mean=", "sd="}}
     ]
@@ -25,7 +27,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         {"code": "ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width)) + ggplot2::geom_point()", "mime": "image/png"}, 
         {"code": "View(head(iris))", "mime": "text/html"}
     ]
-
+    
     # code_page_something = "?cat"
     code_clear_output = "clear_output()"
     code_generate_error = "stop('ouch')"
@@ -34,19 +36,6 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
     incomplete_code_samples = ["fun(", "1 + "]
     invalid_code_samples = ["fun())", "a |> b", "a |> b(_)", "a |> b(c(_))"]
-
-    def test_stdout(self):
-        self.flush_channels()
-        reply, output_msgs = self.execute_helper(code="cat('hello, world')")
-        self.assertEqual(output_msgs[0]["msg_type"], "stream")
-        self.assertEqual(output_msgs[0]["content"]["name"], "stdout")
-        self.assertEqual(output_msgs[0]["content"]["text"], "hello, world")
-
-    def test_stderr(self):
-        self.flush_channels()
-        reply, output_msgs = self.execute_helper(code="message('error')")
-        self.assertEqual(output_msgs[0]["msg_type"], "stream")
-        self.assertEqual(output_msgs[0]["content"]["name"], "stderr")
 
     def test_htmlwidget(self):
         self.flush_channels()
