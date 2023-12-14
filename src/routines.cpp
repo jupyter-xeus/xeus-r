@@ -10,6 +10,15 @@
 namespace xeus_r {
 namespace routines {
 
+namespace {
+SEXP json_dump(const nl::json& data) {
+    SEXP out = PROTECT(Rf_mkString(data.dump(4).c_str()));
+    Rf_classgets(out, Rf_mkString("json"));
+    UNPROTECT(1);
+    return out;
+}
+}
+
 SEXP kernel_info_request() {
     auto info = xeus_r::get_interpreter()->kernel_info_request();
     SEXP out = PROTECT(Rf_mkString(info.dump(4).c_str()));
@@ -58,18 +67,24 @@ SEXP is_complete_request(SEXP code_) {
     std::string code = CHAR(STRING_ELT(code_, 0));
     auto is_complete = xeus_r::get_interpreter()->is_complete_request(code);
 
-    SEXP out = PROTECT(Rf_mkString(is_complete.dump(4).c_str()));
-    Rf_classgets(out, Rf_mkString("json"));
-    UNPROTECT(1);
-    return out;
+    return json_dump(is_complete);
 }
 
-SEXP xeusr_log(SEXP level_, SEXP msg_) {
+SEXP log(SEXP level_, SEXP msg_) {
     std::string level = CHAR(STRING_ELT(level_, 0));
     std::string msg = CHAR(STRING_ELT(msg_, 0));
 
     // TODO: actually do some logging
     return R_NilValue;
+}
+
+SEXP history_get_tail(SEXP n_, SEXP raw_, SEXP output_) {
+    int n = INTEGER_ELT(n_, 0);
+    bool raw = LOGICAL_ELT(raw_, 0) == TRUE;
+    bool output = LOGICAL_ELT(output_, 0) == TRUE;
+
+    auto tail = xeus_r::get_interpreter()->get_history_manager().get_tail(n, raw, output);
+    return json_dump(tail);
 }
 
 }
@@ -84,7 +99,8 @@ void register_r_routines() {
         {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
         {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
         {"xeusr_is_complete_request"     , (DL_FUNC) &routines::is_complete_request     , 1},
-        {"xeusr_log"                     , (DL_FUNC) &routines::xeusr_log               , 2},
+        {"xeusr_log"                     , (DL_FUNC) &routines::log                     , 2},
+        {"xeusr_history_get_tail"        , (DL_FUNC) &routines::history_get_tail        , 3},
 
         {NULL, NULL, 0}
     };

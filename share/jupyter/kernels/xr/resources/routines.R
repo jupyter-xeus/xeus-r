@@ -26,6 +26,14 @@ cell_options <- function(...) {
   rlang::local_options(..., .frame = .xeusr_private_env$frame_cell_execute)
 }
 
+history_request <- function(hist_access_type = c("tail", "search", "range"), ...) {
+  switch(match.arg(hist_access_type),
+    tail   = .xeusr_private_env$history_tail(...), 
+    search = .xeusr_private_env$history_search(...),
+    range  = .xeusr_private_env$history_range(...)  
+  )
+}
+
 View <- function(x, title) {
   if (!missing(title)) IRdisplay::display_text(title)
   IRdisplay::display(x)

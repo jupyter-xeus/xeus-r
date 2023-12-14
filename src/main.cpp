@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 
     auto interpreter = xeus_r::make_interpreter(argc, argv);
     auto hist = xeus::make_in_memory_history_manager();
-
     auto logger = xeus::make_console_logger(xeus::xlogger::full, make_file_logger(xeus::xlogger::full));
 
     std::string connection_filename = extract_filename(argc, argv);
