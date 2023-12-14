@@ -26,8 +26,9 @@ cell_options <- function(...) {
   rlang::local_options(..., .frame = .xeusr_private_env$frame_cell_execute)
 }
 
-history_tail <- .xeusr_private_env$history_tail
+history_tail   <- .xeusr_private_env$history_tail
 history_search <- .xeusr_private_env$history_search
+history_range  <- .xeusr_private_env$history_range
 
 View <- function(x, title) {
   if (!missing(title)) IRdisplay::display_text(title)

@@ -98,6 +98,17 @@ SEXP history_search(SEXP pattern_, SEXP raw_, SEXP output_, SEXP n_, SEXP unique
     return json_dump(search);
 }
 
+SEXP history_get_range(SEXP session_, SEXP start_, SEXP stop_, SEXP raw_, SEXP output_) {
+    int session = INTEGER_ELT(session_, 0);
+    int start = INTEGER_ELT(start_, 0);
+    int stop = INTEGER_ELT(stop_, 0);
+    bool raw = LOGICAL_ELT(raw_, 0) == TRUE;
+    bool output = LOGICAL_ELT(output_, 0) == TRUE;
+
+    auto range = xeus_r::get_interpreter()->get_history_manager().get_range(session, start, stop, raw, output);
+    return json_dump(range);
+}
+
 }
 
 void register_r_routines() {
@@ -113,6 +124,8 @@ void register_r_routines() {
         {"xeusr_log"                     , (DL_FUNC) &routines::log                     , 2},
         {"xeusr_history_get_tail"        , (DL_FUNC) &routines::history_get_tail        , 3},
         {"xeusr_history_search"          , (DL_FUNC) &routines::history_search          , 5},
+        {"xeusr_history_get_range"       , (DL_FUNC) &routines::history_get_range       , 5},
+        
 
         {NULL, NULL, 0}
     };

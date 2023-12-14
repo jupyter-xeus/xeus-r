@@ -3,7 +3,7 @@ history_df <- function(json) {
         json <- matrix(character(), nrow = 0, ncol = 4)
     }
     data.frame(
-        session         = json[, 1L], 
+        session         = as.integer(json[, 1L]), 
         execution_count = as.integer(json[, 2L]),
         input           = json[, 3]
     )
@@ -23,6 +23,12 @@ history_search <- function(pattern = "*", raw = TRUE, output = FALSE, n = 10L, u
     history_df(search$history)
 }
 
-history_range <- function(...) {
-    list(...)
+history_range <- function(session = 0L, start, stop, raw = TRUE, output = FALSE, ...) {
+    rlang::check_dots_empty()
+
+    range <- jsonlite::fromJSON(.Call("xeusr_history_get_range", session, as.integer(start), as.integer(stop), raw, output, PACKAGE = "(embedding)"))
+    if (range$status == "error") {
+        stop(range$ename)
+    }
+    history_df(range$history)
 }
