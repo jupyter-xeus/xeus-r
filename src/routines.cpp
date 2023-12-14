@@ -87,6 +87,17 @@ SEXP history_get_tail(SEXP n_, SEXP raw_, SEXP output_) {
     return json_dump(tail);
 }
 
+SEXP history_search(SEXP pattern_, SEXP raw_, SEXP output_, SEXP n_, SEXP unique_) {
+    std::string pattern = CHAR(STRING_ELT(pattern_, 0));
+    bool raw = LOGICAL_ELT(raw_, 0) == TRUE;
+    bool output = LOGICAL_ELT(output_, 0) == TRUE;
+    int n = INTEGER_ELT(n_, 0);
+    bool unique = LOGICAL_ELT(unique_, 0) == TRUE;
+    
+    auto search = xeus_r::get_interpreter()->get_history_manager().search(pattern, raw, output, n, unique);
+    return json_dump(search);
+}
+
 }
 
 void register_r_routines() {
@@ -101,6 +112,7 @@ void register_r_routines() {
         {"xeusr_is_complete_request"     , (DL_FUNC) &routines::is_complete_request     , 1},
         {"xeusr_log"                     , (DL_FUNC) &routines::log                     , 2},
         {"xeusr_history_get_tail"        , (DL_FUNC) &routines::history_get_tail        , 3},
+        {"xeusr_history_search"          , (DL_FUNC) &routines::history_search          , 5},
 
         {NULL, NULL, 0}
     };
