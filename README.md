@@ -39,7 +39,7 @@ mamba install`xeus-r` notebook -c conda-forge
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-mamba install cmake cxx-compiler xeus-zmq nlohmann_json cppzmq xtl jupyterlab -c conda-forge
+mamba install cmake cxx-compiler xeus-zmq nlohmann_json cppzmq xtl jupyterlab r-base r-evaluate r-rlang r-jsonlite r-glue r-cli r-repr r-irdisplay -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation
