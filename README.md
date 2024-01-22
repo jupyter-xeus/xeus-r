@@ -23,7 +23,7 @@ The safest usage is to create an environment named `xeus-r`
 
 ```bash
 mamba create -n xeus-r
-source activate xeus-r
+mamba activate xeus-r
 ```
 
 <!-- ### Installing from conda-forge
