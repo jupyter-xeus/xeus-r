@@ -22,8 +22,8 @@ which is already installed in the anaconda distribution.
 The safest usage is to create an environment named `xeus-r`
 
 ```bash
-mamba create -n  `xeus-r`
-source activate  `xeus-r`
+mamba create -n xeus-r
+source activate xeus-r
 ```
 
 <!-- ### Installing from conda-forge
