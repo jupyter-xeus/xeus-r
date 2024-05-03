@@ -1,4 +1,7 @@
-
+# This is mostly inspired from IRkernel::completions()
+# and should probably be renewed on top of something like
+# https://github.com/DavisVaughan/r-tree-sitter
+# to avoid the utils:::.completeToken system
 complete <- function(code, cursor_pos = nchar(code)) {
   # Find which line we're on and position within that line
   lines <- strsplit(code, '\n', fixed = TRUE)[[1]]
