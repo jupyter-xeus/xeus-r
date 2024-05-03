@@ -1,0 +1,23 @@
+Package: hera
+Title: Companion to 'Xeus-R'
+Version: 0.10.0.9000
+Authors@R: 
+    c(
+      person("Romain", "François", email = "romain@tada.science", role = c("aut", "cre")), 
+      person("Quantstack", role = c("cph", "fnd"))
+    )
+Description: Set of R functions to work together with Xeus-R. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports: 
+    cli,
+    evaluate,
+    glue,
+    IRdisplay,
+    jsonlite,
+    repr,
+    rlang,
+    tools,
+    utils
