@@ -31,6 +31,28 @@
 namespace xeus_r {
 
 static interpreter* p_interpreter = nullptr;
+static SEXP env_hera = nullptr;
+
+#define CHECK_HERA_AVAILABLE()                    \
+    if (env_hera == nullptr) {                    \
+        return xeus::create_error_reply(          \
+            "R package {hera} is not available",  \
+            "R package {hera} is not available",  \
+            {}                                    \
+        );                                        \
+    }
+
+template <class... Types>
+SEXP invoke_hera_fn(const char* f, Types... args){
+
+    SEXP fn = PROTECT(Rf_findVarInFrame(env_hera, Rf_install(f)));
+    SEXP call = PROTECT(r::r_call(fn, args...));
+    SEXP result = Rf_eval(call, R_GlobalEnv);
+
+    UNPROTECT(2);
+
+    return result;
+}
 
 interpreter* get_interpreter() {
     return p_interpreter;
@@ -80,6 +102,8 @@ nl::json interpreter::execute_request_impl(int execution_counter,    // Typicall
                                             nl::json /*user_expressions*/,
                                             bool /*allow_stdin*/)
 {
+    CHECK_HERA_AVAILABLE()
+    
     if (store_history) {
         const_cast<xeus::xhistory_manager&>(get_history_manager()).store_inputs(0, execution_counter, code);
     }
@@ -88,7 +112,7 @@ nl::json interpreter::execute_request_impl(int execution_counter,    // Typicall
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_counter));
     SEXP silent_ = PROTECT(Rf_ScalarLogical(silent));
 
-    SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_, silent_);
+    SEXP result = invoke_hera_fn("execute", code_, execution_counter_, silent_);
     
     if (Rf_inherits(result, "error_reply")) {
         std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
@@ -123,24 +147,26 @@ nl::json interpreter::execute_request_impl(int execution_counter,    // Typicall
 
 void interpreter::configure_impl()
 {
-    SEXP sym_Sys_which = Rf_install("Sys.which");
-    SEXP sym_dirname = Rf_install("dirname");
-    SEXP str_xr = Rf_mkString("xr");
-    SEXP call_Sys_which = PROTECT(Rf_lang2(sym_Sys_which, str_xr));
-    SEXP call = PROTECT(Rf_lang2(sym_dirname, call_Sys_which));
-    SEXP dir_xr = Rf_eval(call, R_GlobalEnv);
-    
-    std::stringstream ss;
-    ss << CHAR(STRING_ELT(dir_xr, 0)) << "/../share/jupyter/kernels/xr/resources/setup.R";
-    SEXP setup_R_code_path = PROTECT(Rf_mkString(ss.str().c_str()));
+    SEXP sym_library = Rf_install("library");
+    SEXP chr_hera = PROTECT(Rf_mkString("hera"));
+    SEXP call_library_hera = PROTECT(Rf_lang2(sym_library, chr_hera));
 
-    SEXP sym_source = Rf_install("source");
-    SEXP call_source = PROTECT(Rf_lang2(sym_source, setup_R_code_path));
-    Rf_eval(call_source, R_GlobalEnv);
+    SEXP sym_try = Rf_install("try");
+    SEXP sym_silent = Rf_install("silent");
+    SEXP call_try = PROTECT(Rf_lang3(sym_try, call_library_hera, Rf_ScalarLogical(TRUE)));
+    SET_TAG(CDDR(call_try), sym_silent);
+
+    SEXP loaded = PROTECT(Rf_eval(call_try, R_GlobalEnv));
+    if (!Rf_inherits(loaded, "try-error")) {
+        SEXP sym_asNamespace = Rf_install("asNamespace");
+        SEXP call_as_Namespace = PROTECT(Rf_lang2(sym_asNamespace, chr_hera));
+
+        env_hera = PROTECT(Rf_eval(call_as_Namespace, R_GlobalEnv));
+        R_PreserveObject(env_hera);
+        UNPROTECT(2);
+    }
 
     UNPROTECT(4);
-
-    r::invoke_xeusr_fn("configure");
 }
 
 nl::json interpreter::is_complete_request_impl(const std::string& code_)
@@ -207,10 +233,12 @@ nl::json json_from_character_vector(SEXP x) {
 
 nl::json interpreter::complete_request_impl(const std::string& code, int cursor_pos)
 {
+    CHECK_HERA_AVAILABLE()
+
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP cursor_pos_ = PROTECT(Rf_ScalarInteger(cursor_pos));
 
-    SEXP result = PROTECT(r::invoke_xeusr_fn("complete", code_, cursor_pos_));
+    SEXP result = PROTECT(invoke_hera_fn("complete", code_, cursor_pos_));
 
     auto matches = json_from_character_vector(VECTOR_ELT(result, 0));
     int cursor_start = INTEGER_ELT(VECTOR_ELT(result, 1), 0);
@@ -226,11 +254,12 @@ nl::json interpreter::complete_request_impl(const std::string& code, int cursor_
 
 nl::json interpreter::inspect_request_impl(const std::string& code, int cursor_pos, int /*detail_level*/)
 {
+    CHECK_HERA_AVAILABLE()
 
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP cursor_pos_ = PROTECT(Rf_ScalarInteger(cursor_pos));
 
-    SEXP result = PROTECT(r::invoke_xeusr_fn("inspect", code_, cursor_pos_));
+    SEXP result = PROTECT(invoke_hera_fn("inspect", code_, cursor_pos_));
     bool found = LOGICAL_ELT(VECTOR_ELT(result, 0), 0);
     if (!found) {
         UNPROTECT(3);
