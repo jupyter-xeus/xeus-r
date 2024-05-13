@@ -78,13 +78,13 @@ void register_r_routines() {
     DllInfo *info = R_getEmbeddingDllInfo();
 
     static const R_CallMethodDef callMethods[]  = {
-        {"xeusr_kernel_info_request"     , reinterpret_cast<DL_FUNC>(&routines::kernel_info_request)     , 0},
-        {"xeusr_publish_stream"          , reinterpret_cast<DL_FUNC>(&routines::publish_stream)          , 2},
-        {"xeusr_display_data"            , reinterpret_cast<DL_FUNC>(&routines::display_data)            , 2},
-        {"xeusr_update_display_data"     , reinterpret_cast<DL_FUNC>(&routines::update_display_data)     , 2},
-        {"xeusr_clear_output"            , reinterpret_cast<DL_FUNC>(&routines::clear_output)            , 1},
-        {"xeusr_is_complete_request"     , reinterpret_cast<DL_FUNC>(&routines::is_complete_request)     , 1},
-        {"xeusr_log"                     , reinterpret_cast<DL_FUNC>(&routines::xeusr_log)               , 2},
+        {"xeusr_kernel_info_request"     , (DL_FUNC) &routines::kernel_info_request     , 0},
+        {"xeusr_publish_stream"          , (DL_FUNC) &routines::publish_stream          , 2},
+        {"xeusr_display_data"            , (DL_FUNC) &routines::display_data            , 2},
+        {"xeusr_update_display_data"     , (DL_FUNC) &routines::update_display_data     , 2},
+        {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
+        {"xeusr_is_complete_request"     , (DL_FUNC) &routines::is_complete_request     , 1},
+        {"xeusr_log"                     , (DL_FUNC) &routines::xeusr_log               , 2},
 
         {NULL, NULL, 0}
     };
