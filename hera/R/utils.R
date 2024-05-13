@@ -31,44 +31,45 @@ plot_builds_upon <- function(prev, current) {
   lcurrent >= lprev && identical(current[[1]][1:lprev], prev[[1]][1:lprev])
 }
 
+init_overwritten <- function() {
+  unlockBinding("print.vignette", utils)
+  unlockBinding("View", utils)
+  print_vignette <- function(x, ...) {
+    file <- x$PDF
+    if (nzchar(file) == 0) {
+      warning(gettextf("vignette %s has no PDF/HTML", sQuote(x$Topic)), call. = FALSE, domain = NA)
+      return(invisible(x))
+    }
 
-unlockBinding("print.vignette", utils)
-unlockBinding("View", utils)
-print_vignette <- function(x, ...) {
-  file <- x$PDF
-  if (nzchar(file) == 0) {
-    warning(gettextf("vignette %s has no PDF/HTML", sQuote(x$Topic)), call. = FALSE, domain = NA)
-    return(invisible(x))
-  }
+    ext <- tolower(tools::file_ext(file))
+    if (ext == "pdf") {
+      warning("can't display pdf vignette yet")
+      return(invisible(x))
+    }
 
-  ext <- tolower(tools::file_ext(file))
-  if (ext == "pdf") {
-    warning("can't display pdf vignette yet")
-    return(invisible(x))
-  }
+    if (ext == "html") {
+      html <- readLines(file.path(x$Dir, "doc", file))
 
-  if (ext == "html") {
-    html <- readLines(file.path(x$Dir, "doc", file))
-
-    display_data(
-      data = list(
-        "text/html" = paste(html, collapse = "\n")
-      ),
-      metadata = list(
-        "text/html" = list(isolated = TRUE)
+      display_data(
+        data = list(
+          "text/html" = paste(html, collapse = "\n")
+        ),
+        metadata = list(
+          "text/html" = list(isolated = TRUE)
+        )
       )
-    )
+    }
+
+    invisible(x)
   }
+  assign("print.vignette", print_vignette, utils)
+  lockBinding("print.vignette", utils)
 
-  invisible(x)
+  View <- function(x, title) {
+    if (!missing(title)) IRdisplay::display_text(title)
+    IRdisplay::display(x)
+    invisible(x)
+  }
+  assign("View", View, utils)
+  lockBinding("View", utils)
 }
-assign("print.vignette", print_vignette, utils)
-lockBinding("print.vignette", utils)
-
-View <- function(x, title) {
-  if (!missing(title)) IRdisplay::display_text(title)
-  IRdisplay::display(x)
-  invisible(x)
-}
-assign("View", View, utils)
-lockBinding("View", utils)

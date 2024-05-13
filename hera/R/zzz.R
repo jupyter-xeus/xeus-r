@@ -7,4 +7,5 @@ utils <- NULL
 .onLoad <- function(lib, pkg) {
   utils <<- asNamespace("utils")
   init_options()
+  init_overwritten()
 }
