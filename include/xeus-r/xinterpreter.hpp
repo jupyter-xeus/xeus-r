@@ -58,7 +58,6 @@ namespace xeus_r
         nl::json kernel_info_request_impl() override;
 
         void shutdown_request_impl() override;
-
     };
 
     interpreter* get_interpreter();
