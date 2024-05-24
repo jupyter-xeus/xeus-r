@@ -60,9 +60,9 @@ jobs:
         run: |
           cd test
           pytest .  --reruns 5
+          
+  win:
 
- win:
-   
    runs-on: ${{ matrix.os }}
     
    strategy:
@@ -99,7 +99,7 @@ jobs:
          cd bld
          set CL=/MP
          nmake install
-         
+
 #      - name: test
 #        shell: cmd
 #        run: |
