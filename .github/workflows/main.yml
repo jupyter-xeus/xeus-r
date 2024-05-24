@@ -34,6 +34,11 @@ jobs:
         run: |
           $HOME/micromamba-bin/micromamba install cxx-compiler -c conda-forge -y
 
+      - name: micromamba list
+        shell: bash -l {0}
+        run: |
+          $HOME/micromamba-bin/micromamba list
+
       - name: cmake configure
         shell: bash -l {0}
         run: |
