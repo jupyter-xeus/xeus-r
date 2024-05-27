@@ -23,14 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: install mamba
-        uses: mamba-org/provision-with-micromamba@main
+      - uses: mamba-org/setup-micromamba@v1
         with:
+          micromamba-version: '1.5.6-0' # any version from https://github.com/mamba-org/micromamba-releases
           environment-file: environment-dev.yml
           environment-name: xeus-r
+          init-shell: bash
+          cache-environment: true
+          post-cleanup: 'all'
 
       - name: install cxx compiler
-        shell: bash -l {0}
+        shell: micromamba-shell {0}
         run: |
           $HOME/micromamba-bin/micromamba install cxx-compiler -c conda-forge -y
 
@@ -55,16 +58,9 @@ jobs:
           cd bld
           make install
 
-      - name: r checks
-        shell: bash -l {0}
-        run: |
-          Rscript -e ".libPaths()"
-          R --version
-
       - name: test
-        shell: bash -l {0}
+        shell: micromamba-shell {0}
         run: |
-          $HOME/micromamba-bin/micromamba activate xeus-r
           cd test
           pytest .  --reruns 5
 
