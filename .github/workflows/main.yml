@@ -59,6 +59,7 @@ jobs:
         shell: bash -l {0}
         run: |
           Rscript -e ".libPaths()"
+          Rscript -e "update.packages(ask = FALSE)"
 
       - name: test
         shell: bash -l {0}
