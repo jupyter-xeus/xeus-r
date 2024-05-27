@@ -10,10 +10,6 @@
 namespace xeus_r {
 namespace routines {
 
-xeus::xrequest_context get_request_context() {
-    return *xeus_r::get_interpreter()->current_request_context;
-}
-
 SEXP kernel_info_request() {
     auto info = xeus_r::get_interpreter()->kernel_info_request();
     SEXP out = PROTECT(Rf_mkString(info.dump(4).c_str()));
@@ -27,7 +23,7 @@ SEXP publish_stream(SEXP name_, SEXP text_) {
     auto text = CHAR(STRING_ELT(text_, 0));
 
     auto interpreter = xeus_r::get_interpreter();
-    interpreter->publish_stream(get_request_context(), name, text);
+    interpreter->publish_stream(name, text);
 
     return R_NilValue;
 }
@@ -37,7 +33,7 @@ SEXP display_data(SEXP js_data, SEXP js_metadata){
     auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
     
     xeus_r::get_interpreter()->display_data(
-        get_request_context(), std::move(data), std::move(metadata), /* transient = */ nl::json::object()
+        std::move(data), std::move(metadata), /* transient = */ nl::json::object()
     );
 
     return R_NilValue;
@@ -48,7 +44,7 @@ SEXP update_display_data(SEXP js_data, SEXP js_metadata){
     auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
     
     xeus_r::get_interpreter()->update_display_data(
-        get_request_context(), std::move(data), std::move(metadata), /* transient = */ nl::json::object()
+        std::move(data), std::move(metadata), /* transient = */ nl::json::object()
     );
 
     return R_NilValue;
@@ -56,7 +52,7 @@ SEXP update_display_data(SEXP js_data, SEXP js_metadata){
 
 SEXP clear_output(SEXP wait_) {
     bool wait = LOGICAL_ELT(wait_, 0) == TRUE;
-    xeus_r::get_interpreter()->clear_output(get_request_context(), wait);
+    xeus_r::get_interpreter()->clear_output(wait);
     return R_NilValue;
 }
 

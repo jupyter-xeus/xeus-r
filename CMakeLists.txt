@@ -41,7 +41,7 @@ OPTION(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead 
 # ============
 
 set(xtl_REQUIRED_VERSION 0.7.0)
-set(xeus_REQUIRED_VERSION 4.0.0)
+set(xeus_REQUIRED_VERSION 3.0.5)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -242,14 +242,13 @@ endif ()
 # xr
 # =======
 if (XEUS_R_BUILD_EXECUTABLE)
-    find_package(xeus-zmq REQUIRED)
+    find_package(xeus-zmq 1.0.3 REQUIRED)
     add_executable(xr ${XEUS_R_MAIN_SRC})
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
     xeus_r_set_kernel_options(xr)
     target_link_libraries(xr PRIVATE xeus xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
 endif()
-
 
 
 # Installation

@@ -38,20 +38,10 @@ interpreter* get_interpreter() {
 
 void WriteConsoleEx(const char *buf, int buflen, int otype) {
     std::string output(buf, buflen);
-    auto request_context_ptr = get_interpreter()->current_request_context;
-    if (request_context_ptr) {
-        if (otype == 1) {
-            p_interpreter->publish_stream(*request_context_ptr, "stderr", output);
-        } else {
-            p_interpreter->publish_stream(*request_context_ptr, "stdout", output);
-        }
+    if (otype == 1) {
+        p_interpreter->publish_stream("stderr", output);
     } else {
-        if (otype == 1) {
-            std::cerr << output;
-        } else {
-            std::cout << output;
-        }
-
+        p_interpreter->publish_stream("stdout", output);
     }
 }
 
@@ -82,28 +72,21 @@ interpreter::interpreter(int argc, char* argv[])
 std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]) {
     return std::unique_ptr<interpreter>(new interpreter(argc, argv));
 }
-
-void interpreter::execute_request_impl(
-    xeus::xrequest_context request_context,
-    send_reply_callback cb,
-    int execution_counter,
-    const std::string& code,
-    xeus::execute_request_config /* config */,
-    nl::json /* user_expressions */ )
+nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
+                                            const std::string & code, // Code to execute
+                                            bool silent,
+                                            bool store_history,
+                                            nl::json /*user_expressions*/,
+                                            bool /*allow_stdin*/)
 {
-    this->current_request_context = &request_context;
-
-    /* 
     if (store_history) {
         const_cast<xeus::xhistory_manager&>(get_history_manager()).store_inputs(0, execution_counter, code);
     }
-    */
 
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_counter));
-    // SEXP silent_ = PROTECT(Rf_ScalarLogical(silent));
-    SEXP silent_ = PROTECT(Rf_ScalarLogical(false));
-
+    SEXP silent_ = PROTECT(Rf_ScalarLogical(silent));
+    
     SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_, silent_);
     
     if (Rf_inherits(result, "error_reply")) {
@@ -119,10 +102,10 @@ void interpreter::execute_request_impl(
             }
         }
 
-        publish_execution_error(request_context, evalue, ename, trace_back);
+        publish_execution_error(evalue, ename, trace_back);
 
         UNPROTECT(3);
-        cb(xeus::create_error_reply(evalue, ename, std::move(trace_back)));
+        return xeus::create_error_reply(evalue, ename, std::move(trace_back));
     }
     
     if (Rf_inherits(result, "execution_result")) {
@@ -130,11 +113,11 @@ void interpreter::execute_request_impl(
         SEXP metadata_ = VECTOR_ELT(result, 1);
         auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
         auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
-        publish_execution_result(request_context, execution_counter, data, metadata);
+        publish_execution_result(execution_counter, data, metadata);
     }
 
     UNPROTECT(3);
-    cb(xeus::create_successful_reply(/*payload, user_expressions*/));
+    return xeus::create_successful_reply(/*payload, user_expressions*/);
 }
 
 void interpreter::configure_impl()
