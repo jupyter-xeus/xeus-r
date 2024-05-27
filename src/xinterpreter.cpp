@@ -266,14 +266,13 @@ void interpreter::shutdown_request_impl() {
 
 nl::json interpreter::kernel_info_request_impl()
 {
-
     const std::string  protocol_version = "5.3";
     const std::string  implementation = "xr";
     const std::string  implementation_version = XEUS_R_VERSION;
     const std::string  language_name = "R";
     const std::string  language_version = "4.3.1";
-    const std::string  language_mimetype = "text/x-R";;
-    const std::string  language_file_extension = "R";;
+    const std::string  language_mimetype = "text/x-R";
+    const std::string  language_file_extension = "R";
     const std::string  language_pygments_lexer = "";
     const std::string  language_codemirror_mode = "";
     const std::string  language_nbconvert_exporter = "";
