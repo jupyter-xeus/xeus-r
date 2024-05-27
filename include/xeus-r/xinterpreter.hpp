@@ -22,6 +22,7 @@
 
 #include "xeus_r_config.hpp"
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xrequest_context.hpp"
 
 namespace nl = nlohmann;
 
@@ -35,17 +36,18 @@ namespace xeus_r
         virtual ~interpreter() = default;
 
         std::stringstream capture_stream;
+        xeus::xrequest_context* current_request_context;
 
     protected:
 
         void configure_impl() override;
 
-        nl::json execute_request_impl(int execution_counter,
-                                      const std::string& code,
-                                      bool silent,
-                                      bool store_history,
-                                      nl::json user_expressions,
-                                      bool allow_stdin) override;
+        void execute_request_impl(xeus::xrequest_context request_context,
+                                  send_reply_callback cb,
+                                  int execution_counter,
+                                  const std::string& code,
+                                  xeus::execute_request_config config,
+                                  nl::json user_expressions) override;
 
         nl::json complete_request_impl(const std::string& code, int cursor_pos) override;
 
