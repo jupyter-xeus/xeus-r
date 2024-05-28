@@ -32,11 +32,6 @@ jobs:
           cache-environment: false
           post-cleanup: 'all'
 
-      - name: install cxx compiler
-        shell: micromamba-shell {0}
-        run: |
-          $HOME/micromamba-bin/micromamba install cxx-compiler -c conda-forge -y
-
       - name: cmake configure
         shell: bash -l {0}
         run: |
