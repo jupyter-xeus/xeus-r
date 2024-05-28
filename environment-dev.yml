@@ -12,7 +12,7 @@ dependencies:
   - nlohmann_json =3.11.2
   - cppzmq
   - xtl
-  - r-base =4.3.1
+  - r-base =4.4.0
   # Run dependencies
   - r-rlang
   - r-evaluate
