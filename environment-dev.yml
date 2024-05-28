@@ -7,12 +7,12 @@ dependencies:
   - cmake
   - cxx-compiler
   # Host dependencies
-  - xeus >=3.0.5,<3.1.0
-  - xeus-zmq #>=1.1.0,<2.0
-  - nlohmann_json
+  - xeus =3.0.5
+  - xeus-zmq =1.0.3
+  - nlohmann_json =3.11.2
   - cppzmq
   - xtl
-  - r-base >=4
+  - r-base =4.3.1
   # Run dependencies
   - r-rlang
   - r-evaluate

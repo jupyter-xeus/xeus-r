@@ -84,7 +84,6 @@ interpreter::interpreter(int argc, char* argv[])
 std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]) {
     return std::unique_ptr<interpreter>(new interpreter(argc, argv));
 }
-
 nl::json interpreter::execute_request_impl(int execution_counter,    // Typically the cell number
                                             const std::string & code, // Code to execute
                                             bool silent,
@@ -99,7 +98,7 @@ nl::json interpreter::execute_request_impl(int execution_counter,    // Typicall
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_counter));
     SEXP silent_ = PROTECT(Rf_ScalarLogical(silent));
-
+    
     SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_, silent_);
     
     if (Rf_inherits(result, "error_reply")) {
@@ -262,14 +261,13 @@ void interpreter::shutdown_request_impl() {
 
 nl::json interpreter::kernel_info_request_impl()
 {
-
     const std::string  protocol_version = "5.3";
     const std::string  implementation = "xr";
     const std::string  implementation_version = XEUS_R_VERSION;
     const std::string  language_name = "R";
     const std::string  language_version = "4.3.1";
-    const std::string  language_mimetype = "text/x-R";;
-    const std::string  language_file_extension = "R";;
+    const std::string  language_mimetype = "text/x-R";
+    const std::string  language_file_extension = "R";
     const std::string  language_pygments_lexer = "";
     const std::string  language_codemirror_mode = "";
     const std::string  language_nbconvert_exporter = "";
