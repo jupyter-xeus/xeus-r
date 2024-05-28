@@ -6,11 +6,12 @@
 #The full license is in the file LICENSE, distributed with this software. 
 #############################################################################
 
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.10)
 project(xeus-r)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
-
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-v")
 
 # Versionning
 # ===========
@@ -35,10 +36,6 @@ OPTION(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 
 OPTION(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
 OPTION(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead of the static library)" ON)
-
-
-
-
 
 # Dependencies
 # ============
@@ -87,7 +84,6 @@ endif ()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
     
-
     CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
     if (HAS_CPP_17_FLAG)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
@@ -112,7 +108,6 @@ set(XEUS_R_SRC
 set(XEUS_R_MAIN_SRC
     src/main.cpp
 )
-
 
 # Targets and link - Macros
 # =========================
@@ -247,14 +242,13 @@ endif ()
 # xr
 # =======
 if (XEUS_R_BUILD_EXECUTABLE)
-    find_package(xeus-zmq 1.0.2 REQUIRED)
+    find_package(xeus-zmq 1.0.3 REQUIRED)
     add_executable(xr ${XEUS_R_MAIN_SRC})
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
     xeus_r_set_kernel_options(xr)
-    target_link_libraries(xr PRIVATE xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    target_link_libraries(xr PRIVATE xeus xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
 endif()
-
 
 
 # Installation

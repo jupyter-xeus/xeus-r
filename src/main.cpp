@@ -23,8 +23,8 @@
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
-#include "xeus-zmq/xserver_zmq.hpp"
 
+#include "xeus-zmq/xserver_zmq.hpp"
 
 #include "xeus-r/xinterpreter.hpp"
 #include "xeus-r/xeus_r_config.hpp"

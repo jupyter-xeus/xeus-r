@@ -18,21 +18,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: install mamba
-        uses: mamba-org/provision-with-micromamba@main
+      - uses: mamba-org/setup-micromamba@v1
         with:
+          micromamba-version: '1.5.6-0' # any version from https://github.com/mamba-org/micromamba-releases
           environment-file: environment-dev.yml
           environment-name: xeus-r
-
-      - name: install cxx compiler
-        shell: bash -l {0}
-        run: |
-          $HOME/micromamba-bin/micromamba install cxx-compiler -c conda-forge -y
+          init-shell: bash
+          cache-environment: false
+          post-cleanup: 'all'
 
       - name: cmake configure
         shell: bash -l {0}
@@ -56,7 +54,7 @@ jobs:
           make install
 
       - name: test
-        shell: bash -l {0}
+        shell: micromamba-shell {0}
         run: |
           cd test
           pytest .  --reruns 5

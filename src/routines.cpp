@@ -21,7 +21,9 @@ SEXP kernel_info_request() {
 SEXP publish_stream(SEXP name_, SEXP text_) {
     auto name = CHAR(STRING_ELT(name_, 0));
     auto text = CHAR(STRING_ELT(text_, 0));
-    xeus_r::get_interpreter()->publish_stream(name, text);
+
+    auto interpreter = xeus_r::get_interpreter();
+    interpreter->publish_stream(name, text);
 
     return R_NilValue;
 }
