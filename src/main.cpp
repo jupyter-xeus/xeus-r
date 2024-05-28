@@ -24,7 +24,7 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 
-#include "xeus-zmq/xserver_shell_main.hpp"
+#include "xeus-zmq/xserver_zmq.hpp"
 
 #include "xeus-r/xinterpreter.hpp"
 #include "xeus-r/xeus_r_config.hpp"
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main, 
+                             xeus::make_xserver_zmq, 
                              std::move(hist), 
                              std::move(logger));
 
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main);
+                             xeus::make_xserver_zmq);
 
         const auto& config = kernel.get_config();
         std::cout <<
