@@ -58,7 +58,8 @@ if(R_COMMAND)
                   OUTPUT_VARIABLE R_LDFLAGS
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
-
+  string(STRIP ${R_LDFLAGS} R_LDFLAGS)
+  
   find_path(R_INCLUDE_DIR R.h
             HINTS ${R_ROOT_DIR} ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
             PATHS /usr/local/lib /usr/local/lib64 /usr/share

@@ -76,8 +76,10 @@ SEXP xeusr_log(SEXP level_, SEXP msg_) {
 
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-function-type"
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 void register_r_routines() {
     DllInfo *info = R_getEmbeddingDllInfo();
 
@@ -95,6 +97,8 @@ void register_r_routines() {
 
     R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 }
-#pragma GCC diagnostic pop
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 
 }

@@ -25,7 +25,15 @@
 #include "Rinternals.h"
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
+
+#if defined(_WIN32)
+#include <R_ext/Boolean.h>
+#include <R_ext/RStartup.h>
+// TODO
+#else
 #include "Rinterface.h"
+#endif
+
 #include "rtools.hpp"
 
 namespace xeus_r {
@@ -59,12 +67,16 @@ interpreter::interpreter(int argc, char* argv[])
     Rf_initEmbeddedR(argc, argv);
     register_r_routines();
 
+#if defined(_WIN32)
+    // TODO
+#else
     R_Outputfile = NULL;
     R_Consolefile = NULL;
 
     ptr_R_WriteConsole = nullptr;
     ptr_R_WriteConsoleEx = WriteConsoleEx;
-    
+#endif    
+
     xeus::register_interpreter(this);
     p_interpreter = this;
 }
