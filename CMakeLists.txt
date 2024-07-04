@@ -6,7 +6,7 @@
 #The full license is in the file LICENSE, distributed with this software. 
 #############################################################################
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.24)
 project(xeus-r)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -39,13 +39,9 @@ OPTION(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead 
 
 # Dependencies
 # ============
+set(xeus_REQUIRED_VERSION 5.0.0)
+set(xeus_zmq_REQUIRED_VERSION 3.0.0)
 
-set(xtl_REQUIRED_VERSION 0.7.0)
-set(xeus_REQUIRED_VERSION 3.0.5)
-
-if (NOT TARGET xtl)
-    find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
-endif ()
 if (NOT TARGET xeus AND NOT TARGET xeus-static)
     find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 endif ()
@@ -54,6 +50,7 @@ find_package(R REQUIRED)
 message(STATUS "R_HOME           = ${R_HOME}")
 message(STATUS "R_INCLUDE_DIR    = ${R_INCLUDE_DIR}")
 message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
+message(STATUS "R_LIBRARY_BASE   = ${R_LIBRARY_BASE}")
 message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
 message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
 
@@ -65,6 +62,9 @@ include(GNUInstallDirs)
 if (NOT DEFINED XEUS_R_KERNELSPEC_PATH)
     set(XEUS_R_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
 endif ()
+
+#set(XEUS_R_LD_LIBRARY_PATH "${R_LIBRARY_BASE}")
+get_filename_component(XEUS_R_LD_LIBRARY_PATH "${R_LIBRARY_BASE}" DIRECTORY)
 
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json.in"
@@ -205,7 +205,7 @@ macro(xeus_r_create_target target_name linkage output_name)
         set(XEUS_R_XEUS_TARGET xeus-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} xtl)
+    target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET})
     if (WIN32 OR CYGWIN)
         #
     elseif (APPLE)

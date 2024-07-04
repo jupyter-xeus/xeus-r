@@ -39,7 +39,7 @@ mamba install`xeus-r` notebook -c conda-forge
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-mamba install cmake cxx-compiler xeus-zmq nlohmann_json cppzmq xtl jupyterlab r-base r-evaluate r-rlang r-jsonlite r-glue r-cli r-repr r-irdisplay -c conda-forge
+mamba install cmake cxx-compiler xeus-zmq nlohmann_json jupyterlab r-base r-evaluate r-rlang r-jsonlite r-glue r-cli r-repr r-irdisplay -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation
@@ -72,9 +72,18 @@ http://xeus-r.readthedocs.io
 `xeus-r` depends on
 
 - [xeus-zmq](https://github.com/jupyter-xeus/xeus-zmq)
-- [xtl](https://github.com/xtensor-stack/xtl)
 - [nlohmann_json](https://github.com/nlohmann/json)
-- [cppzmq](https://github.com/zeromq/cppzmq)
+
+| `xeus-r`|   `xeus-zmq`     |`nlohmann_json` |
+|---------|------------------|----------------|
+|  main   |  >=3.0,<4.0      |  >=3.11.3      |
+|  0.2.x  |  >=3.0,<4.0      |  >=3.11.3      |
+
+Prior vo version 0.2, `xeus-r` was also depending on [xtl](https://github.com/xtensor-stack/xtl) & [cppzmq](https://github.com/zeromq/cppzmq):
+
+| `xeus-r`|   `xeus-zmq`     |      `xtl`      | `cppzmq` | `nlohmann_json` |
+|---------|------------------|-----------------|----------|-----------------|
+|  0.1.x  |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   |  >=3.11.2       |
 
 ## Contributing
 

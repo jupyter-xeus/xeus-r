@@ -18,19 +18,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: mamba-org/setup-micromamba@v1
+      - name: Install micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          micromamba-version: '1.5.6-0' # any version from https://github.com/mamba-org/micromamba-releases
           environment-file: environment-dev.yml
-          environment-name: xeus-r
-          init-shell: bash
-          cache-environment: false
-          post-cleanup: 'all'
 
       - name: cmake configure
         shell: bash -l {0}
@@ -39,7 +35,8 @@ jobs:
           cd bld
           cmake .. \
            -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
-           -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX 
+           -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+           -D CMAKE_INSTALL_LIBDIR=lib
 
       - name: build
         shell: bash -l {0}
