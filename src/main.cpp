@@ -24,6 +24,7 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 
+#include "xeus-zmq/xzmq_context.hpp"
 #include "xeus-zmq/xserver_zmq.hpp"
 
 #include "xeus-r/xinterpreter.hpp"
@@ -108,7 +109,7 @@ int main(int argc, char* argv[])
     signal(SIGSEGV, handler);
 #endif
 
-    auto context = xeus::make_context<zmq::context_t>();
+    std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
     auto interpreter = xeus_r::make_interpreter(argc, argv);
     auto hist = xeus::make_in_memory_history_manager();
@@ -120,11 +121,13 @@ int main(int argc, char* argv[])
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
+
+        std::clog << "Instantiating kernel" << std::endl;
         xeus::xkernel kernel(config,
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_zmq, 
+                             xeus::make_xserver_default,
                              std::move(hist), 
                              std::move(logger));
 
@@ -141,8 +144,9 @@ int main(int argc, char* argv[])
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_zmq);
+                             xeus::make_xserver_default);
 
+        std::cout << "Getting config" << std::endl;
         const auto& config = kernel.get_config();
         std::cout <<
             "Starting xr kernel...\n\n"

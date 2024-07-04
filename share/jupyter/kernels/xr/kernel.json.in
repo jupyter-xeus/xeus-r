@@ -7,5 +7,8 @@
   ],
   "language": "R",
   "metadata": {"debugger": false},
-  "env": {"R_HOME": "@R_HOME@"}
+  "env": {
+    "R_HOME": "@R_HOME@",
+    "LD_LIBRARY_PATH": "@XEUS_R_LD_LIBRARY_PATH@"
+  }
 }
