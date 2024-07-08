@@ -23,6 +23,7 @@
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "xeus-zmq/xzmq_context.hpp"
 #include "xeus-zmq/xserver_zmq.hpp"
@@ -45,37 +46,6 @@ void handler(int sig)
 }
 #endif
 
-bool should_print_version(int argc, char* argv[])
-{
-    for (int i = 0; i < argc; ++i)
-    {
-        if (std::string(argv[i]) == "--version")
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-std::string extract_filename(int argc, char* argv[])
-{
-    std::string res = "";
-    for (int i = 0; i < argc; ++i)
-    {
-        if ((std::string(argv[i]) == "-f") && (i + 1 < argc))
-        {
-            res = argv[i + 1];
-            for (int j = i; j < argc - 2; ++j)
-            {
-                argv[j] = argv[j + 2];
-            }
-            argc -= 2;
-            break;
-        }
-    }
-    return res;
-}
-
 std::unique_ptr<xeus::xlogger> make_file_logger(xeus::xlogger::level log_level) {
     auto logfile = std::getenv("JUPYTER_LOGFILE");
     if (logfile == nullptr) {
@@ -87,7 +57,7 @@ std::unique_ptr<xeus::xlogger> make_file_logger(xeus::xlogger::level log_level) 
 
 int main(int argc, char* argv[])
 {
-    if (should_print_version(argc, argv))
+    if (xeus::should_print_version(argc, argv))
     {
         std::clog << "xr " << XEUS_R_VERSION  << std::endl;
         return 0;
@@ -116,7 +86,7 @@ int main(int argc, char* argv[])
 
     auto logger = xeus::make_console_logger(xeus::xlogger::full, make_file_logger(xeus::xlogger::full));
 
-    std::string connection_filename = extract_filename(argc, argv);
+    std::string connection_filename = xeus::extract_filename(argc, argv);
 
     if (!connection_filename.empty())
     {
@@ -148,23 +118,7 @@ int main(int argc, char* argv[])
 
         std::cout << "Getting config" << std::endl;
         const auto& config = kernel.get_config();
-        std::cout <<
-            "Starting xr kernel...\n\n"
-            "If you want to connect to this kernel from an other client, just copy"
-            " and paste the following content inside of a `kernel.json` file. And then run for example:\n\n"
-            "# jupyter console --existing kernel.json\n\n"
-            "kernel.json\n```\n{\n"
-            "    \"transport\": \"" + config.m_transport + "\",\n"
-            "    \"ip\": \"" + config.m_ip + "\",\n"
-            "    \"control_port\": " + config.m_control_port + ",\n"
-            "    \"shell_port\": " + config.m_shell_port + ",\n"
-            "    \"stdin_port\": " + config.m_stdin_port + ",\n"
-            "    \"iopub_port\": " + config.m_iopub_port + ",\n"
-            "    \"hb_port\": " + config.m_hb_port + ",\n"
-            "    \"signature_scheme\": \"" + config.m_signature_scheme + "\",\n"
-            "    \"key\": \"" + config.m_key + "\"\n"
-            "}\n```"
-            << std::endl;
+        std::cout << xeus::get_start_message(config) << std::endl;
 
         kernel.start();
     }
