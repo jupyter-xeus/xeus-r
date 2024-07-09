@@ -10,7 +10,7 @@ Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
 
 ## Installation
 
-xeus-r has not been packaged for the mamba (or conda) package manager.
+xeus-r has been packaged for the mamba (or conda) package manager on the **Linux** and **OS X** platforms. At the moment, we are not providing packages for the **Windows** platform.
 
 To ensure that the installation works, it is preferable to install `xeus-r` in a
 fresh environment. It is also needed to use a
@@ -19,6 +19,8 @@ fresh environment. It is also needed to use a
 [anaconda](https://www.anaconda.com/) you may have a conflict with the `zeromq` library
 which is already installed in the anaconda distribution.
 
+### Installation with mamba or conda
+
 The safest usage is to create an environment named `xeus-r`
 
 ```bash
@@ -26,13 +28,11 @@ mamba create -n xeus-r
 mamba activate xeus-r
 ```
 
-<!-- ### Installing from conda-forge
-
 Then you can install in this environment `xeus-r` and its dependencies
 
-```bash
-mamba install`xeus-r` notebook -c conda-forge
-``` -->
+```
+mamba install xeus-r -c conda-forge
+```
 
 ### Installing from source
 
