@@ -9,6 +9,6 @@
   "metadata": {"debugger": false},
   "env": {
     "R_HOME": "@R_HOME@",
-    "LD_LIBRARY_PATH": "@XEUS_R_LD_LIBRARY_PATH@"
+    "PATH": "@CMAKE_INSTALL_PREFIX@/../lib/R/bin/x64;@CMAKE_INSTALL_PREFIX@/mingw-w64/bin;%PATH%"
   }
 }

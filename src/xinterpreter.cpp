@@ -26,11 +26,7 @@
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
 
-#if defined(_WIN32)
-#include <R_ext/Boolean.h>
-#include <R_ext/RStartup.h>
-// TODO
-#else
+#ifndef _WIN32
 #include "Rinterface.h"
 #endif
 
@@ -67,9 +63,7 @@ interpreter::interpreter(int argc, char* argv[])
     Rf_initEmbeddedR(argc, argv);
     register_r_routines();
 
-#if defined(_WIN32)
-    // TODO
-#else
+#ifndef _WIN32
     R_Outputfile = NULL;
     R_Consolefile = NULL;
 
@@ -81,9 +75,6 @@ interpreter::interpreter(int argc, char* argv[])
     p_interpreter = this;
 }
 
-std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]) {
-    return std::unique_ptr<interpreter>(new interpreter(argc, argv));
-}
 
 void interpreter::execute_request_impl(
     send_reply_callback cb,

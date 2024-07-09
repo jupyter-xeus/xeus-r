@@ -59,18 +59,23 @@ message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
 
 include(GNUInstallDirs)
 
-if (NOT DEFINED XEUS_R_KERNELSPEC_PATH)
-    set(XEUS_R_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
+if (NOT DEFINED XR_KERNELSPEC_PATH)
+    set(XR_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
 endif ()
 
-#set(XEUS_R_LD_LIBRARY_PATH "${R_LIBRARY_BASE}")
 get_filename_component(XEUS_R_LD_LIBRARY_PATH "${R_LIBRARY_BASE}" DIRECTORY)
 
+if (MSVC)
+configure_file (
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel-win.json.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json"
+)
+else ()
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xr/kernel.json"
 )
-
+endif ()
 
 # Flags
 # =====
@@ -213,7 +218,7 @@ macro(xeus_r_create_target target_name linkage output_name)
     endif ()
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
 
-    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LIBRARY_BASE})
     
 endmacro()
 
@@ -247,7 +252,7 @@ if (XEUS_R_BUILD_EXECUTABLE)
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
     xeus_r_set_kernel_options(xr)
-    target_link_libraries(xr PRIVATE xeus xeus-zmq ${R_LDFLAGS} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+    target_link_libraries(xr PRIVATE xeus xeus-zmq)
 endif()
 
 
