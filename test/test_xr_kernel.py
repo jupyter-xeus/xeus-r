@@ -33,7 +33,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     code_generate_error = "stop('ouch')"
     code_inspect_sample = "print"
     
-    complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = _)"]
+    complete_code_samples = ["fun()", "1 + 2", "a %>% b", "a |> b()", "a |> b(c = 1)"]
     incomplete_code_samples = ["fun(", "1 + "]
     invalid_code_samples = ["fun())", "a |> b", "a |> b(_)", "a |> b(c(_))"]
 

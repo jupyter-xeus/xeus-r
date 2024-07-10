@@ -101,9 +101,9 @@ jobs:
          md %CONDA_PREFIX%\share\jupyter\kernels\xr
          xcopy %CONDA_PREFIX%\Library\share\jupyter\kernels\xr %CONDA_PREFIX%\share\jupyter\kernels\xr /F /Y
 
-     # - name: test
-     #  shell: cmd
-     #  run: |
-     #     call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
-     #     cd test
-     #     pytest .  -vv --reruns 5
+     - name: test
+       shell: cmd
+       run: |
+         call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
+         cd test
+         pytest .  -vv
