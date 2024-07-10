@@ -34,5 +34,5 @@ If ``XEUS_R_USE_SHARED_XEUS_R`` is disabled, xr  will be linked statically with 
 Building the Tests
 ~~~~~~~~~~~~~~~~~~
 
-- ``XEUS_R_BUILD_TESTS ``: enables the tets  **Disabled by default**.
+- ``XEUS_R_BUILD_TESTS``: enables the tests  **Disabled by default**.
 
