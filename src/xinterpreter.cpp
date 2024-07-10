@@ -25,7 +25,11 @@
 #include "Rinternals.h"
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
+
+#ifndef _WIN32
 #include "Rinterface.h"
+#endif
+
 #include "rtools.hpp"
 
 namespace xeus_r {
@@ -59,19 +63,18 @@ interpreter::interpreter(int argc, char* argv[])
     Rf_initEmbeddedR(argc, argv);
     register_r_routines();
 
+#ifndef _WIN32
     R_Outputfile = NULL;
     R_Consolefile = NULL;
 
     ptr_R_WriteConsole = nullptr;
     ptr_R_WriteConsoleEx = WriteConsoleEx;
-    
+#endif    
+
     xeus::register_interpreter(this);
     p_interpreter = this;
 }
 
-std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]) {
-    return std::unique_ptr<interpreter>(new interpreter(argc, argv));
-}
 
 void interpreter::execute_request_impl(
     send_reply_callback cb,
