@@ -7,7 +7,7 @@ Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
 
 ## Installation
 
-xeus-r has been packaged for the mamba (or conda) package manager on the **Linux** and **OS X** platforms. At the moment, we are not providing packages for the **Windows** platform.
+xeus-r has been packaged for the mamba (or conda) package manager on the Linux, Windows, and OS X platforms.
 
 To ensure that the installation works, it is preferable to install `xeus-r` in a
 fresh environment. It is also needed to use a
