@@ -68,3 +68,16 @@ lockBinding("print.vignette", ns_utils)
 get_comm_manager__size <- function() {
   .Call("xeusr_get_comm_manager__size", PACKAGE = "(embedding)")
 }
+
+comm_target_env <- new.env()
+
+# TODO: callback should be a function that takes `comm` and `msg`
+comm_register_target <- function(name, callback) {
+  .Call("xeusr_comm_register_target", name, PACKAGE = "(embedding)")
+  comm_target_env[[name]] <- callback
+}
+
+comm_unregister_target <- function(name) {
+  .Call("xeusr_comm_unregister_target", name, PACKAGE = "(embedding)")
+  comm_target_env[[name]] <- NULL
+}

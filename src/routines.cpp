@@ -6,6 +6,10 @@
 
 #include "xeus-r/xinterpreter.hpp"
 #include "nlohmann/json.hpp"
+#include "xeus/xmessage.hpp"
+#include "xeus/xcomm.hpp"
+
+#include <functional>
 
 namespace xeus_r {
 namespace routines {
@@ -79,6 +83,22 @@ SEXP xeusr_get_comm_manager__size() {
     return Rf_ScalarInteger(manager.comms().size());
 }
 
+SEXP comm_register_target(SEXP name_) {
+    std::string name = CHAR(STRING_ELT(name_, 0));
+    
+    // TODO: for now the lambda is empty, because the callback is meant to be an 
+    //       R function stored on the R side, see routines.R/comm_target_env
+    xeus_r::get_interpreter()->comm_manager().register_comm_target(name, [](xeus::xcomm&&, xeus::xmessage) {});
+    return R_NilValue;
+}
+
+SEXP comm_unregister_target(SEXP name_) {
+    std::string name = CHAR(STRING_ELT(name_, 0));
+
+    xeus_r::get_interpreter()->comm_manager().unregister_comm_target(name);
+    return R_NilValue;
+}
+
 }
 
 #ifdef __GNUC__
@@ -99,6 +119,9 @@ void register_r_routines() {
 
         // comms
         {"xeusr_get_comm_manager__size"  , (DL_FUNC) &routines::xeusr_get_comm_manager__size, 0},
+
+        {"xeusr_comm_register_target"    , (DL_FUNC) &routines::comm_register_target, 1},
+        {"xeusr_comm_unregister_target"  , (DL_FUNC) &routines::comm_unregister_target, 1},
 
         {NULL, NULL, 0}
     };
