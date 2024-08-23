@@ -64,3 +64,7 @@ print.vignette <- function(x, ...) {
 }
 assign("print.vignette", print.vignette, ns_utils)
 lockBinding("print.vignette", ns_utils)
+
+get_comm_manager__size <- function() {
+  .Call("xeusr_get_comm_manager__size", PACKAGE = "(embedding)")
+}

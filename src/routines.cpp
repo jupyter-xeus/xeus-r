@@ -74,6 +74,11 @@ SEXP xeusr_log(SEXP level_, SEXP msg_) {
     return R_NilValue;
 }
 
+SEXP xeusr_get_comm_manager__size() {
+    auto& manager = xeus_r::get_interpreter()->comm_manager();
+    return Rf_ScalarInteger(manager.comms().size());
+}
+
 }
 
 #ifdef __GNUC__
@@ -91,6 +96,9 @@ void register_r_routines() {
         {"xeusr_clear_output"            , (DL_FUNC) &routines::clear_output            , 1},
         {"xeusr_is_complete_request"     , (DL_FUNC) &routines::is_complete_request     , 1},
         {"xeusr_log"                     , (DL_FUNC) &routines::xeusr_log               , 2},
+
+        // comms
+        {"xeusr_get_comm_manager__size"  , (DL_FUNC) &routines::xeusr_get_comm_manager__size, 0},
 
         {NULL, NULL, 0}
     };
