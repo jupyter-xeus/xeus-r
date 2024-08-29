@@ -72,12 +72,16 @@ get_comm_manager__size <- function() {
 comm_target_env <- new.env()
 
 # TODO: callback should be a function that takes `comm` and `msg`
-comm_register_target <- function(name, callback) {
-  .Call("xeusr_comm_register_target", name, PACKAGE = "(embedding)")
+xeusr_comm_manager__register_target <- function(name, callback) {
+  .Call("xeusr_comm_manager__register_target", name, PACKAGE = "(embedding)")
   comm_target_env[[name]] <- callback
 }
 
-comm_unregister_target <- function(name) {
-  .Call("xeusr_comm_unregister_target", name, PACKAGE = "(embedding)")
+xeusr_comm_manager__unregister_target <- function(name) {
+  .Call("xeusr_comm_manager__unregister_target", name, PACKAGE = "(embedding)")
   comm_target_env[[name]] <- NULL
+}
+
+xeusr_comm_manager__comm_open <- function(target_name, data = NULL, comm_id = uuid::UUIDgenerate()) {
+  .Call("xeusr_comm_manager__comm_open", comm_id, target_name, data, PACKAGE = "(embedding)")
 }

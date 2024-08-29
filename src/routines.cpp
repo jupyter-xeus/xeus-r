@@ -8,6 +8,7 @@
 #include "nlohmann/json.hpp"
 #include "xeus/xmessage.hpp"
 #include "xeus/xcomm.hpp"
+#include "xeus/xlogger.hpp"
 
 #include <functional>
 
@@ -83,19 +84,48 @@ SEXP xeusr_get_comm_manager__size() {
     return Rf_ScalarInteger(manager.comms().size());
 }
 
-SEXP comm_register_target(SEXP name_) {
+SEXP comm_manager__register_target(SEXP name_) {
     std::string name = CHAR(STRING_ELT(name_, 0));
     
     // TODO: for now the lambda is empty, because the callback is meant to be an 
     //       R function stored on the R side, see routines.R/comm_target_env
-    xeus_r::get_interpreter()->comm_manager().register_comm_target(name, [](xeus::xcomm&&, xeus::xmessage) {});
+    xeus_r::get_interpreter()->comm_manager().register_comm_target(name, [name](xeus::xcomm&& comm, xeus::xmessage) {
+        Rprintf("open comm '%s' for target '%s'", comm.id().c_str(), name.c_str());
+    });
     return R_NilValue;
 }
 
-SEXP comm_unregister_target(SEXP name_) {
+SEXP comm_manager__unregister_target(SEXP name_) {
     std::string name = CHAR(STRING_ELT(name_, 0));
 
     xeus_r::get_interpreter()->comm_manager().unregister_comm_target(name);
+    return R_NilValue;
+}
+
+SEXP comm_manager__comm_open(SEXP s_comm_id, SEXP s_target_name, SEXP js_data) {
+    auto interpreter = xeus_r::get_interpreter();
+    
+    std::string comm_id = CHAR(STRING_ELT(s_comm_id, 0));
+    std::string target_name = CHAR(STRING_ELT(s_target_name, 0));
+    auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
+
+    auto content = nl::json {
+        {"comm_id", comm_id}, 
+        {"target_name", target_name}, 
+        {"data", data}
+    };
+
+    auto msg = xeus::xmessage(
+        /* zmq_id = */        {},                  // TODO: not sure where to get `zmq_id` from
+        /* header = */        nl::json::object(),  // TODO: what should this be ?
+        /* parent_header = */ interpreter->parent_header(),
+        /* metadata = */      nl::json::object(),          
+        /* content = */       content, 
+        /* buffers = */       xeus::buffer_sequence()
+    );
+
+    interpreter->comm_manager().comm_open(std::move(msg));
+
     return R_NilValue;
 }
 
@@ -120,8 +150,9 @@ void register_r_routines() {
         // comms
         {"xeusr_get_comm_manager__size"  , (DL_FUNC) &routines::xeusr_get_comm_manager__size, 0},
 
-        {"xeusr_comm_register_target"    , (DL_FUNC) &routines::comm_register_target, 1},
-        {"xeusr_comm_unregister_target"  , (DL_FUNC) &routines::comm_unregister_target, 1},
+        {"xeusr_comm_manager__register_target"    , (DL_FUNC) &routines::comm_manager__register_target, 1},
+        {"xeusr_comm_manager__unregister_target"  , (DL_FUNC) &routines::comm_manager__unregister_target, 1},
+        {"xeusr_comm_manager__comm_open"          , (DL_FUNC) &routines::comm_manager__comm_open, 3},
 
         {NULL, NULL, 0}
     };
