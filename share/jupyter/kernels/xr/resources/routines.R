@@ -64,24 +64,3 @@ print.vignette <- function(x, ...) {
 }
 assign("print.vignette", print.vignette, ns_utils)
 lockBinding("print.vignette", ns_utils)
-
-get_comm_manager__size <- function() {
-  .Call("xeusr_get_comm_manager__size", PACKAGE = "(embedding)")
-}
-
-comm_target_env <- new.env()
-
-# TODO: callback should be a function that takes `comm` and `msg`
-xeusr_comm_manager__register_target <- function(name, callback) {
-  .Call("xeusr_comm_manager__register_target", name, PACKAGE = "(embedding)")
-  comm_target_env[[name]] <- callback
-}
-
-xeusr_comm_manager__unregister_target <- function(name) {
-  .Call("xeusr_comm_manager__unregister_target", name, PACKAGE = "(embedding)")
-  comm_target_env[[name]] <- NULL
-}
-
-xeusr_comm_manager__comm_open <- function(target_name, data = NULL, comm_id = uuid::UUIDgenerate()) {
-  .Call("xeusr_comm_manager__comm_open", comm_id, target_name, data, PACKAGE = "(embedding)")
-}

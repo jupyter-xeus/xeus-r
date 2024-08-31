@@ -1,16 +1,19 @@
 #define R_NO_REMAP
 
+#ifndef XEUS_R_RTOOLS_HPP
+#define XEUS_R_RTOOLS_HPP
+
 #include "R.h"
 #include "Rinternals.h"
 
 namespace xeus_r {
 namespace r {
 
-SEXP r_pairlist(SEXP head) {
+inline SEXP r_pairlist(SEXP head) {
     return Rf_cons(head, R_NilValue);
 }
 
-SEXP r_call(SEXP head) {
+inline SEXP r_call(SEXP head) {
     return Rf_lcons(head, R_NilValue);
 }
 
@@ -43,3 +46,5 @@ SEXP invoke_xeusr_fn(const char* f, Types... args) {
 
 }
 }
+
+#endif

@@ -4,6 +4,7 @@
 #include "Rinternals.h"
 #include "R_ext/Rdynload.h"
 
+#include "rtools.hpp"
 #include "xeus-r/xinterpreter.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xmessage.hpp"
@@ -85,12 +86,31 @@ SEXP xeusr_get_comm_manager__size() {
 }
 
 SEXP comm_manager__register_target(SEXP name_) {
+    using namespace xeus_r;
+
     std::string name = CHAR(STRING_ELT(name_, 0));
     
-    // TODO: for now the lambda is empty, because the callback is meant to be an 
-    //       R function stored on the R side, see routines.R/comm_target_env
-    xeus_r::get_interpreter()->comm_manager().register_comm_target(name, [name](xeus::xcomm&& comm, xeus::xmessage) {
-        Rprintf("open comm '%s' for target '%s'", comm.id().c_str(), name.c_str());
+    get_interpreter()->comm_manager().register_comm_target(name, [name](xeus::xcomm&&, xeus::xmessage request) {
+        /*
+            auto ptr_msg = new xeus::xmessage(std::move(msg));
+
+            SEXP xptr_msg = PROTECT(R_MakeExternalPtr(
+                reinterpret_cast<void*>(ptr_msg), R_NilValue, R_NilValue
+            ));
+            R_RegisterCFinalizerEx(xptr_msg, [](SEXP xp) {
+                delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
+            }, FALSE);
+        */
+
+        SEXP content = PROTECT(Rf_mkString(request.content().dump(4).c_str()));
+        Rf_classgets(content, Rf_mkString("json"));
+        
+        SEXP target_name = PROTECT(Rf_mkString(name.c_str()));
+    
+        // TODO: pass msg instead of content, probably as an external pointer
+        r::invoke_xeusr_fn("comm_target_handle_comm_open", target_name, content);
+
+        UNPROTECT(2);
     });
     return R_NilValue;
 }
@@ -102,15 +122,14 @@ SEXP comm_manager__unregister_target(SEXP name_) {
     return R_NilValue;
 }
 
-SEXP comm_manager__comm_open(SEXP s_comm_id, SEXP s_target_name, SEXP js_data) {
+SEXP comm_manager__comm_open(SEXP s_target_name, SEXP js_data) {
     auto interpreter = xeus_r::get_interpreter();
     
-    std::string comm_id = CHAR(STRING_ELT(s_comm_id, 0));
     std::string target_name = CHAR(STRING_ELT(s_target_name, 0));
     auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
 
     auto content = nl::json {
-        {"comm_id", comm_id}, 
+        {"comm_id", xeus::new_xguid()}, 
         {"target_name", target_name}, 
         {"data", data}
     };
@@ -152,7 +171,7 @@ void register_r_routines() {
 
         {"xeusr_comm_manager__register_target"    , (DL_FUNC) &routines::comm_manager__register_target, 1},
         {"xeusr_comm_manager__unregister_target"  , (DL_FUNC) &routines::comm_manager__unregister_target, 1},
-        {"xeusr_comm_manager__comm_open"          , (DL_FUNC) &routines::comm_manager__comm_open, 3},
+        {"xeusr_comm_manager__comm_open"          , (DL_FUNC) &routines::comm_manager__comm_open, 2},
 
         {NULL, NULL, 0}
     };
