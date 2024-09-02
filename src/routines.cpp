@@ -80,72 +80,92 @@ SEXP xeusr_log(SEXP level_, SEXP msg_) {
     return R_NilValue;
 }
 
-SEXP xeusr_get_comm_manager__size() {
-    auto& manager = xeus_r::get_interpreter()->comm_manager();
-    return Rf_ScalarInteger(manager.comms().size());
-}
-
-SEXP comm_manager__register_target(SEXP name_) {
+SEXP CommManager__register_target(SEXP name_) {
     using namespace xeus_r;
 
     std::string name = CHAR(STRING_ELT(name_, 0));
     
-    get_interpreter()->comm_manager().register_comm_target(name, [name](xeus::xcomm&&, xeus::xmessage request) {
-        /*
-            auto ptr_msg = new xeus::xmessage(std::move(msg));
+    auto callback = [name](xeus::xcomm&& comm, xeus::xmessage request) {
+        SEXP comm_id = PROTECT(Rf_mkString(comm.id().c_str()));
 
-            SEXP xptr_msg = PROTECT(R_MakeExternalPtr(
-                reinterpret_cast<void*>(ptr_msg), R_NilValue, R_NilValue
-            ));
-            R_RegisterCFinalizerEx(xptr_msg, [](SEXP xp) {
-                delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
-            }, FALSE);
-        */
-
-        SEXP content = PROTECT(Rf_mkString(request.content().dump(4).c_str()));
-        Rf_classgets(content, Rf_mkString("json"));
+        auto ptr_request = new xeus::xmessage(std::move(request));
+        SEXP xptr_request = PROTECT(R_MakeExternalPtr(
+            reinterpret_cast<void*>(ptr_request), R_NilValue, R_NilValue
+        ));
+        R_RegisterCFinalizerEx(xptr_request, [](SEXP xp) {
+            delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
+        }, FALSE);
         
-        SEXP target_name = PROTECT(Rf_mkString(name.c_str()));
-    
-        // TODO: pass msg instead of content, probably as an external pointer
-        r::invoke_xeusr_fn("comm_target_handle_comm_open", target_name, content);
+        r::invoke_xeusr_fn("CommManager__register_target_callback", comm_id, xptr_request);
 
         UNPROTECT(2);
-    });
+    };
+
+    get_interpreter()->comm_manager().register_comm_target(name, callback);
     return R_NilValue;
 }
 
-SEXP comm_manager__unregister_target(SEXP name_) {
+SEXP CommManager__unregister_target(SEXP name_) {
     std::string name = CHAR(STRING_ELT(name_, 0));
 
     xeus_r::get_interpreter()->comm_manager().unregister_comm_target(name);
     return R_NilValue;
 }
 
-SEXP comm_manager__comm_open(SEXP s_target_name, SEXP js_data) {
-    auto interpreter = xeus_r::get_interpreter();
+SEXP CommManager__get_comm(SEXP id_) {
+    auto id = xeus::xguid(CHAR(STRING_ELT(id_, 0)));
+
+    auto comms = get_interpreter()->comm_manager().comms() ;
+    auto it = comms.find(id);
+    if (it == comms.end()) {
+        return R_NilValue;
+    }
+
+    SEXP xp = PROTECT(R_MakeExternalPtr(
+        reinterpret_cast<void*>(it->second), R_NilValue, R_NilValue
+    ));
+    UNPROTECT(1);
+    return xp;
+}
+
+SEXP CommManager__new_comm(SEXP target_name_) {
+    auto target = get_interpreter()->comm_manager().target(CHAR(STRING_ELT(target_name_, 0)));
+    if (target == nullptr) {
+        return R_NilValue;
+    }
+
+    auto id = xeus::new_xguid();
+    auto comm = new xeus::xcomm(target, id);
+    SEXP xp_comm = PROTECT(R_MakeExternalPtr(
+        reinterpret_cast<void*>(comm), R_NilValue, R_NilValue
+    ));
+    R_RegisterCFinalizerEx(xp_comm, [](SEXP xp) {
+        delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
+    }, FALSE);
+
+    UNPROTECT(1);
+
+    return xp_comm;
+}
+
+SEXP Comm__id(SEXP xp_comm) {
+    auto comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
+    return Rf_mkString(comm->id().c_str());
+}
+
+SEXP Comm__target_name(SEXP xp_comm) {
+    auto comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
+    return Rf_mkString(comm->target().name().c_str());
+}
+
+SEXP xmessage__get_content(SEXP xptr_msg) {
+    auto ptr_msg = reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xptr_msg));
     
-    std::string target_name = CHAR(STRING_ELT(s_target_name, 0));
-    auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
-
-    auto content = nl::json {
-        {"comm_id", xeus::new_xguid()}, 
-        {"target_name", target_name}, 
-        {"data", data}
-    };
-
-    auto msg = xeus::xmessage(
-        /* zmq_id = */        {},                  // TODO: not sure where to get `zmq_id` from
-        /* header = */        nl::json::object(),  // TODO: what should this be ?
-        /* parent_header = */ interpreter->parent_header(),
-        /* metadata = */      nl::json::object(),          
-        /* content = */       content, 
-        /* buffers = */       xeus::buffer_sequence()
-    );
-
-    interpreter->comm_manager().comm_open(std::move(msg));
-
-    return R_NilValue;
+    SEXP out = PROTECT(Rf_mkString(ptr_msg->content().dump(4).c_str()));
+    Rf_classgets(out, Rf_mkString("json"));
+    UNPROTECT(1);
+    
+    return out;
 }
 
 }
@@ -167,11 +187,16 @@ void register_r_routines() {
         {"xeusr_log"                     , (DL_FUNC) &routines::xeusr_log               , 2},
 
         // comms
-        {"xeusr_get_comm_manager__size"  , (DL_FUNC) &routines::xeusr_get_comm_manager__size, 0},
+        {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
+        {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
 
-        {"xeusr_comm_manager__register_target"    , (DL_FUNC) &routines::comm_manager__register_target, 1},
-        {"xeusr_comm_manager__unregister_target"  , (DL_FUNC) &routines::comm_manager__unregister_target, 1},
-        {"xeusr_comm_manager__comm_open"          , (DL_FUNC) &routines::comm_manager__comm_open, 2},
+        {"CommManager__get_comm"    , (DL_FUNC) &routines::CommManager__get_comm, 1},
+        
+        {"Comm__id"    , (DL_FUNC) &routines::Comm__id, 1},
+        {"Comm__target_name"    , (DL_FUNC) &routines::Comm__target_name, 1},
+
+        // xeus::xmessage
+        {"xeusr_xmessage__get_content"    , (DL_FUNC) &routines::xmessage__get_content, 1},
 
         {NULL, NULL, 0}
     };

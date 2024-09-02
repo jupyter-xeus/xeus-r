@@ -1,28 +1,64 @@
-get_comm_manager__size <- function() {
-  .Call("xeusr_get_comm_manager__size", PACKAGE = "(embedding)")
-}
-
-comm_target_env <- new.env()
-
-xeusr_comm_manager__register_target <- function(name, callback) {
-  comm_target_env[[name]] <- callback
-  .Call("xeusr_comm_manager__register_target", name, PACKAGE = "(embedding)")
-}
-
-xeusr_comm_manager__unregister_target <- function(name) {
-  .Call("xeusr_comm_manager__unregister_target", name, PACKAGE = "(embedding)")
-  rm(list = name, comm_target_env)
-}
-
-xeusr_comm_manager__comm_open <- function(target_name, data = NULL) {
-  .Call("xeusr_comm_manager__comm_open", target_name, jsonlite::toJSON(data), PACKAGE = "(embedding)")
-}
-
-comm_target_handle_comm_open <- function(target_name, js_content) {
+CommManager__register_target_callback <- function(comm_id, xp_request) {
+    js_content <- .Call("xeusr_xmessage__get_content", xp_request, PACKAGE = "(embedding)")
     content <- jsonlite::fromJSON(js_content)
-    comm_id <- content$comm_id
-
+    
+    target_name <- content$target_name
     target_callback <- comm_target_env[[target_name]]
 
-    target_callback(comm_id, content)
+    comm <- CommManager$get_comm(comm_id)
+
+    # TODO: target_callback called with request, not content
+    target_callback(comm, content)
 }
+
+CommManagerClass <- R6Class("CommManagerClass", 
+    public = list(
+        initialize = function() {
+            private$targets <- new.env()
+            private$comms <- new.env()
+        },
+
+        register_comm_target = function(target_name, callback) {
+            private$targets[[name]] <- callback
+            .Call("CommManager__register_target", target_name, PACKAGE = "(embedding)")
+        }, 
+
+        unregister_comm_target = function(target_name) {
+            rm(list = target_name, private$targets)
+            .Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)")
+        }, 
+
+        get_comm = function(id) {
+            xp <- .Call("CommManager__get_comm", id, PACKAGE = "(embedding)")
+            Comm$new(xp = xp)
+        }, 
+
+        new_comm = function(target_name) {
+            xp <- .Call("CommManager__new_comm", target_name, PACKAGE = "(embedding)")
+            Comm$new(xp = xp)
+        }
+    ), 
+
+    private = list(
+        targets = NULL
+    )
+)
+CommManager <- CommManagerClass$new()
+
+Comm <- R6Class("Comm", 
+    public = list(
+        id = character(),
+        target_name = character(),
+
+        initialize = function(xp) {
+            private$xp <- xp
+            self$id <- .Call("Comm__id", xp, PACKAGE = "(embedding)")
+            self$target_name <- .Call("Comm__target_name", xp, PACKAGE = "(embedding)")
+        }
+        
+    ), 
+    
+    private = list(
+        xp = NULL
+    )
+)

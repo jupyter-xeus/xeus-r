@@ -28,4 +28,6 @@ local({
   }
   sys.source(file.path(here, "routines.R"), envir = xeus_env)
 
+  public_env$CommManager <- private_env$CommManager
+
 })
