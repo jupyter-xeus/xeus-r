@@ -1,10 +1,5 @@
-.CommManager__register_target_callback <- function(comm_id, request) {
-
-    target_name <- request$content$target_name
-    target_callback <- comm_target_env[[target_name]]
-
-    comm <- CommManager$get_comm(comm_id)
-
+.CommManager__register_target_callback <- function(comm, request) {
+    target_callback <- comm_target_env[[request$content$target_name]]
     target_callback(comm, request)
 }
 
@@ -23,11 +18,6 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
         unregister_comm_target = function(target_name) {
             rm(list = target_name, private$targets)
             invisible(.Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)"))
-        }, 
-
-        get_comm = function(id) {
-            xp <- .Call("CommManager__get_comm", id, PACKAGE = "(embedding)")
-            Comm$new(xp = xp)
         }, 
 
         new_comm = function(target_name) {

@@ -94,8 +94,14 @@ SEXP CommManager__register_target(SEXP name_) {
     std::string name = CHAR(STRING_ELT(name_, 0));
     
     auto callback = [name](xeus::xcomm&& comm, xeus::xmessage request) {
-        SEXP comm_id = PROTECT(Rf_mkString(comm.id().c_str()));
+        // comm
+        auto ptr_comm = get_interpreter()->comm_manager().comms().find(comm.id())->second ;
+        SEXP xptr_comm = PROTECT(R_MakeExternalPtr(
+            reinterpret_cast<void*>(ptr_comm), R_NilValue, R_NilValue
+        ));
+        SEXP r6_comm = PROTECT(r::new_r6("Comm", xptr_comm));
 
+        // request
         auto ptr_request = new xeus::xmessage(std::move(request));
         SEXP xptr_request = PROTECT(R_MakeExternalPtr(
             reinterpret_cast<void*>(ptr_request), R_NilValue, R_NilValue
@@ -105,14 +111,11 @@ SEXP CommManager__register_target(SEXP name_) {
         }, FALSE);
 
         SEXP r6_request = PROTECT(r::new_r6("Message", xptr_request));
-        
-        // we give the comm_id and the message (as an R6 wrapper) to the
-        // .CommManager__register_target_callback() function, 
-        // which in turns retrives the actual R target, and the comm from the comm 
-        // manager 
-        r::invoke_xeusr_fn(".CommManager__register_target_callback", comm_id, r6_request);
 
-        UNPROTECT(3);
+        // callback
+        r::invoke_xeusr_fn(".CommManager__register_target_callback", r6_comm, r6_request);
+
+        UNPROTECT(4);
     };
 
     get_interpreter()->comm_manager().register_comm_target(name, callback);
@@ -124,22 +127,6 @@ SEXP CommManager__unregister_target(SEXP name_) {
 
     xeus_r::get_interpreter()->comm_manager().unregister_comm_target(name);
     return R_NilValue;
-}
-
-SEXP CommManager__get_comm(SEXP id_) {
-    auto id = xeus::xguid(CHAR(STRING_ELT(id_, 0)));
-
-    auto comms = get_interpreter()->comm_manager().comms() ;
-    auto it = comms.find(id);
-    if (it == comms.end()) {
-        return R_NilValue;
-    }
-
-    SEXP xp = PROTECT(R_MakeExternalPtr(
-        reinterpret_cast<void*>(it->second), R_NilValue, R_NilValue
-    ));
-    UNPROTECT(1);
-    return xp;
 }
 
 SEXP CommManager__new_comm(SEXP target_name_) {
@@ -282,7 +269,6 @@ void register_r_routines() {
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
         {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
         {"CommManager__new_comm"           , (DL_FUNC) &routines::CommManager__new_comm, 1},
-        {"CommManager__get_comm"           , (DL_FUNC) &routines::CommManager__get_comm, 1},
         
         // Comm
         {"Comm__id"                        , (DL_FUNC) &routines::Comm__id, 1},
