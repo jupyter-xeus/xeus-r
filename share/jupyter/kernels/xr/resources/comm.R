@@ -1,5 +1,7 @@
 CommManager__register_target_callback <- function(comm_id, xp_request) {
-    js_content <- .Call("xeusr_xmessage__get_content", xp_request, PACKAGE = "(embedding)")
+    message <- Message$new(xp_request)
+    js_content <- message$content
+
     content <- jsonlite::fromJSON(js_content)
     
     target_name <- content$target_name
@@ -11,7 +13,7 @@ CommManager__register_target_callback <- function(comm_id, xp_request) {
     target_callback(comm, content)
 }
 
-CommManagerClass <- R6Class("CommManagerClass", 
+CommManagerClass <- R6::R6Class("CommManagerClass", 
     public = list(
         initialize = function() {
             private$targets <- new.env()
@@ -19,13 +21,13 @@ CommManagerClass <- R6Class("CommManagerClass",
         },
 
         register_comm_target = function(target_name, callback) {
-            private$targets[[name]] <- callback
-            .Call("CommManager__register_target", target_name, PACKAGE = "(embedding)")
+            private$targets[[target_name]] <- callback
+            invisible(.Call("CommManager__register_target", target_name, PACKAGE = "(embedding)"))
         }, 
 
         unregister_comm_target = function(target_name) {
             rm(list = target_name, private$targets)
-            .Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)")
+            invisible(.Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)"))
         }, 
 
         get_comm = function(id) {
@@ -35,29 +37,114 @@ CommManagerClass <- R6Class("CommManagerClass",
 
         new_comm = function(target_name) {
             xp <- .Call("CommManager__new_comm", target_name, PACKAGE = "(embedding)")
+            if (is.null(xp)) {
+                stop(glue::glue("No target '{target_name}' registered"))
+            }
             Comm$new(xp = xp)
         }
     ), 
 
     private = list(
-        targets = NULL
+        targets = NULL, 
+        comms = NULL
     )
 )
 CommManager <- CommManagerClass$new()
 
-Comm <- R6Class("Comm", 
+Comm <- R6::R6Class("Comm", 
     public = list(
-        id = character(),
-        target_name = character(),
-
         initialize = function(xp) {
             private$xp <- xp
-            self$id <- .Call("Comm__id", xp, PACKAGE = "(embedding)")
-            self$target_name <- .Call("Comm__target_name", xp, PACKAGE = "(embedding)")
+        }, 
+
+        open = function(metadata = NULL, data = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata)
+            js_data <- jsonlite::toJSON(data)
+
+            invisible(.Call("Comm__open", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
+        }, 
+
+        close = function(metadata = NULL, data = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata)
+            js_data <- jsonlite::toJSON(data)
+
+            invisible(.Call("Comm__close", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
+        }, 
+
+        send = function(metadata = NULL, data = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata)
+            js_data <- jsonlite::toJSON(data)
+
+            invisible(.Call("Comm__send", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
+        }, 
+
+        on_close = function(handler) {
+            private$close_handler <- handler
+            invisible(.Call("Comm__on_close", private$xp, handler, PACKAGE = "(embedding)"))
+        }, 
+
+        on_message = function(handler) {
+            private$message_handler <- handler
+            invisible(.Call("Comm__on_message", private$xp, handler, PACKAGE = "(embedding)"))
         }
-        
     ), 
+
+    active = list(
+        id = function() {
+            .Call("Comm__id", private$xp, PACKAGE = "(embedding)")
+        }, 
+
+        target_name = function() {
+            .Call("Comm__target_name", private$xp, PACKAGE = "(embedding)")
+        }
+    ),
     
+    private = list(
+        xp = NULL, 
+        close_handler = NULL, 
+        message_handler = NULL
+    )
+)
+
+Message <- R6::R6Class("Message", 
+    public = list(
+        initialize = function(xp) {
+            private$xp <- xp
+        }, 
+
+        print = function() {
+            print(cli::rule("$content"))
+            str(self$content)
+
+            print(cli::rule("$header"))
+            str(self$header)
+
+            print(cli::rule("$parent_header"))
+            str(self$parent_header)
+
+            print(cli::rule("$metadata"))
+            str(self$metadata)
+        }
+    ), 
+
+    active = list(
+        content = function() {
+            jsonlite::fromJSON(.Call("Message__get_content", private$xp, PACKAGE = "(embedding)"))
+        }, 
+
+        header = function() {
+            jsonlite::fromJSON(.Call("Message__get_header", private$xp, PACKAGE = "(embedding)"))
+        }, 
+
+        parent_header = function() {
+            jsonlite::fromJSON(.Call("Message__get_parent_header", private$xp, PACKAGE = "(embedding)"))
+        }, 
+
+        metadata = function() {
+            jsonlite::fromJSON(.Call("Message__get_metadata", private$xp, PACKAGE = "(embedding)"))
+        }
+    ),
+
     private = list(
         xp = NULL
     )

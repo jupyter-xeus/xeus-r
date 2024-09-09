@@ -32,6 +32,7 @@ configure <- function() {
 
   attachNamespace("jsonlite", pos = pos + 1)
   attachNamespace("IRdisplay", pos = pos + 1)
+  attachNamespace("glue", pos = pos + 1)
 
   setMethod(jsonlite:::asJSON, "shiny.tag", function(x, ...) {
     jsonlite:::asJSON(as.character(x), ...)
