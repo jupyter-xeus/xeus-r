@@ -103,10 +103,16 @@ SEXP CommManager__register_target(SEXP name_) {
         R_RegisterCFinalizerEx(xptr_request, [](SEXP xp) {
             delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
         }, FALSE);
-        
-        r::invoke_xeusr_fn("CommManager__register_target_callback", comm_id, xptr_request);
 
-        UNPROTECT(2);
+        SEXP r6_request = PROTECT(r::new_r6("Message", xptr_request));
+        
+        // we give the comm_id and the message (as an R6 wrapper) to the
+        // .CommManager__register_target_callback() function, 
+        // which in turns retrives the actual R target, and the comm from the comm 
+        // manager 
+        r::invoke_xeusr_fn(".CommManager__register_target_callback", comm_id, r6_request);
+
+        UNPROTECT(3);
     };
 
     get_interpreter()->comm_manager().register_comm_target(name, callback);

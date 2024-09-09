@@ -1,16 +1,11 @@
-CommManager__register_target_callback <- function(comm_id, xp_request) {
-    message <- Message$new(xp_request)
-    js_content <- message$content
+.CommManager__register_target_callback <- function(comm_id, request) {
 
-    content <- jsonlite::fromJSON(js_content)
-    
-    target_name <- content$target_name
+    target_name <- request$content$target_name
     target_callback <- comm_target_env[[target_name]]
 
     comm <- CommManager$get_comm(comm_id)
 
-    # TODO: target_callback called with request, not content
-    target_callback(comm, content)
+    target_callback(comm, request)
 }
 
 CommManagerClass <- R6::R6Class("CommManagerClass", 
