@@ -39,4 +39,5 @@ configure <- function() {
   # })
 
   init_options()
+  init_widgets()
 }

@@ -95,11 +95,14 @@ SEXP CommManager__register_target(SEXP name_) {
     
     auto callback = [name](xeus::xcomm&& comm, xeus::xmessage request) {
         // comm
-        auto ptr_comm = get_interpreter()->comm_manager().comms().find(comm.id())->second ;
-        SEXP xptr_comm = PROTECT(R_MakeExternalPtr(
+        auto ptr_comm = new xeus::xcomm(std::move(comm));
+        SEXP xp_comm = PROTECT(R_MakeExternalPtr(
             reinterpret_cast<void*>(ptr_comm), R_NilValue, R_NilValue
         ));
-        SEXP r6_comm = PROTECT(r::new_r6("Comm", xptr_comm));
+        R_RegisterCFinalizerEx(xp_comm, [](SEXP xp) {
+            delete reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp));
+        }, FALSE);
+        SEXP r6_comm = PROTECT(r::new_r6("Comm", xp_comm));
 
         // request
         auto ptr_request = new xeus::xmessage(std::move(request));
@@ -109,7 +112,6 @@ SEXP CommManager__register_target(SEXP name_) {
         R_RegisterCFinalizerEx(xptr_request, [](SEXP xp) {
             delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
         }, FALSE);
-
         SEXP r6_request = PROTECT(r::new_r6("Message", xptr_request));
 
         // callback
@@ -143,10 +145,11 @@ SEXP CommManager__new_comm(SEXP target_name_) {
     R_RegisterCFinalizerEx(xp_comm, [](SEXP xp) {
         delete reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp));
     }, FALSE);
+    SEXP r6_comm = PROTECT(r::new_r6("Comm", xp_comm));
 
-    UNPROTECT(1);
+    UNPROTECT(2);
 
-    return xp_comm;
+    return r6_comm;
 }
 
 SEXP Comm__id(SEXP xp_comm) {
@@ -277,6 +280,7 @@ void register_r_routines() {
         {"Comm__close"                     , (DL_FUNC) &routines::Comm__close, 3},
         {"Comm__send"                      , (DL_FUNC) &routines::Comm__send, 3},
         {"Comm__on_close"                  , (DL_FUNC) &routines::Comm__on_close, 2},
+        {"Comm__on_message"                , (DL_FUNC) &routines::Comm__on_message, 2},
 
         // Message aka xeus::xmessage
         {"Message__get_content"            , (DL_FUNC) &routines::Message__get_content, 1},
