@@ -34,6 +34,17 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider",
         initialize = function(...) {
             private$comm <- CommManager$new_comm("jupyter.widget")
 
+            private$comm$on_message(function(request) {
+                # TODO: when receiing message from front end
+                
+                # method <- request$content$data$method
+                # ...
+            })
+
+            private$comm$on_close(function(request) {
+                # TODO
+            })
+
             dots <- list(...)
             states <- replace(private$defaults, names(dots), dots)
             
