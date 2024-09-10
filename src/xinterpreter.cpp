@@ -44,8 +44,10 @@ void WriteConsoleEx(const char *buf, int buflen, int otype) {
     std::string output(buf, buflen);
     if (otype == 1) {
         p_interpreter->publish_stream("stderr", output);
+        // std::cout << output << std::endl;
     } else {
         p_interpreter->publish_stream("stdout", output);
+        // std::cerr << output << std::endl;
     }
 }
 
@@ -140,11 +142,12 @@ void interpreter::configure_impl()
 
     SEXP sym_source = Rf_install("source");
     SEXP call_source = PROTECT(Rf_lang2(sym_source, setup_R_code_path));
+    
     Rf_eval(call_source, R_GlobalEnv);
-
-    UNPROTECT(4);
-
+    
     r::invoke_xeusr_fn("configure");
+    
+    UNPROTECT(4);
 }
 
 nl::json interpreter::is_complete_request_impl(const std::string& code_)

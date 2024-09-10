@@ -30,13 +30,13 @@ init_options <- function() {
 configure <- function() {
   pos <- which(search() == "tools:xeusr") 
 
-  attachNamespace("jsonlite", pos = pos + 1)
   attachNamespace("IRdisplay", pos = pos + 1)
   attachNamespace("glue", pos = pos + 1)
-
-  setMethod(jsonlite:::asJSON, "shiny.tag", function(x, ...) {
-    jsonlite:::asJSON(as.character(x), ...)
-  })
+  attachNamespace("jsonlite", pos = pos + 1)
+  
+  # setMethod(jsonlite:::asJSON, "shiny.tag", function(x, ...) {
+  #   jsonlite:::asJSON(as.character(x), ...)
+  # })
 
   init_options()
 }
