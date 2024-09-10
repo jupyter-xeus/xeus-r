@@ -49,3 +49,4 @@ bld
 .virtual_documents/
 Untitled*.ipynb
 *.log
+/*.ipynb
