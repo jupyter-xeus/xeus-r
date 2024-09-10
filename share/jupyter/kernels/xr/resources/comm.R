@@ -10,7 +10,7 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
             private$comms <- new.env()
         },
 
-        register_comm_target = function(target_name, callback) {
+        register_comm_target = function(target_name, callback = function(comm, message){}) {
             private$targets[[target_name]] <- callback
             invisible(.Call("CommManager__register_target", target_name, PACKAGE = "(embedding)"))
         }, 
