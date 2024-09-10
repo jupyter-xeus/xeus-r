@@ -6,7 +6,12 @@ handler_jupyter.widget.control <- function(comm, message) {
 
         switch(data$method, 
             "request_states" = {
-                # TODO: reply to request_states message
+                comm$send(
+                    data = list(
+                        method = unbox("update_states"), 
+                        states = NULL
+                    )
+                )
             }
         )
     })
