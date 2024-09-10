@@ -36,7 +36,7 @@ SEXP r_call(SEXP head, Types... tail) {
 template<class... Types>
 SEXP invoke_xeusr_fn(const char* f, Types... args) {
     SEXP sym_xeus_call = Rf_install(".xeus_call");
-
+    
     SEXP call = PROTECT(r_call(sym_xeus_call, Rf_mkString(f), args...));
     SEXP result = Rf_eval(call, R_GlobalEnv);
 
