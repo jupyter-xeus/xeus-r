@@ -55,23 +55,23 @@ Comm <- R6::R6Class("Comm",
             CommManager$preserve(self)
         }, 
 
-        open = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+        open = function(metadata = NULL, data = NULL, ...) {
+            js_metadata <- jsonlite::toJSON(metadata, ...)
+            js_data <- jsonlite::toJSON(data, ...)
 
             invisible(.Call("Comm__open", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
-        close = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+        close = function(metadata = NULL, data = NULL, ...) {
+            js_metadata <- jsonlite::toJSON(metadata, ...)
+            js_data <- jsonlite::toJSON(data, ...)
 
             invisible(.Call("Comm__close", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
-        send = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+        send = function(metadata = NULL, data = NULL, ...) {
+            js_metadata <- jsonlite::toJSON(metadata, ...)
+            js_data <- jsonlite::toJSON(data, ...)
 
             invisible(.Call("Comm__send", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
