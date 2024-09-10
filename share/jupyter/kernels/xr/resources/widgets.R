@@ -55,6 +55,10 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider",
                 )
             )
             private$comm$open(data = data, auto_unbox = TRUE, null = "null")
+        }, 
+
+        print = function() {
+            # display the widget mime bundle 
         }
     ), 
 
