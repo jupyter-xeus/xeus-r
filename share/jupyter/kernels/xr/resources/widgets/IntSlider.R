@@ -43,55 +43,21 @@ IntSliderStyle <- R6::R6Class("jupyter.widget.IntSliderStyle",
     )
 )
 
-IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
+IntSliderModel <- R6::R6Class("jupyter.widget.IntSliderModel", 
     public = list(
-        initialize = function() {
-            private$layout <- Layout$new()
-            private$style  <- IntSliderStyle$new()
+        comm = NULL, 
 
-            private$comm_slider <- private$initialise_comm_slider()
-        }, 
-
-        mime_bundle = function() {
-            data <- list(
-                "text/plain" = unbox(
-                    glue("<IntSlider id = {private$comm_slider$id} value={private$states_slider$value})>")
-                ), 
-                "application/vnd.jupyter.widget-view+json" = list(
-                    "version_major" = unbox(2L), 
-                    "version_minor" = unbox(0L), 
-                    "model_id" = unbox(private$comm_slider$id)
-                )
-            )
-            list(data = data, metadata = namedlist())
-        }, 
-
-        state = function(what) {
-            private$states_slider[[what]]
-        },
-
-        finalize = function() {
-            private$comm_slider <- NULL
-        }
-    ), 
-
-    private = list(
-        layout = NULL,
-        style = NULL,
-
-        comm_slider = NULL,
-
-        initialise_comm_slider = function() {
-            comm_slider <- CommManager$new_comm("jupyter.widget", "slider model")
-            comm_slider$on_message(function(request) {
+        initialize = function(layout, style) {
+            comm <- CommManager$new_comm("jupyter.widget", "slider model")
+            comm$on_message(function(request) {
                 
                 switch(
                     request$content$data$method, 
                     update = {
                         state <- request$content$data$state
-                        private$states_slider <- replace(private$states_slider, names(state), state)
+                        private$state_ <- replace(private$states_, names(state), state)
 
-                        comm_slider$send(
+                        comm$send(
                             data = list(method = "echo_update", state = state, buffer_paths = list())
                         )
                     }
@@ -99,21 +65,29 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
 
             })
 
-            comm_slider$on_close(function(request) {
-                writeLines(glue("comm slider closed {comm_slider$id}"))
-            })
+            comm$on_close(function(request) {})
 
-            private$states_slider$layout <- glue("IPY_MODEL_{private$layout$comm$id}")
-            private$states_slider$style <- glue("IPY_MODEL_{private$style$comm$id}")
+            private$state_$layout <- glue("IPY_MODEL_{layout$comm$id}")
+            private$state_$style <- glue("IPY_MODEL_{style$comm$id}")
 
-            comm_slider$open(
-                data = list(state = private$states_slider, buffer_paths = list()), 
+            comm$open(
+                data = list(state = private$state_, buffer_paths = list()), 
                 metadata = list(version = "2.1.0")
             )
-            comm_slider
-        },
+            self$comm <- comm
+        }, 
 
-        states_slider = list(
+        state = function(what) {
+            if (missing(what)) {
+                private$state_
+            } else {
+                private$state_[[what]]
+            }
+        }
+    ), 
+
+    private = list(
+        state_ = list(
             "_dom_classes" = list(), 
             "_model_module" = "@jupyter-widgets/controls", 
             "_model_module_version" = "2.0.0", 
@@ -139,6 +113,39 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
             "tooltip" = NULL, 
             "value" = 0
         )
+    )
+)
 
+IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
+    public = list(
+        initialize = function() {
+            private$layout <- Layout$new()
+            private$style  <- IntSliderStyle$new()
+            private$model  <- IntSliderModel$new(private$layout, private$style)
+        }, 
+
+        mime_bundle = function() {
+            data <- list(
+                "text/plain" = unbox(
+                    glue("<IntSlider id = {private$model$comm$id} value={private$model$state('value')})>")
+                ), 
+                "application/vnd.jupyter.widget-view+json" = list(
+                    "version_major" = unbox(2L), 
+                    "version_minor" = unbox(0L), 
+                    "model_id" = unbox(private$model$comm$id)
+                )
+            )
+            list(data = data, metadata = namedlist())
+        }, 
+
+        state = function(what) {
+            private$model$state(what)
+        }
+    ), 
+
+    private = list(
+        layout = NULL,
+        style = NULL,
+        model = NULL
     )
 )
