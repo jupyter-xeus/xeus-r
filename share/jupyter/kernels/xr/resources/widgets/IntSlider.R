@@ -1,30 +1,7 @@
-IntSliderStyle <- R6::R6Class("jupyter.widget.IntSliderStyle", 
+IntSliderStyle <- R6::R6Class("jupyter.widget.IntSliderStyle", inherit = Style,
     public = list(
-        comm = NULL, 
-
         initialize = function() {
-            comm <- CommManager$new_comm("jupyter.widget", "slider style")
-            comm$on_message(function(request) {
-                
-            })
-            comm$on_close(function(request) {
-                
-            })
-
-            comm$open(
-                data = list(state = private$state_, buffer_paths = list()), 
-                metadata = list(version = "2.1.0")
-            )
-            
-            self$comm <- comm
-        }, 
-
-        state = function(what) {
-            if (missing(what)) {
-                private$state_
-            } else {
-                private$state_[[what]]
-            }
+            super$initialize("slider style")
         }
     ), 
 
@@ -159,7 +136,7 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
         }, 
 
         on_update = function(handler) {
-            self$model$on_update(event_type)
+            self$model$on_update(handler)
         }
     )
 )
