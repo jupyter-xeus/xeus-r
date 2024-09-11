@@ -43,11 +43,11 @@ interpreter* get_interpreter() {
 void WriteConsoleEx(const char *buf, int buflen, int otype) {
     std::string output(buf, buflen);
     if (otype == 1) {
-        // p_interpreter->publish_stream("stderr", output);
-        std::cout << output ;
+        p_interpreter->publish_stream("stderr", output);
+        // std::cout << output ;
     } else {
-        // p_interpreter->publish_stream("stdout", output);
-        std::cerr << output ;
+        p_interpreter->publish_stream("stdout", output);
+        // std::cerr << output ;
     }
 }
 
