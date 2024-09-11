@@ -70,6 +70,13 @@ IntSliderModel <- R6::R6Class("jupyter.widget.IntSliderModel",
 
         on_update = function(handler = NULL) {
             private$handlers[["update"]] <- handler
+        }, 
+
+        update = function(...) {
+            state <- list(...)
+            self$comm$send(
+                data = list(method = "update", state = state, buffer_paths = list())
+            )
         }
     ), 
 
@@ -137,6 +144,10 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
 
         on_update = function(handler) {
             self$model$on_update(handler)
+        }, 
+
+        update = function(...) {
+            self$model$update(...)
         }
     )
 )
