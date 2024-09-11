@@ -108,7 +108,8 @@ Widget <- R6::R6Class("jupyter.widget.Widget",
 IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
     public = list(
         initialize = function() {
-
+            super$initialize()
+            
             private$comm_style  <- private$initialise_comm_style()
             private$comm_slider <- private$initialise_comm_slider()
         }, 
