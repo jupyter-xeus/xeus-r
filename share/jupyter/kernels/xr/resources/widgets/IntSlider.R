@@ -57,6 +57,10 @@ IntSliderModel <- R6::R6Class("jupyter.widget.IntSliderModel",
                         state <- request$content$data$state
                         private$state_ <- replace(private$states_, names(state), state)
 
+                        if (!is.null(handler <- private$handlers[["update"]])) {
+                            handler(request$content$data$state)
+                        }
+
                         comm$send(
                             data = list(method = "echo_update", state = state, buffer_paths = list())
                         )
@@ -75,6 +79,8 @@ IntSliderModel <- R6::R6Class("jupyter.widget.IntSliderModel",
                 metadata = list(version = "2.1.0")
             )
             self$comm <- comm
+
+            private$handlers <- new.env()
         }, 
 
         state = function(what) {
@@ -83,10 +89,16 @@ IntSliderModel <- R6::R6Class("jupyter.widget.IntSliderModel",
             } else {
                 private$state_[[what]]
             }
+        }, 
+
+        on_update = function(handler = NULL) {
+            private$handlers[["update"]] <- handler
         }
     ), 
 
     private = list(
+        handlers = NULL,
+
         state_ = list(
             "_dom_classes" = list(), 
             "_model_module" = "@jupyter-widgets/controls", 
@@ -118,34 +130,36 @@ IntSliderModel <- R6::R6Class("jupyter.widget.IntSliderModel",
 
 IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
     public = list(
+        layout = NULL, 
+        style = NULL, 
+        model = NULL,
+
         initialize = function() {
-            private$layout <- Layout$new()
-            private$style  <- IntSliderStyle$new()
-            private$model  <- IntSliderModel$new(private$layout, private$style)
+            self$layout <- Layout$new()
+            self$style  <- IntSliderStyle$new()
+            self$model  <- IntSliderModel$new(self$layout, self$style)
         }, 
 
         mime_bundle = function() {
             data <- list(
                 "text/plain" = unbox(
-                    glue("<IntSlider id = {private$model$comm$id} value={private$model$state('value')})>")
+                    glue("<IntSlider id = {self$model$comm$id} value={self$model$state('value')})>")
                 ), 
                 "application/vnd.jupyter.widget-view+json" = list(
                     "version_major" = unbox(2L), 
                     "version_minor" = unbox(0L), 
-                    "model_id" = unbox(private$model$comm$id)
+                    "model_id" = unbox(self$model$comm$id)
                 )
             )
             list(data = data, metadata = namedlist())
         }, 
 
         state = function(what) {
-            private$model$state(what)
-        }
-    ), 
+            self$model$state(what)
+        }, 
 
-    private = list(
-        layout = NULL,
-        style = NULL,
-        model = NULL
+        on_update = function(handler) {
+            self$model$on_update(event_type)
+        }
     )
 )
