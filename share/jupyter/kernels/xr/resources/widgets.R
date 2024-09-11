@@ -52,6 +52,10 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
             list(data = data, metadata = namedlist())
         }, 
 
+        state = function(what) {
+            private$states_slider[[what]]
+        },
+
         finalize = function() {
             private$comm_layout <- NULL
             private$comm_style <- NULL
