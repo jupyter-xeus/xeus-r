@@ -20,8 +20,8 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
             invisible(.Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)"))
         }, 
 
-        new_comm = function(target_name) {
-            .Call("CommManager__new_comm", target_name, PACKAGE = "(embedding)")
+        new_comm = function(target_name, description = "") {
+            .Call("CommManager__new_comm", target_name, description, PACKAGE = "(embedding)")
         }, 
 
         comms = function() {
@@ -33,11 +33,11 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
         }, 
 
         preserve = function(comm) {
-            assign(comm$id, comm, private$env_comms)
+            assign(comm$id, comm, envir = private$env_comms)
         }, 
 
         release = function(comm) {
-            rm(list = comm$id, private$env_comms)
+            rm(list = comm$id, envir = private$env_comms)
         }
     ), 
 
@@ -50,45 +50,52 @@ CommManager <- CommManagerClass$new()
 
 Comm <- R6::R6Class("Comm", 
     public = list(
-        initialize = function(xp) {
+        initialize = function(xp, description = "") {
             private$xp <- xp
+            private$description <- description
             CommManager$preserve(self)
         }, 
 
-        open = function(metadata = NULL, data = NULL, ...) {
-            js_metadata <- jsonlite::toJSON(metadata, ...)
-            js_data <- jsonlite::toJSON(data, ...)
+        open = function(data = NULL, metadata = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
+            js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
             invisible(.Call("Comm__open", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
-        close = function(metadata = NULL, data = NULL, ...) {
-            js_metadata <- jsonlite::toJSON(metadata, ...)
-            js_data <- jsonlite::toJSON(data, ...)
+        close = function(data = NULL, metadata = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
+            js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
             invisible(.Call("Comm__close", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
-        send = function(metadata = NULL, data = NULL, ...) {
-            js_metadata <- jsonlite::toJSON(metadata, ...)
-            js_data <- jsonlite::toJSON(data, ...)
+        send = function(data = NULL, metadata = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
+            js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
             invisible(.Call("Comm__send", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
         on_close = function(handler) {
-            private$close_handler <- handler
-            invisible(.Call("Comm__on_close", private$xp, handler, PACKAGE = "(embedding)"))
-            CommManager$release(self)
+            private$close_handler <- function(request) {
+                handler(request)
+                self$finalize()
+            }
+            invisible(.Call("Comm__on_close", private$xp, private$close_handler, PACKAGE = "(embedding)"))
         }, 
 
         on_message = function(handler) {
             private$message_handler <- handler
-            invisible(.Call("Comm__on_message", private$xp, handler, PACKAGE = "(embedding)"))
+            invisible(.Call("Comm__on_message", private$xp, private$message_handler, PACKAGE = "(embedding)"))
         }, 
 
         print = function() {
-            writeLines(glue("<Comm id ={self$id} target_name = '{self$target_name}'>"))
+            writeLines(glue("<Comm id={self$id} target_name='{self$target_name}' description='{private$description}' >"))
+        }, 
+
+        finalize = function() {
+            CommManager$release(self)
         }
     ), 
 
@@ -104,6 +111,7 @@ Comm <- R6::R6Class("Comm",
     
     private = list(
         xp = NULL, 
+        description = "",
         close_handler = NULL, 
         message_handler = NULL
     )

@@ -131,7 +131,7 @@ SEXP CommManager__unregister_target(SEXP name_) {
     return R_NilValue;
 }
 
-SEXP CommManager__new_comm(SEXP target_name_) {
+SEXP CommManager__new_comm(SEXP target_name_, SEXP s_description) {
     auto target = get_interpreter()->comm_manager().target(CHAR(STRING_ELT(target_name_, 0)));
     if (target == nullptr) {
         return R_NilValue;
@@ -145,7 +145,7 @@ SEXP CommManager__new_comm(SEXP target_name_) {
     R_RegisterCFinalizerEx(xp_comm, [](SEXP xp) {
         delete reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp));
     }, FALSE);
-    SEXP r6_comm = PROTECT(r::new_r6("Comm", xp_comm));
+    SEXP r6_comm = PROTECT(r::new_r6("Comm", xp_comm, s_description));
 
     UNPROTECT(2);
 
@@ -187,7 +187,7 @@ SEXP Comm__send(SEXP xp_comm, SEXP js_metadata, SEXP js_data) {
     auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
     
     auto* comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
-    comm->close(metadata, data, xeus::buffer_sequence());
+    comm->send(metadata, data, xeus::buffer_sequence());
     
     return R_NilValue;
 }
@@ -271,7 +271,7 @@ void register_r_routines() {
         // CommManager
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
         {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
-        {"CommManager__new_comm"           , (DL_FUNC) &routines::CommManager__new_comm, 1},
+        {"CommManager__new_comm"           , (DL_FUNC) &routines::CommManager__new_comm, 2},
         
         // Comm
         {"Comm__id"                        , (DL_FUNC) &routines::Comm__id, 1},
