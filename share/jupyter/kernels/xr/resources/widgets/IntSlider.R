@@ -1,41 +1,54 @@
+IntSliderStyle <- R6::R6Class("jupyter.widget.IntSliderStyle", 
+    public = list(
+        comm = NULL, 
 
-handler_jupyter.widget.control <- function(comm, message) {
-    
-    comm$on_message(function(request) {
-        data <- request$content$data
+        initialize = function() {
+            comm <- CommManager$new_comm("jupyter.widget", "slider style")
+            comm$on_message(function(request) {
+                
+            })
+            comm$on_close(function(request) {
+                
+            })
 
-        switch(data$method, 
-            "request_states" = {
-                comm$send(
-                    data = list(
-                        method = unbox("update_states"), 
-                        state = NULL
-                    )
-                )
+            comm$open(
+                data = list(state = private$state_, buffer_paths = list()), 
+                metadata = list(version = "2.1.0")
+            )
+            
+            self$comm <- comm
+        }, 
+
+        state = function(what) {
+            if (missing(what)) {
+                private$state_
+            } else {
+                private$state_[[what]]
             }
+        }
+    ), 
+
+    private = list(
+        state_ = list(
+            "_model_module" = "@jupyter-widgets/controls", 
+            "_model_module_version" = "2.0.0", 
+            "_model_name" = "SliderStyleModel", 
+            "_view_count" = NULL, 
+            "_view_module" = "@jupyter-widgets/base", 
+            "_view_module_version" = "2.0.0", 
+            "_view_name" = "StyleView", 
+            "description_width" = "", 
+            "handle_color" = NULL
         )
-    })
-}
-
-handler_jupyter.widget <- function(comm, message) {
-    comm$on_message(function(request) {
-    
-    })
-}
-
-init_widgets <- function() {
-    # CommManager$register_comm_target("jupyter.widget.control", handler_jupyter.widget.control)
-    CommManager$register_comm_target("jupyter.widget", handler_jupyter.widget)
-}
-
-Widget <- R6::R6Class("jupyter.widget.Widget")
+    )
+)
 
 IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
     public = list(
         initialize = function() {
             private$layout <- Layout$new()
+            private$style  <- IntSliderStyle$new()
 
-            private$comm_style  <- private$initialise_comm_style()
             private$comm_slider <- private$initialise_comm_slider()
         }, 
 
@@ -58,33 +71,15 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
         },
 
         finalize = function() {
-            private$comm_style <- NULL
             private$comm_slider <- NULL
         }
     ), 
 
     private = list(
         layout = NULL,
+        style = NULL,
 
-        comm_style = NULL, 
         comm_slider = NULL,
-
-        initialise_comm_style = function() {
-            comm_style <- CommManager$new_comm("jupyter.widget", "slider style")
-            comm_style$on_message(function(request) {
-
-            })
-            comm_style$on_close(function(request) {
-                writeLines(glue("comm style closed {comm_style$id}"))
-            })
-
-
-            comm_style$open(
-                data = list(state = private$states_style, buffer_paths = list()), 
-                metadata = list(version = "2.1.0")
-            )
-            comm_style
-        },
 
         initialise_comm_slider = function() {
             comm_slider <- CommManager$new_comm("jupyter.widget", "slider model")
@@ -109,7 +104,7 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
             })
 
             private$states_slider$layout <- glue("IPY_MODEL_{private$layout$comm$id}")
-            private$states_slider$style <- glue("IPY_MODEL_{private$comm_style$id}")
+            private$states_slider$style <- glue("IPY_MODEL_{private$style$comm$id}")
 
             comm_slider$open(
                 data = list(state = private$states_slider, buffer_paths = list()), 
@@ -117,18 +112,6 @@ IntSlider <- R6::R6Class("jupyter.widget.IntSlider", inherit = Widget,
             )
             comm_slider
         },
-
-        states_style = list(
-            "_model_module" = "@jupyter-widgets/controls", 
-            "_model_module_version" = "2.0.0", 
-            "_model_name" = "SliderStyleModel", 
-            "_view_count" = NULL, 
-            "_view_module" = "@jupyter-widgets/base", 
-            "_view_module_version" = "2.0.0", 
-            "_view_name" = "StyleView", 
-            "description_width" = "", 
-            "handle_color" = NULL
-        ), 
 
         states_slider = list(
             "_dom_classes" = list(), 

@@ -1,5 +1,7 @@
 Layout <- R6::R6Class("jupyter.widget.Layout", 
     public = list(
+        comm = NULL, 
+
         initialize = function() {
             comm <- CommManager$new_comm("jupyter.widget", "slider layout")
             comm$on_message(function(request) {
@@ -16,8 +18,6 @@ Layout <- R6::R6Class("jupyter.widget.Layout",
             
             self$comm <- comm
         }, 
-
-        comm = NULL, 
 
         state = function(what) {
             if (missing(what)) {
