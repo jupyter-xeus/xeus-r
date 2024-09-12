@@ -27,54 +27,29 @@ ButtonStyle <- R6::R6Class("jupyter.widget.ButtonStyle", inherit = Style,
     )
 )
 
-ButtonModel <- R6::R6Class("jupyter.widget.ButtonModel", 
+ButtonModel <- R6::R6Class("jupyter.widget.ButtonModel", inherit = Model,
     public = list(
         comm = NULL, 
 
         initialize = function(layout, style) {
-            comm <- CommManager$new_comm("jupyter.widget", "button model")
-            comm$on_message(function(request) {
-                method <- request$content$data$method
-                
-                if (method == "custom" && request$content$data$content$event == "click") {
-                    handler <- private$handlers[["click"]]
-                    if (!is.null(handler)) {
-                        handler()
+            super$initialize(layout, style, "button model")
+            
+            self$on_custom(function(content) {
+                if (content$event == "click") {
+                    click_handler <- private$handlers[["custom/click"]]
+                    if (!is.null(click_handler)) {
+                        click_handler()
                     }
                 }
-
             })
-
-            comm$on_close(function(request) {})
-
-            private$state_$layout <- glue("IPY_MODEL_{layout$comm$id}")
-            private$state_$style <- glue("IPY_MODEL_{style$comm$id}")
-
-            comm$open(
-                data = list(state = private$state_, buffer_paths = list()), 
-                metadata = list(version = "2.1.0")
-            )
-            self$comm <- comm
-
-            private$handlers <- new.env()
-        }, 
-
-        state = function(what) {
-            if (missing(what)) {
-                private$state_
-            } else {
-                private$state_[[what]]
-            }
         }, 
 
         on_click = function(handler = NULL) {
-            private$handlers[["click"]] <- handler
+            private$handlers[["custom/click"]] <- handler
         }
     ), 
 
     private = list(
-        handlers = NULL,
-
         state_ = list(
             "_dom_classes" = list(), 
             "_model_module" = "@jupyter-widgets/controls",
