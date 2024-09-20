@@ -74,6 +74,10 @@ jobs:
          environment-file: environment-dev.yml
          environment-name: xeus-r
 
+     - name: Apply patch
+       run: |
+        patch C:\Users\runneradmin\micromamba-root\envs\xeus-r\Lib\R\include\R_ext\Complex.h < D:\a\xeus-r\xeus-r\patches\patch_complex.patch
+
      - name: micromamba shell hook
        shell: powershell
        run: |
