@@ -219,7 +219,12 @@ macro(xeus_r_create_target target_name linkage output_name)
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
 
     target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LIBRARY_BASE})
-    
+
+    # MSVC compilers don't support C99 _Complex type
+    # https://learn.microsoft.com/en-us/cpp/c-runtime-library/complex-math-support?view=msvc-170
+    if (MSVC)
+        target_compile_definitions(${target_name} PRIVATE "R_LEGACY_RCOMPLEX")
+    endif ()
 endmacro()
 
 # xeus-r
