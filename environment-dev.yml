@@ -26,3 +26,4 @@ dependencies:
   - nbval
   - pytest-rerunfailures
   - r-ggplot2
+  - r-htmltools
