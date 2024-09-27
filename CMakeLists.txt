@@ -6,12 +6,15 @@
 #The full license is in the file LICENSE, distributed with this software. 
 #############################################################################
 
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.5)
 project(xeus-r)
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-v")
+if(NOT EMSCRIPTEN)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-v")
+endif()
 
 # Versionning
 # ===========
@@ -36,6 +39,16 @@ OPTION(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 
 OPTION(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
 OPTION(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead of the static library)" ON)
+
+if(EMSCRIPTEN)
+    add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
+    message("Build with emscripten")
+    SET(XEUS_R_BUILD_STATIC ON)
+    SET(XEUS_R_BUILD_SHARED OFF)
+    SET(XEUS_R_BUILD_EXECUTABLE OFF)
+    SET(XEUS_R_USE_SHARED_XEUS OFF)
+    SET(XEUS_R_USE_SHARED_XEUS_R OFF)
+endif()
 
 # Dependencies
 # ============
@@ -87,7 +100,9 @@ if (MSVC)
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
+    if(NOT EMSCRIPTEN)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
+    endif()
     
     CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
     if (HAS_CPP_17_FLAG)
@@ -96,6 +111,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
         message(FATAL_ERROR "Unsupported compiler -- xeus requires C++17 support!")
     endif ()
 endif ()
+
+if(EMSCRIPTEN)
+    # ENV (https://github.com/emscripten-core/emscripten/commit/6d9681ad04f60b41ef6345ab06c29bbc9eeb84e0)
+    set(EMSCRIPTEN_FEATURES "${EMSCRIPTEN_FEATURES} -s \"EXTRA_EXPORTED_RUNTIME_METHODS=[ENV']\"")
+endif()
 
 # Source files
 # ============
@@ -109,6 +129,10 @@ set(XEUS_R_SRC
     src/xinterpreter.cpp
     src/routines.cpp
 )
+
+if(EMSCRIPTEN)
+    list(APPEND XEUS_R_SRC src/xinterpreter_wasm.cpp)
+endif()
 
 set(XEUS_R_MAIN_SRC
     src/main.cpp
@@ -134,6 +158,10 @@ macro(xeus_r_set_common_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 
         target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
+
+        if (EMSCRIPTEN)
+            target_compile_options(${target_name} PRIVATE -fPIC)
+        endif()
 
         # C++17 flag
         CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
@@ -171,8 +199,10 @@ macro(xeus_r_set_kernel_options target_name)
         target_link_libraries(${target_name} PRIVATE xeus-r-static)
     endif()
 
-    find_package(Threads) 
+    if(NOT EMSCRIPTEN)
+        find_package(Threads) 
         target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+    endif()
     
 endmacro()
 
@@ -216,9 +246,11 @@ macro(xeus_r_create_target target_name linkage output_name)
     elseif (APPLE)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
     endif ()
-    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
 
-    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LIBRARY_BASE})
+    if(NOT EMSCRIPTEN)
+        find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
+        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LIBRARY_BASE})
+    endif()
 
     # MSVC compilers don't support C99 _Complex type
     # https://learn.microsoft.com/en-us/cpp/c-runtime-library/complex-math-support?view=msvc-170
@@ -260,6 +292,16 @@ if (XEUS_R_BUILD_EXECUTABLE)
     target_link_libraries(xr PRIVATE xeus xeus-zmq)
 endif()
 
+if(EMSCRIPTEN)
+    include(WasmBuildOptions)
+    find_package(xeus-lite REQUIRED)
+    add_executable(xr src/main_emscripten_kernel.cpp )
+    target_link_libraries(xr PRIVATE xeus-lite)
+    xeus_r_set_kernel_options(xr)
+    xeus_wasm_compile_options(xr)
+    xeus_wasm_link_options(xr "web,worker")
+endif()
+
 
 # Installation
 # ============
@@ -285,7 +327,9 @@ endif ()
 if (XEUS_R_BUILD_EXECUTABLE)
     install(TARGETS xr
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
+if (XEUS_R_BUILD_EXECUTABLE OR EMSCRIPTEN)
     # Configuration and data directories for jupyter and xeus-r
     set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
 
@@ -331,4 +375,12 @@ if (XEUS_R_BUILD_SHARED)
             DESTINATION ${XEUS_R_CMAKECONFIG_INSTALL_DIR})
 endif ()
 
+if(EMSCRIPTEN)
+    install(TARGETS xr
+            ARCHIVE DESTINATION ${XEUS_R_CMAKECONFIG_INSTALL_DIR})
 
+    install(FILES
+            "$<TARGET_FILE_DIR:xr>/xr.js"
+            "$<TARGET_FILE_DIR:xr>/xr.wasm"
+            DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif ()

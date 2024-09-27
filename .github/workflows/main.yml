@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
 
@@ -63,24 +63,29 @@ jobs:
    strategy:
      fail-fast: false
      matrix:
-       os: [ windows-latest]
+      include:
+       - name : windows
+         os: windows-latest
+         micromamba_shell_init: cmd.exe
 
    steps:
-     - uses: actions/checkout@v2
+     - uses: actions/checkout@v4
 
      - name: install mamba
-       uses: mamba-org/provision-with-micromamba@main
+       uses: mamba-org/setup-micromamba@v2
        with:
          environment-file: environment-dev.yml
+         init-shell: >-
+          ${{ matrix.micromamba_shell_init }}
          environment-name: xeus-r
 
      - name: micromamba shell hook
        shell: powershell
        run: |
-         micromamba shell hook -s cmd.exe -p C:\Users\runneradmin\micromamba-root
+         micromamba shell hook -s cmd.exe --root-prefix C:\Users\runneradmin\micromamba-root
 
      - name: cmake configure
-       shell: cmd
+       shell: cmd /C call {0}
        run: |
          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
          mkdir -p build
@@ -89,10 +94,11 @@ jobs:
            -G "NMake Makefiles" ^
            -DCMAKE_BUILD_TYPE=Release ^
            -DXEUS_BUILD_TESTS=ON ^
+           -DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library" ^
            -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library"
 
-     - name: build
-       shell: cmd
+     - name: build & install
+       shell: cmd /C call {0}
        run: |
          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
          cd build
@@ -102,8 +108,65 @@ jobs:
          xcopy %CONDA_PREFIX%\Library\share\jupyter\kernels\xr %CONDA_PREFIX%\share\jupyter\kernels\xr /F /Y
 
      - name: test
-       shell: cmd
+       shell: cmd /C call {0}
        run: |
          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
          cd test
-         pytest .  -vv
+         pytest -sv test_xr_kernel.py
+  
+  emscripten_wasm:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        emsdk_ver: ["3.1.45"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment-wasm-build.yml
+          environment-name: xeus-r-wasm-build
+
+      - name: Setup emsdk
+        shell: bash -l {0}
+        run: |
+          emsdk install ${{matrix.emsdk_ver}}
+
+      - name: Build xeus-r
+        shell: bash -l {0}
+        run: |
+          emsdk activate ${{matrix.emsdk_ver}}
+          source $CONDA_EMSDK_DIR/emsdk_env.sh
+          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
+
+          mkdir build
+          pushd build
+
+          export EMPACK_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-build
+          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          export CMAKE_PREFIX_PATH=$PREFIX
+          export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
+
+          emcmake cmake \
+            -DCMAKE_BUILD_TYPE=Release                        \
+            -DCMAKE_PREFIX_PATH=$PREFIX                       \
+            -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
+            -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON                 \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON            \
+            ..
+
+          EMCC_CFLAGS='-sERROR_ON_UNDEFINED_SYMBOLS=0' emmake make install
+
+      - name: Jupyter Lite integration
+        shell: bash -l {0}
+        run: |
+          micromamba create -n xeus-lite-host jupyterlite-core
+          micromamba activate xeus-lite-host
+          python -m pip install jupyterlite-xeus
+          jupyter lite build --XeusAddon.prefix=${{ env.PREFIX }}
