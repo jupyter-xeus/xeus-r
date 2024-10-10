@@ -6,15 +6,12 @@
 #The full license is in the file LICENSE, distributed with this software. 
 #############################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.24)
 project(xeus-r)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-if(NOT EMSCRIPTEN)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-v")
-endif()
 
 # Versionning
 # ===========
@@ -38,7 +35,7 @@ option(XEUS_R_BUILD_SHARED "Split xr build into executable and library" ON)
 option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 
 option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
-option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead of the static library)" ON)
+option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus-r shared library (instead of the static library)" ON)
 
 if(EMSCRIPTEN)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
@@ -48,6 +45,8 @@ if(EMSCRIPTEN)
     set(XEUS_R_BUILD_EXECUTABLE OFF)
     set(XEUS_R_USE_SHARED_XEUS OFF)
     set(XEUS_R_USE_SHARED_XEUS_R OFF)
+    # ENV (https://github.com/emscripten-core/emscripten/commit/6d9681ad04f60b41ef6345ab06c29bbc9eeb84e0)
+    set(EMSCRIPTEN_FEATURES "${EMSCRIPTEN_FEATURES} -s \"EXTRA_EXPORTED_RUNTIME_METHODS=[ENV']\"")
 endif()
 
 # Dependencies
@@ -90,33 +89,6 @@ configure_file (
 )
 endif ()
 
-# Flags
-# =====
-include(CheckCXXCompilerFlag)
-
-if (MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251 /wd4141")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018 /wd4267 /wd4715 /wd4146 /wd4129")
-endif ()
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-    if(NOT EMSCRIPTEN)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
-    endif()
-    
-    CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
-    if (HAS_CPP_17_FLAG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-    else ()
-        message(FATAL_ERROR "Unsupported compiler -- xeus requires C++17 support!")
-    endif ()
-endif ()
-
-if(EMSCRIPTEN)
-    # ENV (https://github.com/emscripten-core/emscripten/commit/6d9681ad04f60b41ef6345ab06c29bbc9eeb84e0)
-    set(EMSCRIPTEN_FEATURES "${EMSCRIPTEN_FEATURES} -s \"EXTRA_EXPORTED_RUNTIME_METHODS=[ENV']\"")
-endif()
-
 # Source files
 # ============
 
@@ -157,10 +129,10 @@ macro(xeus_r_set_common_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 
-        target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
-
         if (EMSCRIPTEN)
             target_compile_options(${target_name} PRIVATE -fPIC)
+        else ()
+            target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
         endif()
 
         # C++17 flag
@@ -200,6 +172,7 @@ macro(xeus_r_set_kernel_options target_name)
     endif()
 
     if(NOT EMSCRIPTEN)
+        target_link_options(${target_name} PRIVATE "-Wl,-v")
         find_package(Threads) 
         target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
     endif()
@@ -381,9 +354,6 @@ if (XEUS_R_BUILD_SHARED)
 endif ()
 
 if(EMSCRIPTEN)
-    install(TARGETS xr
-            ARCHIVE DESTINATION ${XEUS_R_CMAKECONFIG_INSTALL_DIR})
-
     install(FILES
             "$<TARGET_FILE_DIR:xr>/xr.js"
             "$<TARGET_FILE_DIR:xr>/xr.wasm"
