@@ -34,20 +34,20 @@ message(STATUS "Building xeus-r v${${PROJECT_NAME}_VERSION}")
 # =============
 
 option(XEUS_R_BUILD_STATIC "Build xeus-r static library" ON)
-OPTION(XEUS_R_BUILD_SHARED "Split xr build into executable and library" ON)
-OPTION(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
+option(XEUS_R_BUILD_SHARED "Split xr build into executable and library" ON)
+option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 
-OPTION(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
-OPTION(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead of the static library)" ON)
+option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
+option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus shared library (instead of the static library)" ON)
 
 if(EMSCRIPTEN)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
     message("Build with emscripten")
-    SET(XEUS_R_BUILD_STATIC ON)
-    SET(XEUS_R_BUILD_SHARED OFF)
-    SET(XEUS_R_BUILD_EXECUTABLE OFF)
-    SET(XEUS_R_USE_SHARED_XEUS OFF)
-    SET(XEUS_R_USE_SHARED_XEUS_R OFF)
+    set(XEUS_R_BUILD_STATIC ON)
+    set(XEUS_R_BUILD_SHARED OFF)
+    set(XEUS_R_BUILD_EXECUTABLE OFF)
+    set(XEUS_R_USE_SHARED_XEUS OFF)
+    set(XEUS_R_USE_SHARED_XEUS_R OFF)
 endif()
 
 # Dependencies
@@ -240,7 +240,12 @@ macro(xeus_r_create_target target_name linkage output_name)
         set(XEUS_R_XEUS_TARGET xeus-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET})
+    if (EMSCRIPTEN)
+        target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LDFLAGS})
+    else ()
+        target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} PRIVATE ${R_LIBRARY_BASE})
+    endif ()
+
     if (WIN32 OR CYGWIN)
         #
     elseif (APPLE)
@@ -249,7 +254,7 @@ macro(xeus_r_create_target target_name linkage output_name)
 
     if(NOT EMSCRIPTEN)
         find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
-        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${R_LIBRARY_BASE})
+        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
     endif()
 
     # MSVC compilers don't support C99 _Complex type

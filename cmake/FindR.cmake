@@ -52,15 +52,10 @@ if(R_COMMAND)
     set(R_HOME "${CMAKE_PREFIX_PATH}/lib/R" CACHE PATH "R home directory for Emscripten")
 
     set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
-    file(GLOB_RECURSE R_INCLUDE_FILES "${R_INCLUDE_DIR}/*")
-    message(STATUS "Contents of R include directory:")
-    foreach(file IN LISTS R_INCLUDE_FILES)
-        message(STATUS " - ${file}")
-    endforeach()
 
-    set(R_LDFLAGS "-Wl,--export-dynamic -fopenmp -Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -L${R_HOME}/lib -lR -lpcre2-8 -ldeflate -llzma -lbz2 -lz -ltirpc -lrt -ldl -lm -licuuc -licui18n" CACHE STRING "Linker flags for R libraries in Emscripten")
+    set(R_LDFLAGS "-L${CMAKE_PREFIX_PATH}/lib -L${CMAKE_PREFIX_PATH}/lib/R/lib -lRblas -lFortranRuntime -lpcre2-8 -llzma -lbz2 -lz -lrt -ldl -lm -liconv" CACHE STRING "Linker flags for R libraries in Emscripten")
 
-    set(R_LIBRARY_BASE "${R_HOME}/lib/libR.so" CACHE FILEPATH "R library (libR.so) in Emscripten")
+    set(R_LIBRARY_BASE "${R_HOME}/lib/libR.a" CACHE FILEPATH "R library (libR.a) in Emscripten")
 
     set(R_LIBRARY_BLAS "${R_HOME}/lib/libRblas.so" CACHE FILEPATH "Rblas library (libRblas.so) in Emscripten")
 
