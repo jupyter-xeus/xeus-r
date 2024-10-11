@@ -69,7 +69,7 @@ jobs:
          micromamba_shell_init: cmd.exe
 
    steps:
-     - uses: actions/checkout@v2
+     - uses: actions/checkout@v4
 
      - name: install mamba
        uses: mamba-org/setup-micromamba@v2
@@ -113,3 +113,60 @@ jobs:
          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
          cd test
          pytest -sv test_xr_kernel.py
+  
+  emscripten_wasm:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        emsdk_ver: ["3.1.45"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment-wasm-build.yml
+          environment-name: xeus-r-wasm-build
+
+      - name: Setup emsdk
+        shell: bash -l {0}
+        run: |
+          emsdk install ${{matrix.emsdk_ver}}
+
+      - name: Build xeus-r
+        shell: bash -l {0}
+        run: |
+          emsdk activate ${{matrix.emsdk_ver}}
+          source $CONDA_EMSDK_DIR/emsdk_env.sh
+          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
+
+          mkdir build
+          pushd build
+
+          export EMPACK_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-build
+          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          export CMAKE_PREFIX_PATH=$PREFIX
+          export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
+
+          emcmake cmake \
+            -DCMAKE_BUILD_TYPE=Release                        \
+            -DCMAKE_PREFIX_PATH=$PREFIX                       \
+            -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
+            -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON                 \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON            \
+            ..
+
+          emmake make install
+
+      - name: Jupyter Lite integration
+        shell: bash -l {0}
+        run: |
+          micromamba create -n xeus-lite-host jupyterlite-core
+          micromamba activate xeus-lite-host
+          python -m pip install jupyterlite-xeus
+          jupyter lite build --XeusAddon.prefix=${{ env.PREFIX }}

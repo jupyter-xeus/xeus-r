@@ -46,42 +46,62 @@ if(R_COMMAND)
   set(OLD_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES} ".dll")
 
-  execute_process(WORKING_DIRECTORY .
-                  COMMAND ${R_COMMAND} RHOME
-                  OUTPUT_VARIABLE R_ROOT_DIR
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    message(STATUS "Configuring for Emscripten...")
 
-  set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
-  
-  execute_process(WORKING_DIRECTORY .
-                  COMMAND ${R_COMMAND} CMD config --ldflags
-                  OUTPUT_VARIABLE R_LDFLAGS
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
+    set(R_HOME "${CMAKE_PREFIX_PATH}/lib/R" CACHE PATH "R home directory for Emscripten")
 
-  find_path(R_INCLUDE_DIR R.h
-            HINTS ${R_ROOT_DIR} ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-            PATHS /usr/local/lib /usr/local/lib64 /usr/share
-            PATH_SUFFIXES include R/include
-            DOC "Path to file R.h")
+    set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
 
-  find_library(R_LIBRARY_BASE R
-            HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-            DOC "R library (example libR.a, libR.dylib, etc.).")
+    set(R_LDFLAGS "-L${CMAKE_PREFIX_PATH}/lib -L${CMAKE_PREFIX_PATH}/lib/R/lib -lRblas -lFortranRuntime -lpcre2-8 -llzma -lbz2 -lz -lrt -ldl -lm -liconv" CACHE STRING "Linker flags for R libraries in Emscripten")
 
-  find_library(R_LIBRARY_BLAS NAMES Rblas blas
-            HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-            DOC "Rblas library (example libRblas.a, libRblas.dylib, etc.).")
+    set(R_LIBRARY_BASE "${R_HOME}/lib/libR.a" CACHE FILEPATH "R library (libR.a) in Emscripten")
 
-  find_library(R_LIBRARY_LAPACK NAMES Rlapack lapack
-            HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-            DOC "Rlapack library (example libRlapack.a, libRlapack.dylib, etc.).")
+    set(R_LIBRARY_BLAS "${R_HOME}/lib/libRblas.so" CACHE FILEPATH "Rblas library (libRblas.so) in Emscripten")
 
-  find_library(R_LIBRARY_READLINE readline
-            DOC "(Optional) system readline library. Only required if the R libraries were built with readline support.")
+    set(R_LIBRARY_LAPACK "${R_HOME}/lib/libRlapack.so" CACHE FILEPATH "Rlapack library (libRlapack.so) in Emscripten")
+
+  else()
+    message(STATUS "Configuring for non-Emscripten environment...")
+
+    execute_process(WORKING_DIRECTORY .
+                    COMMAND ${R_COMMAND} RHOME
+                    OUTPUT_VARIABLE R_ROOT_DIR
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
+
+    execute_process(WORKING_DIRECTORY .
+                    COMMAND ${R_COMMAND} CMD config --ldflags
+                    OUTPUT_VARIABLE R_LDFLAGS
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
+
+    find_path(R_INCLUDE_DIR R.h
+              HINTS ${R_ROOT_DIR} ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+              PATHS /usr/local/lib /usr/local/lib64 /usr/share
+              PATH_SUFFIXES include R/include
+              DOC "Path to file R.h")
+
+    find_library(R_LIBRARY_BASE R
+                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                 DOC "R library (example libR.a, libR.dylib, etc.).")
+
+    find_library(R_LIBRARY_BLAS NAMES Rblas blas
+                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                 DOC "Rblas library (example libRblas.a, libRblas.dylib, etc.).")
+
+    find_library(R_LIBRARY_LAPACK NAMES Rlapack lapack
+                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                 DOC "Rlapack library (example libRlapack.a, libRlapack.dylib, etc.).")
+
+    find_library(R_LIBRARY_READLINE readline
+                 DOC "(Optional) system readline library. Only required if the R libraries were built with readline support.")
+  endif()
 
   # reset cmake find_library to initial value
   set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_SUFFIXES})
+
 else()
   message(SEND_ERROR "FindR.cmake requires the following variables to be set: R_COMMAND")
 endif()
