@@ -13,7 +13,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-# Versionning
+# Versioning
 # ===========
 
 file(STRINGS "${XEUS_R_INCLUDE_DIR}/xeus-r/xeus_r_config.hpp" version_defines
