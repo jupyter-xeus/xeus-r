@@ -11,7 +11,7 @@
 
 // Project version
 #define XEUS_R_VERSION_MAJOR 0
-#define XEUS_R_VERSION_MINOR 2 
+#define XEUS_R_VERSION_MINOR 2
 #define XEUS_R_VERSION_PATCH 1
 
 // Composing the version string from major, minor and patch
