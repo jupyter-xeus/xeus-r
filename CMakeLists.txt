@@ -36,6 +36,7 @@ option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 
 option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
 option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus-r shared library (instead of the static library)" ON)
+option(XEUS_R_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
 if(EMSCRIPTEN)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)

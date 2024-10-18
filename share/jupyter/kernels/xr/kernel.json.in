@@ -1,5 +1,5 @@
 {
-  "display_name": "R 4.3.1 (xr)",
+  "display_name": "R 4.4.1 (xr)",
   "argv": [
       "@XR_KERNELSPEC_PATH@xr",
       "-f",
