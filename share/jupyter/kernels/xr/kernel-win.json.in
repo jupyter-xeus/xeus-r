@@ -1,5 +1,5 @@
 {
-  "display_name": "R 4.4.1 (xr)",
+  "display_name": "R @R_VERSION_MAJOR@.@R_VERSION_MINOR@ (xr)",
   "argv": [
       "@XR_KERNELSPEC_PATH@xr",
       "-f",
