@@ -49,6 +49,10 @@ if(R_COMMAND)
   if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     message(STATUS "Configuring for Emscripten...")
 
+    set(R_VERSION_MAJOR "4" CACHE STRING "Major version of R")
+
+    set(R_VERSION_MINOR "4.1" CACHE STRING "Minor version of R")
+
     set(R_HOME "${CMAKE_PREFIX_PATH}/lib/R" CACHE PATH "R home directory for Emscripten")
 
     set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
@@ -63,6 +67,17 @@ if(R_COMMAND)
 
   else()
     message(STATUS "Configuring for non-Emscripten environment...")
+
+    execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "cat(R.Version()$major)"
+                    OUTPUT_VARIABLE R_VERSION_MAJOR
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "cat(R.Version()$minor)"
+                    OUTPUT_VARIABLE R_VERSION_MINOR
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set(R_VERSION_MAJOR ${R_VERSION_MAJOR} CACHE STRING "Major version of R")
+    set(R_VERSION_MINOR ${R_VERSION_MINOR} CACHE STRING "Minor version of R")
 
     execute_process(WORKING_DIRECTORY .
                     COMMAND ${R_COMMAND} RHOME

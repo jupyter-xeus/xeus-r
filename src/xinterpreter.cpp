@@ -62,7 +62,16 @@ void capture_WriteConsoleEx(const char *buf, int buflen, int otype) {
 
 interpreter::interpreter(int argc, char* argv[])
 {
-    Rf_initEmbeddedR(argc, argv);
+    // When building with Emscripten, pass --no-readline to disable
+    // readline support, as r-base is not compiled with readline
+    // and will not read input from the command line.
+    #ifdef __EMSCRIPTEN__
+        const char* argvNew[] = {"--no-readline"};
+        Rf_initEmbeddedR(sizeof(argvNew) / sizeof(argvNew[0]), const_cast<char**>(argvNew));
+    #else
+        Rf_initEmbeddedR(argc, argv);
+    #endif
+
     register_r_routines();
 
 #ifndef _WIN32
