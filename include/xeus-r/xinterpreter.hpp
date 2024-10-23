@@ -64,8 +64,6 @@ namespace xeus_r
 
     interpreter* get_interpreter();
     void register_r_routines();
-
-    std::unique_ptr<interpreter> make_interpreter(int argc, char* argv[]);
 }
 
 #ifdef __GNUC__

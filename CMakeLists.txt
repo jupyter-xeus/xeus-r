@@ -36,6 +36,7 @@ option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 
 option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
 option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus-r shared library (instead of the static library)" ON)
+option(XEUS_R_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
 if(EMSCRIPTEN)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
@@ -65,6 +66,8 @@ message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
 message(STATUS "R_LIBRARY_BASE   = ${R_LIBRARY_BASE}")
 message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
 message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
+message(STATUS "R_VERSION_MAJOR = ${R_VERSION_MAJOR}")
+message(STATUS "R_VERSION_MINOR = ${R_VERSION_MINOR}")
 
 # Configuration
 # =============

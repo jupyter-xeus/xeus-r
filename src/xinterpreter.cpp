@@ -62,7 +62,16 @@ void capture_WriteConsoleEx(const char *buf, int buflen, int otype) {
 
 interpreter::interpreter(int argc, char* argv[])
 {
-    Rf_initEmbeddedR(argc, argv);
+    // When building with Emscripten, pass --no-readline to disable
+    // readline support, as r-base is not compiled with readline
+    // and will not read input from the command line.
+    #ifdef __EMSCRIPTEN__
+        const char* argvNew[] = {"--no-readline"};
+        Rf_initEmbeddedR(sizeof(argvNew) / sizeof(argvNew[0]), const_cast<char**>(argvNew));
+    #else
+        Rf_initEmbeddedR(argc, argv);
+    #endif
+
     register_r_routines();
 
 #ifndef _WIN32
@@ -252,7 +261,6 @@ nl::json interpreter::inspect_request_impl(const std::string& code, int cursor_p
 
 void interpreter::shutdown_request_impl() {
     Rf_endEmbeddedR(0);
-    std::cout << "Bye!!" << std::endl;
 }
 
 nl::json interpreter::kernel_info_request_impl()
@@ -261,7 +269,7 @@ nl::json interpreter::kernel_info_request_impl()
     const std::string  implementation = "xr";
     const std::string  implementation_version = XEUS_R_VERSION;
     const std::string  language_name = "R";
-    const std::string  language_version = "4.3.1";
+    const std::string  language_version = "4.4.1";
     const std::string  language_mimetype = "text/x-R";
     const std::string  language_file_extension = "R";
     const std::string  language_pygments_lexer = "";

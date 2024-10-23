@@ -13,10 +13,13 @@
 #include <string>
 #include <utility>
 
-#ifdef __GNUC__
-#include <stdio.h>
-#include <execinfo.h>
 #include <signal.h>
+
+#ifdef __GNUC__
+#ifndef XEUS_R_EMSCRIPTEN_WASM_BUILD
+#include <execinfo.h>
+#endif
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #endif
@@ -31,7 +34,7 @@
 #include "xeus-r/xinterpreter.hpp"
 #include "xeus-r/xeus_r_config.hpp"
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(XEUS_R_EMSCRIPTEN_WASM_BUILD)
 void handler(int sig)
 {
     void* array[10];
@@ -45,6 +48,11 @@ void handler(int sig)
     exit(1);
 }
 #endif
+
+void stop_handler(int /*sig*/)
+{
+    exit(0);
+}
 
 std::unique_ptr<xeus::xlogger> make_file_logger(xeus::xlogger::level log_level) {
     auto logfile = std::getenv("JUPYTER_LOGFILE");
@@ -77,7 +85,11 @@ int main(int argc, char* argv[])
 #ifdef __GNUC__
     std::clog << "registering handler for SIGSEGV" << std::endl;
     signal(SIGSEGV, handler);
+
+    // Registering SIGINT and SIGKILL handlers
+    signal(SIGKILL, stop_handler);
 #endif
+    signal(SIGINT, stop_handler);
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
