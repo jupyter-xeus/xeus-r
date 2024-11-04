@@ -265,7 +265,7 @@ endif ()
 # xr
 # =======
 if (XEUS_R_BUILD_EXECUTABLE)
-    find_package(xeus-zmq 1.0.3 REQUIRED)
+    find_package(xeus-zmq ${xeus_zmq_REQUIRED_VERSION} REQUIRED)
     add_executable(xr ${XEUS_R_MAIN_SRC})
     target_compile_features(xr PRIVATE cxx_std_17)
     xeus_r_set_common_options(xr)
