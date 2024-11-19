@@ -44,10 +44,11 @@ SEXP invoke_xeusr_fn(const char* f, Types... args) {
     return result;
 }
 
-inline SEXP new_r6(const char* klass, SEXP xp) {
+template<class... Types>
+inline SEXP new_r6(const char* klass, SEXP xp, Types... args) {
     SEXP sym_new_r6 = Rf_install(".xeus_new");
 
-    SEXP call = PROTECT(r_call(sym_new_r6, Rf_mkString(klass), xp));
+    SEXP call = PROTECT(r_call(sym_new_r6, Rf_mkString(klass), xp, args...));
     SEXP result = Rf_eval(call, R_GlobalEnv);
 
     UNPROTECT(1);

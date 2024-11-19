@@ -1,76 +1,101 @@
 .CommManager__register_target_callback <- function(comm, request) {
-    target_callback <- comm_target_env[[request$content$target_name]]
-    target_callback(comm, request)
+    callback <- CommManager$target_callback(request$content$target_name)
+    callback(comm, request)
 }
 
 CommManagerClass <- R6::R6Class("CommManagerClass", 
     public = list(
         initialize = function() {
-            private$targets <- new.env()
-            private$comms <- new.env()
+            private$env_targets <- new.env()
+            private$env_comms <- new.env()
         },
 
-        register_comm_target = function(target_name, callback) {
-            private$targets[[target_name]] <- callback
+        register_comm_target = function(target_name, callback = function(comm, message){}) {
+            private$env_targets[[target_name]] <- callback
             invisible(.Call("CommManager__register_target", target_name, PACKAGE = "(embedding)"))
         }, 
 
         unregister_comm_target = function(target_name) {
-            rm(list = target_name, private$targets)
+            rm(list = target_name, private$env_targets)
             invisible(.Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)"))
         }, 
 
-        new_comm = function(target_name) {
-            xp <- .Call("CommManager__new_comm", target_name, PACKAGE = "(embedding)")
-            if (is.null(xp)) {
-                stop(glue::glue("No target '{target_name}' registered"))
-            }
-            Comm$new(xp = xp)
+        new_comm = function(target_name, description = "") {
+            .Call("CommManager__new_comm", target_name, description, PACKAGE = "(embedding)")
+        }, 
+
+        comms = function() {
+            as.list(private$env_comms)
+        },
+
+        target_callback = function(target_name) {
+            private$env_targets[[target_name]]
+        }, 
+
+        preserve = function(comm) {
+            assign(comm$id, comm, envir = private$env_comms)
+        }, 
+
+        release = function(comm) {
+            rm(list = comm$id, envir = private$env_comms)
         }
     ), 
 
     private = list(
-        targets = NULL, 
-        comms = NULL
+        env_targets = NULL, 
+        env_comms = NULL
     )
 )
 CommManager <- CommManagerClass$new()
 
 Comm <- R6::R6Class("Comm", 
     public = list(
-        initialize = function(xp) {
+        initialize = function(xp, description = "") {
             private$xp <- xp
+            private$description <- description
+            CommManager$preserve(self)
         }, 
 
-        open = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+        open = function(data = NULL, metadata = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
+            js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
             invisible(.Call("Comm__open", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
-        close = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+        close = function(data = NULL, metadata = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
+            js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
             invisible(.Call("Comm__close", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
-        send = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+        send = function(data = NULL, metadata = NULL) {
+            js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
+            js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
             invisible(.Call("Comm__send", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
         }, 
 
         on_close = function(handler) {
-            private$close_handler <- handler
-            invisible(.Call("Comm__on_close", private$xp, handler, PACKAGE = "(embedding)"))
+            private$close_handler <- function(request) {
+                handler(request)
+                self$finalize()
+            }
+            invisible(.Call("Comm__on_close", private$xp, private$close_handler, PACKAGE = "(embedding)"))
         }, 
 
         on_message = function(handler) {
             private$message_handler <- handler
-            invisible(.Call("Comm__on_message", private$xp, handler, PACKAGE = "(embedding)"))
+            invisible(.Call("Comm__on_message", private$xp, private$message_handler, PACKAGE = "(embedding)"))
+        }, 
+
+        print = function() {
+            writeLines(glue("<Comm id={self$id} target_name='{self$target_name}' description='{private$description}' >"))
+        }, 
+
+        finalize = function() {
+            CommManager$release(self)
         }
     ), 
 
@@ -86,6 +111,7 @@ Comm <- R6::R6Class("Comm",
     
     private = list(
         xp = NULL, 
+        description = "",
         close_handler = NULL, 
         message_handler = NULL
     )

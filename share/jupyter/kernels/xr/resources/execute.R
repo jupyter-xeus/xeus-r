@@ -174,17 +174,27 @@ execute <- function(code, execution_counter, silent = FALSE) {
   if (isTRUE(last_visible)) {
     obj <- .Last.value
 
-    # TODO: This probably needs to be generalized
     mimetypes <- if (inherits(obj, c("htmlwidget", "shiny.tag.list", "shiny.tag"))) {
       c("text/plain", "text/html")
     } else {
       "text/plain"
     }
     
-    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
+    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = c("text/plain", "text/html"))
+
+    bundle <- if (inherits(obj, c("htmlwidget", "shiny.tag.list", "shiny.tag"))) {
+      IRdisplay::prepare_mimebundle(obj, mimetypes = c("text/plain", "text/html"))
+    } else if (inherits(obj, "jupyter.widget.Widget")) {
+      obj$mime_bundle()
+    } else {
+      IRdisplay::prepare_mimebundle(obj, mimetypes = c("text/plain"))
+    }
     
     structure(class = "execution_result", 
-      list(toJSON(bundle$data), toJSON(bundle$metadata))
+      list(
+        data = toJSON(bundle$data), 
+        metadata = toJSON(bundle$metadata)
+      )
     )
   }
 
