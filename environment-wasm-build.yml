@@ -1,5 +1,0 @@
-name: xeus-r-wasm-build
-channels:
-  - conda-forge
-dependencies:
-  - cmake
