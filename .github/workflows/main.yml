@@ -128,9 +128,6 @@ jobs:
 
       - name: Install mamba
         uses: mamba-org/setup-micromamba@v2
-        with:
-          init-shell: >-
-            ${{ matrix.micromamba_shell_init }}
 
       - name: Setup emsdk
         shell: bash -l {0}
