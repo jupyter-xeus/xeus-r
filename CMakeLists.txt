@@ -279,7 +279,7 @@ if(EMSCRIPTEN)
     add_executable(xr src/main_emscripten_kernel.cpp)
     target_link_libraries(xr PRIVATE xeus-lite)
     target_link_options(xr
-        PUBLIC "SHELL: --pre-js ./env_vars.js"
+        PUBLIC "SHELL: --pre-js ../src/env_vars.js"
         PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
     )
 
