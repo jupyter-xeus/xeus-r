@@ -1,9 +1,9 @@
 /***************************************************************************
 * Copyright (c) 2023, QuantStack
-*                                                                          
-* Distributed under the terms of the GNU General Public License v3.                 
-*                                                                          
-* The full license is in the file LICENSE, distributed with this software. 
+*
+* Distributed under the terms of the GNU General Public License v3.
+*
+* The full license is in the file LICENSE, distributed with this software.
 ****************************************************************************/
 
 #include <string>
@@ -25,6 +25,7 @@
 #include "Rinternals.h"
 #include "Rembedded.h"
 #include "R_ext/Parse.h"
+#include "R_ext/Rdynload.h"
 
 #ifndef _WIN32
 #include "Rinterface.h"
@@ -65,12 +66,16 @@ interpreter::interpreter(int argc, char* argv[])
     // When building with Emscripten, pass --no-readline to disable
     // readline support, as r-base is not compiled with readline
     // and will not read input from the command line.
-    #ifdef __EMSCRIPTEN__
-        const char* argvNew[] = {"--no-readline"};
-        Rf_initEmbeddedR(sizeof(argvNew) / sizeof(argvNew[0]), const_cast<char**>(argvNew));
-    #else
-        Rf_initEmbeddedR(argc, argv);
-    #endif
+#ifdef __EMSCRIPTEN__
+    char *argvNew[] = {
+        (char*)("R"),
+        (char*)("--no-readline"),
+        (char*)("--vanilla"),
+    };
+    Rf_initEmbeddedR(sizeof(argvNew) / sizeof(argvNew[0]), const_cast<char**>(argvNew));
+#else
+    Rf_initEmbeddedR(argc, argv);
+#endif
 
     register_r_routines();
 
@@ -80,7 +85,7 @@ interpreter::interpreter(int argc, char* argv[])
 
     ptr_R_WriteConsole = nullptr;
     ptr_R_WriteConsoleEx = WriteConsoleEx;
-#endif    
+#endif
 
     xeus::register_interpreter(this);
     p_interpreter = this;
@@ -102,9 +107,9 @@ void interpreter::execute_request_impl(
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_count));
     SEXP silent_ = PROTECT(Rf_ScalarLogical(config.silent));
-    
+
     SEXP result = r::invoke_xeusr_fn("execute", code_, execution_counter_, silent_);
-    
+
     if (Rf_inherits(result, "error_reply")) {
         std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
         std::string ename = CHAR(STRING_ELT(VECTOR_ELT(result, 1), 0));
@@ -123,7 +128,7 @@ void interpreter::execute_request_impl(
         UNPROTECT(3);
         cb(xeus::create_error_reply(evalue, ename, std::move(trace_back)));
     }
-    
+
     if (Rf_inherits(result, "execution_result")) {
         SEXP data_ = VECTOR_ELT(result, 0);
         SEXP metadata_ = VECTOR_ELT(result, 1);
@@ -138,31 +143,41 @@ void interpreter::execute_request_impl(
 
 void interpreter::configure_impl()
 {
+    std::stringstream ss;
+
+#ifndef __EMSCRIPTEN__
+    // Sys.which is not available in WebAssembly
     SEXP sym_Sys_which = Rf_install("Sys.which");
     SEXP sym_dirname = Rf_install("dirname");
     SEXP str_xr = Rf_mkString("xr");
     SEXP call_Sys_which = PROTECT(Rf_lang2(sym_Sys_which, str_xr));
     SEXP call = PROTECT(Rf_lang2(sym_dirname, call_Sys_which));
     SEXP dir_xr = Rf_eval(call, R_GlobalEnv);
-    
-    std::stringstream ss;
     ss << CHAR(STRING_ELT(dir_xr, 0)) << "/../share/jupyter/kernels/xr/resources/setup.R";
+#else
+    ss << "/share/jupyter/kernels/xr/resources/setup.R";
+#endif
+
     SEXP setup_R_code_path = PROTECT(Rf_mkString(ss.str().c_str()));
 
     SEXP sym_source = Rf_install("source");
     SEXP call_source = PROTECT(Rf_lang2(sym_source, setup_R_code_path));
-    
+
     Rf_eval(call_source, R_GlobalEnv);
-    
+
     r::invoke_xeusr_fn("configure");
-    
+
+#ifndef __EMSCRIPTEN__
     UNPROTECT(4);
+#else
+    UNPROTECT(2);
+#endif
 }
 
 nl::json interpreter::is_complete_request_impl(const std::string& code_)
 {
-    // initially code holds the string, but then it is being 
-    // replaced by incomplete, invalid or complete either in the 
+    // initially code holds the string, but then it is being
+    // replaced by incomplete, invalid or complete either in the
     // body handler or the error handler
     SEXP code = PROTECT(Rf_mkString(code_.c_str()));
 
@@ -180,7 +195,7 @@ nl::json interpreter::is_complete_request_impl(const std::string& code_)
                 case PARSE_INCOMPLETE:
                     SET_STRING_ELT(code, 0, Rf_mkChar("incomplete"));
                     break;
-                    
+
                 case PARSE_ERROR:
                     SET_STRING_ELT(code, 0, Rf_mkChar("invalid"));
                     break;
@@ -190,18 +205,18 @@ nl::json interpreter::is_complete_request_impl(const std::string& code_)
             }
 
             return R_NilValue;
-        }, 
-        reinterpret_cast<void*>(code), 
+        },
+        reinterpret_cast<void*>(code),
 
         [](SEXP, void* void_code) { // handler
             // some parse error cases are not propagated to PARSE_ERROR
-            // but rather throw an error, so we need to catch it 
+            // but rather throw an error, so we need to catch it
             // and set the result to invalid
             SEXP code = reinterpret_cast<SEXP>(void_code);
             SET_STRING_ELT(code, 0, Rf_mkChar("invalid"));
 
             return R_NilValue;
-        }, 
+        },
         reinterpret_cast<void*>(code)
     );
 
@@ -254,7 +269,7 @@ nl::json interpreter::inspect_request_impl(const std::string& code, int cursor_p
     }
 
     auto data = nl::json::parse(CHAR(STRING_ELT(VECTOR_ELT(result, 1), 0)));
-    
+
     UNPROTECT(3); // result, code_, cursor_pos_
     return xeus::create_inspect_reply(found, data);
 }
