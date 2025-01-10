@@ -176,10 +176,10 @@ macro(xeus_r_set_kernel_options target_name)
 
     if(NOT EMSCRIPTEN)
         target_link_options(${target_name} PRIVATE "-Wl,-v")
-        find_package(Threads) 
+        find_package(Threads)
         target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
     endif()
-    
+
 endmacro()
 
 # Common macro for shared and static library
@@ -276,8 +276,13 @@ endif()
 if(EMSCRIPTEN)
     include(WasmBuildOptions)
     find_package(xeus-lite REQUIRED)
-    add_executable(xr src/main_emscripten_kernel.cpp )
+    add_executable(xr src/main_emscripten_kernel.cpp)
     target_link_libraries(xr PRIVATE xeus-lite)
+    target_link_options(xr
+        PUBLIC "SHELL: --pre-js ../src/env_vars.js"
+        PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
+    )
+
     xeus_r_set_kernel_options(xr)
     xeus_wasm_compile_options(xr)
     xeus_wasm_link_options(xr "web,worker")
