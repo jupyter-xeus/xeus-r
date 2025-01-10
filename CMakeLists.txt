@@ -278,14 +278,16 @@ if(EMSCRIPTEN)
     find_package(xeus-lite REQUIRED)
     add_executable(xr src/main_emscripten_kernel.cpp)
     target_link_libraries(xr PRIVATE xeus-lite)
-    target_link_options(xr
-        PUBLIC "SHELL: --pre-js ../src/env_vars.js"
-        PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
-    )
 
     xeus_r_set_kernel_options(xr)
     xeus_wasm_compile_options(xr)
     xeus_wasm_link_options(xr "web,worker")
+    target_link_options(xr
+        PUBLIC "SHELL: --pre-js ../src/env_vars.js"
+        PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
+        PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"PATH\",\"LDSO\",\"getDylinkMetadata\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
+        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+    )
 endif()
 
 
