@@ -67,11 +67,7 @@ interpreter::interpreter(int argc, char* argv[])
     // readline support, as r-base is not compiled with readline
     // and will not read input from the command line.
 #ifdef __EMSCRIPTEN__
-    char *argvNew[] = {
-        (char*)("R"),
-        (char*)("--no-readline"),
-        (char*)("--vanilla"),
-    };
+    const char* argvNew[] = {"--no-readline", "--vanilla"};
     Rf_initEmbeddedR(sizeof(argvNew) / sizeof(argvNew[0]), const_cast<char**>(argvNew));
 #else
     Rf_initEmbeddedR(argc, argv);
