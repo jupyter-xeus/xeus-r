@@ -286,7 +286,6 @@ if(EMSCRIPTEN)
         PUBLIC "SHELL: --pre-js ../src/env_vars.js"
         PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
         PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"PATH\",\"LDSO\",\"getDylinkMetadata\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
-        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
     )
 endif()
 
