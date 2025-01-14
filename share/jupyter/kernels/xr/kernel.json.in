@@ -6,7 +6,12 @@
       "{connection_file}"
   ],
   "language": "R",
-  "metadata": {"debugger": false},
+  "metadata": {
+    "debugger": false,
+    "shared": {
+      "libRblas.so": "lib/R/lib/libRblas.so"
+    }
+  },
   "env": {
     "R_HOME": "@R_HOME@",
     "LD_LIBRARY_PATH": "@XEUS_R_LD_LIBRARY_PATH@"
