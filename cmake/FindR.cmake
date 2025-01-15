@@ -49,9 +49,26 @@ if(R_COMMAND)
   if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     message(STATUS "Configuring for Emscripten...")
 
-    set(R_VERSION_MAJOR "4" CACHE STRING "Major version of R")
+    # Find the pkg-config executable
+find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
 
-    set(R_VERSION_MINOR "4.1" CACHE STRING "Minor version of R")
+    if (PKG_CONFIG_EXECUTABLE)
+        # Get the R version using pkg-config
+        execute_process(
+            COMMAND env PKG_CONFIG_PATH=${CMAKE_PREFIX_PATH}/lib/pkgconfig ${PKG_CONFIG_EXECUTABLE} --modversion libR
+            OUTPUT_VARIABLE R_VERSION
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        # Extract the major, minor, and patch version numbers
+        string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ ${R_VERSION})
+        set(R_VERSION_MAJOR ${CMAKE_MATCH_1})
+        set(R_VERSION_MINOR ${CMAKE_MATCH_2}.${CMAKE_MATCH_3})
+
+        message(STATUS "Found R version ${R_VERSION_MAJOR}.${R_VERSION_MINOR}")
+    else()
+        message(FATAL_ERROR "pkg-config executable not found")
+    endif()
 
     set(R_HOME "${CMAKE_PREFIX_PATH}/lib/R" CACHE PATH "R home directory for Emscripten")
 
