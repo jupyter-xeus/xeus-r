@@ -77,7 +77,11 @@ jobs:
           micromamba create -n xeus-lite-host jupyterlite-core
           micromamba activate xeus-lite-host
           python -m pip install jupyterlite-xeus
-          jupyter lite build --XeusAddon.prefix=${{ env.PREFIX }} --output-dir dist
+          jupyter lite build \
+              --XeusAddon.prefix=${{ env.PREFIX }} \
+              --XeusAddon.mount=share/jupyter/kernels/xr/resources \
+              --output-dir dist
+
           mkdir -p dist/files
           mv notebooks dist/files
           mv README.md dist/files
