@@ -70,11 +70,10 @@ jobs:
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --XeusAddon.mounts=${{ env.PREFIX }}/share/jupyter/kernels/xr/resources:/share/jupyter/kernels/xr/resources \
+              --contents README.md \
+              --contents notebooks/examples.ipynb \
+              --contents notebooks/xeus-r.ipynb \
               --output-dir dist
-
-          mkdir -p dist/files
-          mv notebooks/examples.ipynb dist/files
-          mv README.md dist/files
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
