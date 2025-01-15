@@ -49,8 +49,7 @@ make && make install
 ```
 
 Try Jupyter Lite demo by clicking below
-
-[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://github.com/jupyter-xeus/xeus-r/lab/index.html)
+[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyter-xeus.github.io/xeus-r/)
 
 <!-- ## Trying it online
 
