@@ -2,15 +2,16 @@ name: Build and Deploy
 
 on:
   workflow_dispatch:
+  pull_request:
   push:
     branches:
     - main
-    
+
 permissions:
   contents: read
   pages: write
   id-token: write
-    
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -26,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-        
+
       - name: install mamba
         uses: mamba-org/setup-micromamba@main
         with:
@@ -43,11 +44,11 @@ jobs:
         shell: bash -l {0}
         run: |
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
-          
+
           mkdir build
           pushd build
 
-          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host 
+          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           export CMAKE_PREFIX_PATH=$PREFIX
           export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
@@ -61,7 +62,7 @@ jobs:
             ..
           emmake make -j ${{ env.ncpus }} install
 
-      - name: Jupyter Lite integration 
+      - name: Jupyter Lite integration
         shell: bash -l {0}
         run: |
           micromamba create -n xeus-lite-host jupyterlite-core
@@ -69,12 +70,10 @@ jobs:
           python -m pip install jupyterlite-xeus
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
-              --XeusAddon.mount=share/jupyter/kernels/xr/resources \
+              --XeusAddon.mounts=${{ env.PREFIX }}/share/jupyter/kernels/xr/resources:/share/jupyter/kernels/xr/resources \
+              --contents README.md \
+              --contents notebooks/examples.ipynb \
               --output-dir dist
-
-          mkdir -p dist/files
-          mv notebooks/examples.ipynb dist/files
-          mv README.md dist/files
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -83,12 +82,15 @@ jobs:
 
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'
     permissions:
       pages: write
       id-token: write
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-24.04
     steps:
       - name: Deploy to GitHub Pages
