@@ -132,16 +132,9 @@ jobs:
           environment-file: environment-wasm-build.yml
           environment-name: xeus-r-wasm-build
 
-      - name: Setup emsdk
-        shell: bash -l {0}
-        run: |
-          emsdk install ${{matrix.emsdk_ver}}
-
       - name: Build xeus-r
         shell: bash -l {0}
         run: |
-          emsdk activate ${{matrix.emsdk_ver}}
-          source $CONDA_EMSDK_DIR/emsdk_env.sh
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
 
           mkdir build
