@@ -1,7 +1,7 @@
 name: xeus-r-wasm-build
 channels:
+  - https://repo.mamba.pm/emscripten-forge
   - conda-forge
 dependencies:
   - cmake
-  - emsdk >=3.1.11
-  - empack >=2.0.1
+  - emscripten_emscripten-wasm32==3.1.45
