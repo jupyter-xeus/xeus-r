@@ -9,7 +9,8 @@
   "metadata": {
     "debugger": false,
     "shared": {
-      "libRblas.so": "lib/R/lib/libRblas.so"
+      "libRblas.so": "lib/R/lib/libRblas.so",
+      "libRlapack.so": "lib/R/lib/libRlapack.so"
     }
   },
   "env": {
