@@ -1,9 +1,9 @@
 /***************************************************************************
 * Copyright (c) 2023, QuantStack
-*                                                                          
-* Distributed under the terms of the GNU General Public License v3.                 
-*                                                                          
-* The full license is in the file LICENSE, distributed with this software. 
+*
+* Distributed under the terms of the GNU General Public License v3.
+*
+* The full license is in the file LICENSE, distributed with this software.
 ****************************************************************************/
 
 #ifndef XEUS_R_CONFIG_HPP
@@ -11,8 +11,8 @@
 
 // Project version
 #define XEUS_R_VERSION_MAJOR 0
-#define XEUS_R_VERSION_MINOR 2
-#define XEUS_R_VERSION_PATCH 1
+#define XEUS_R_VERSION_MINOR 3
+#define XEUS_R_VERSION_PATCH 0
 
 // Composing the version string from major, minor and patch
 #define XEUS_R_CONCATENATE(A, B) XEUS_R_CONCATENATE_IMPL(A, B)
