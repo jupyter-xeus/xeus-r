@@ -38,20 +38,10 @@ jobs:
         if: ${{ runner.os != 'windows' }}
         run: |
           echo "ncpus=$(nproc --all)" >> $GITHUB_ENV
-          
-      - name: Setup emsdk
-        shell: bash -l {0}
-        run: |
-          cd $HOME
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk
-          ./emsdk install ${{ matrix.emsdk_ver }}    
 
       - name: Build xeus-r
         shell: bash -l {0}
         run: |
-          $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
-          source $HOME/emsdk/emsdk_env.sh
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
           
           mkdir build
@@ -83,7 +73,7 @@ jobs:
               --output-dir dist
 
           mkdir -p dist/files
-          mv notebooks dist/files
+          mv notebooks/examples.ipynb dist/files
           mv README.md dist/files
 
       - name: Upload artifact
