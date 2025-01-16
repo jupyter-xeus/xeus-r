@@ -1,6 +1,9 @@
 # ![xeus-r](docs/source/xeus-logo.svg)
 
-[![Build Status](https://github.com/jupyter-xeus/xeus-r/actions/workflows/main.yml/badge.svg)](https://github.com/jupyter-xeus/xeus-r/actions/workflows/main.yml) [![Documentation Status](http://readthedocs.org/projects/xeus-r/badge/?version=latest)](https://xeus-r.readthedocs.io/en/latest/?badge=latest) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb)
+[![Build Status](https://github.com/jupyter-xeus/xeus-r/actions/workflows/main.yml/badge.svg)](https://github.com/jupyter-xeus/xeus-r/actions/workflows/main.yml)
+[![Documentation Status](http://readthedocs.org/projects/xeus-r/badge/?version=latest)](https://xeus-r.readthedocs.io/en/latest/?badge=latest)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb)
+[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyter-xeus.github.io/xeus-r/)
 
 `xeus-r` is a Jupyter kernel for R based on the native implementation of the
 Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
@@ -48,8 +51,6 @@ cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFI
 make && make install
 ```
 
-Try Jupyter Lite demo by clicking below
-[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyter-xeus.github.io/xeus-r/)
 
 <!-- ## Trying it online
 
