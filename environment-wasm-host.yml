@@ -23,6 +23,7 @@ dependencies:
   - r-cli >=3.6.3
   - r-repr
   - r-IRdisplay
+  - r-dplyr
   # Test dependencies
   - r-htmltools
   - r-ggplot2
