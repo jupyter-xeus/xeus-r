@@ -1,8 +1,8 @@
 get_null_device <- function() {
   os <- get_os()
 
-  ok_device     <- switch(os, win = png,   osx = pdf,  unix = png, wasm = pdf)
-  null_filename <- switch(os, win = 'NUL', osx = NULL, unix = '/dev/null', wasm = NULL)
+  ok_device     <- switch(os, win = png,   osx = pdf,  unix = png, wasm = png)
+  null_filename <- switch(os, win = 'NUL', osx = NULL, unix = '/dev/null', wasm = '/tmp/null')
 
   null_device <- function(filename = null_filename, ...) ok_device(filename, ...)
   null_device
