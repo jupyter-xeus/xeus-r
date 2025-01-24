@@ -72,7 +72,7 @@ jobs:
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --XeusAddon.mounts=${{ env.PREFIX }}/share/jupyter/kernels/xr/resources:/share/jupyter/kernels/xr/resources \
               --contents README.md \
-              --contents notebooks/examples.ipynb \
+              --contents notebooks/xeus-r.ipynb \
               --output-dir dist
 
       - name: Upload artifact
