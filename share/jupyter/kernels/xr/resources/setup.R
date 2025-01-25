@@ -16,7 +16,7 @@ local({
     )
   }
 
-  files <- setdiff(list.files(here), "setup.R")
+  files <- setdiff(list.files(here, recursive = TRUE), "setup.R")
 
   for (f in files) {
     sys.source(file.path(here, f), envir = .xeus_env)
