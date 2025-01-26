@@ -43,6 +43,62 @@ cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFI
 make && make install
 ```
 
+## Installation within a mamba environment (wasm build instructions)
+
+First clone the repository, and move into that directory
+```bash
+git clone --depth=1 git@github.com:jupyter-xeus/xeus-r.git
+cd ./xeus-r
+```
+
+Now you'll want to create a clean mamba environment containing the tools you'll need to do a wasm build. This can be done by executing
+the following
+```bash
+micromamba create -f environment-wasm-build.yml -y
+micromamba activate xeus-r-wasm-build
+```
+
+You'll now want to make sure you're using emsdk version "3.1.45" and activate it. You can get this by executing the following
+```bash
+cd $HOME
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install 3.1.45
+./emsdk activate 3.1.45
+source $HOME/emsdk/emsdk_env.sh
+```
+
+You are now in a position to build the xeus-r kernel. You build it by executing the following
+```bash
+micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
+mkdir build
+pushd build
+export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
+export CMAKE_PREFIX_PATH=$PREFIX
+export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
+
+emcmake cmake \
+        -DCMAKE_BUILD_TYPE=Release                        \
+        -DCMAKE_PREFIX_PATH=$PREFIX                       \
+        -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
+        -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON                 \
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON            \
+        ..
+emmake make install
+```
+
+To build Jupyter Lite with this kernel without creating a website you can execute the following
+```bash
+micromamba create -n xeus-lite-host jupyterlite-core
+micromamba activate xeus-lite-host
+python -m pip install jupyterlite-xeus
+jupyter lite build --XeusAddon.prefix=$PREFIX
+```
+Once the Jupyter Lite site has built you can test the website locally by executing
+```bash
+jupyter lite serve --XeusAddon.prefix=$PREFIX
+```
+
 ## Trying it online
 
 To try out xeus-r interactively in your web browser, just click on the Binder link.
