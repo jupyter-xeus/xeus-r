@@ -3,7 +3,7 @@
     target_callback(comm, request)
 }
 
-CommManagerClass <- R6::R6Class("CommManagerClass", 
+CommManagerClass <- R6::R6Class("CommManagerClass",
     public = list(
         initialize = function() {
             private$targets <- new.env()
@@ -12,90 +12,90 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
 
         register_comm_target = function(target_name, callback) {
             private$targets[[target_name]] <- callback
-            invisible(.Call("CommManager__register_target", target_name, PACKAGE = "(embedding)"))
-        }, 
+            invisible(hera_dot_call("CommManager__register_target", target_name, PACKAGE = "(embedding)"))
+        },
 
         unregister_comm_target = function(target_name) {
             rm(list = target_name, private$targets)
-            invisible(.Call("CommManager__unregister_target", target_name, PACKAGE = "(embedding)"))
-        }, 
+            invisible(hera_dot_call("CommManager__unregister_target", target_name))
+        },
 
         new_comm = function(target_name) {
-            xp <- .Call("CommManager__new_comm", target_name, PACKAGE = "(embedding)")
+            xp <- hera_dot_call("CommManager__new_comm", target_name)
             if (is.null(xp)) {
                 stop(glue::glue("No target '{target_name}' registered"))
             }
             Comm$new(xp = xp)
         }
-    ), 
+    ),
 
     private = list(
-        targets = NULL, 
+        targets = NULL,
         comms = NULL
     )
 )
 CommManager <- CommManagerClass$new()
 
-Comm <- R6::R6Class("Comm", 
+Comm <- R6::R6Class("Comm",
     public = list(
         initialize = function(xp) {
             private$xp <- xp
-        }, 
+        },
 
         open = function(metadata = NULL, data = NULL) {
             js_metadata <- jsonlite::toJSON(metadata)
             js_data <- jsonlite::toJSON(data)
 
-            invisible(.Call("Comm__open", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
-        }, 
+            invisible(hera_dot_call("Comm__open", private$xp, js_metadata, js_data))
+        },
 
         close = function(metadata = NULL, data = NULL) {
             js_metadata <- jsonlite::toJSON(metadata)
             js_data <- jsonlite::toJSON(data)
 
-            invisible(.Call("Comm__close", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
-        }, 
+            invisible(hera_dot_call("Comm__close", private$xp, js_metadata, js_data))
+        },
 
         send = function(metadata = NULL, data = NULL) {
             js_metadata <- jsonlite::toJSON(metadata)
             js_data <- jsonlite::toJSON(data)
 
-            invisible(.Call("Comm__send", private$xp, js_metadata, js_data, PACKAGE = "(embedding)"))
-        }, 
+            invisible(hera_dot_call("Comm__send", private$xp, js_metadata, js_data))
+        },
 
         on_close = function(handler) {
             private$close_handler <- handler
-            invisible(.Call("Comm__on_close", private$xp, handler, PACKAGE = "(embedding)"))
-        }, 
+            invisible(hera_dot_call("Comm__on_close", private$xp, handler)
+        },
 
         on_message = function(handler) {
             private$message_handler <- handler
-            invisible(.Call("Comm__on_message", private$xp, handler, PACKAGE = "(embedding)"))
+            invisible(hera_dot_call("Comm__on_message", private$xp, handler))
         }
-    ), 
+    ),
 
     active = list(
         id = function() {
-            .Call("Comm__id", private$xp, PACKAGE = "(embedding)")
-        }, 
+            hera_dot_call("Comm__id", private$xp)
+        },
 
         target_name = function() {
-            .Call("Comm__target_name", private$xp, PACKAGE = "(embedding)")
+            hera_dot_call("Comm__target_name", private$xp)
         }
     ),
-    
+
     private = list(
-        xp = NULL, 
-        close_handler = NULL, 
+        xp = NULL,
+        close_handler = NULL,
         message_handler = NULL
     )
 )
 
-Message <- R6::R6Class("Message", 
+Message <- R6::R6Class("Message",
     public = list(
         initialize = function(xp) {
             private$xp <- xp
-        }, 
+        },
 
         print = function() {
             print(cli::rule("$content"))
@@ -110,23 +110,23 @@ Message <- R6::R6Class("Message",
             print(cli::rule("$metadata"))
             str(self$metadata)
         }
-    ), 
+    ),
 
     active = list(
         content = function() {
-            jsonlite::fromJSON(.Call("Message__get_content", private$xp, PACKAGE = "(embedding)"))
-        }, 
+            jsonlite::fromJSON(hera_dot_call("Message__get_content", private$xp))
+        },
 
         header = function() {
-            jsonlite::fromJSON(.Call("Message__get_header", private$xp, PACKAGE = "(embedding)"))
-        }, 
+            jsonlite::fromJSON(hera_dot_call("Message__get_header", private$xp))
+        },
 
         parent_header = function() {
-            jsonlite::fromJSON(.Call("Message__get_parent_header", private$xp, PACKAGE = "(embedding)"))
-        }, 
+            jsonlite::fromJSON(hera_dot_call("Message__get_parent_header", private$xp))
+        },
 
         metadata = function() {
-            jsonlite::fromJSON(.Call("Message__get_metadata", private$xp, PACKAGE = "(embedding)"))
+            jsonlite::fromJSON(hera_dot_call("Message__get_metadata", private$xp))
         }
     ),
 
