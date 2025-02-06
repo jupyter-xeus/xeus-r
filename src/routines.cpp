@@ -210,7 +210,6 @@ public:
         Rf_eval(call, R_GlobalEnv);
 
         UNPROTECT(2);
-
     }
 
 private:
