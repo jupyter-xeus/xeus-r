@@ -2,7 +2,7 @@ Package: hera
 Title: Companion to the 'xeus-r' 'Jupyter' kernel for R
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Romain", "François", email = "romain@tada.science", role = c("aut", "cre")
+    person("Romain", "François", email = "romain@tada.science", role = c("aut", "cre"))
   )
 Description: Set of R functions to be coupled with the xeus-r jupyter kernel for R. 
 License: MIT + file LICENSE
