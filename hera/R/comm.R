@@ -65,7 +65,7 @@ Comm <- R6::R6Class("Comm",
 
         on_close = function(handler) {
             private$close_handler <- handler
-            invisible(hera_dot_call("Comm__on_close", private$xp, handler)
+            invisible(hera_dot_call("Comm__on_close", private$xp, handler))
         },
 
         on_message = function(handler) {

@@ -1,10 +1,9 @@
-NAMESPACE <- environment()
-the <- new.env()
-the$frame_cell_execute <- NULL
 
 .onLoad <- function(libname, pkgname) {
   # - verify this is running within xeus-r
   # - handshake
+  the <<- new.env()
+  the$frame_cell_execute <- NULL
 
   init_options()
 }
