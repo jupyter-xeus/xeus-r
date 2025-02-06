@@ -3,6 +3,27 @@ NAMESPACE <- environment()
 .onLoad <- function(libname, pkgname) {
   # - verify this is running within xeus-r
   # - handshake
+
+  init_options()
+}
+
+init_options <- function() {
+  options(
+    device = get_null_device(),
+    cli.num_colors = 256L,
+    jupyter.plot_mimetypes = c('text/plain', 'image/png'),
+    jupyter.plot_scale = 2,
+
+    jupyter.rich_display = TRUE,
+    jupyter.base_display_func = display_data,
+    jupyter.clear_output_func = clear_output
+  )
+
+  repos <- getOption('repos')
+  if (identical(repos, c(CRAN = '@CRAN@'))) {
+    repos[['CRAN']] <- 'https://cran.r-project.org'
+    options(repos = repos)
+  }
 }
 
 hera_call <- function(fn, ...) {
@@ -31,4 +52,13 @@ hera_dot_call <- function(fn, ...) {
   eval.parent(call)
 }
 
+get_null_device <- function() {
+  os <- get_os()
+
+  ok_device     <- switch(os, win = png,   osx = pdf,  unix = png, wasm = png)
+  null_filename <- switch(os, win = 'NUL', osx = NULL, unix = '/dev/null', wasm = '/tmp/null')
+
+  null_device <- function(filename = null_filename, ...) ok_device(filename, ...)
+  null_device
+}
 
