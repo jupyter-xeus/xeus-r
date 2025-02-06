@@ -13,7 +13,7 @@ namedlist <- function() {
 }
 
 set_last_value <- function(obj, visible) {
-    last_visible <<- visible
+    the$last_visible <- visible
 
     unlockBinding(".Last.value", .BaseNamespaceEnv)
     assign(".Last.value", obj, .BaseNamespaceEnv)
