@@ -50,3 +50,4 @@ bld
 Untitled*.ipynb
 *.log
 /*.ipynb
+.Rproj.user
