@@ -11,10 +11,12 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     cli,
+    evaluate,
     glue,
     IRdisplay,
     jsonlite,
     R6,
+    repr,
     rlang,
     tools,
     utils

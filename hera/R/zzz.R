@@ -1,9 +1,49 @@
+#' @importFrom grDevices pdf png
+#' @importFrom jsonlite toJSON unbox
+#' @importFrom utils head tail capture.output
+#' @importFrom R6 R6Class
+NULL
+
+print_vignette <- function(x, ...) {
+  file <- x$PDF
+  if (nzchar(file) == 0) {
+    warning(gettextf("vignette %s has no PDF/HTML", sQuote(x$Topic)), call. = FALSE, domain = NA)
+    return(invisible(x))
+  }
+
+  ext <- tolower(tools::file_ext(file))
+  if (ext == "pdf") {
+    warning("can't display pdf vignette yet")
+    return(invisible(x))
+  }
+
+  if (ext == "html") {
+    html <- readLines(file.path(x$Dir, "doc", file))
+
+    display_data(
+      data = list(
+        "text/html" = paste(html, collapse = "\n")
+      ),
+      metadata = list(
+        "text/html" = list(isolated = TRUE)
+      )
+    )
+  }
+
+  invisible(x)
+}
 
 .onLoad <- function(libname, pkgname) {
   # - verify this is running within xeus-r
   # - handshake
   the <<- new.env()
   the$frame_cell_execute <- NULL
+
+  ns_utils <- asNamespace("utils")
+  get("unlockBinding", envir = baseenv())("print.vignette", ns_utils)
+
+  assign("print.vignette", print_vignette, ns_utils)
+  get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
 
   init_options()
 }
@@ -36,8 +76,7 @@ hera_new <- function(class, xp) {
 }
 
 is_xeus <- function() {
-  dlls <- getLoadedDLLs()
-  embeding <- dlls[["(embedding)"]]
+  embedding <- getLoadedDLLs()[["(embedding)"]]
   !is.null(embedding) && "xeusr_kernel_info_request" %in% getDLLRegisteredRoutines()$.Call
 }
 
@@ -53,7 +92,6 @@ hera_dot_call <- function(fn, ...) {
   eval.parent(call)
 }
 
-#' @importFrom grDevices pdf png
 get_null_device <- function() {
   os <- get_os()
 

@@ -1,9 +1,11 @@
+comm_target_env <- new.env()
+
 .CommManager__register_target_callback <- function(comm, request) {
     target_callback <- comm_target_env[[request$content$target_name]]
     target_callback(comm, request)
 }
 
-CommManagerClass <- R6::R6Class("CommManagerClass",
+CommManagerClass <- R6Class("CommManagerClass",
     public = list(
         initialize = function() {
             private$targets <- new.env()
@@ -36,7 +38,7 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
 )
 CommManager <- CommManagerClass$new()
 
-Comm <- R6::R6Class("Comm",
+Comm <- R6Class("Comm",
     public = list(
         initialize = function(xp) {
             private$xp <- xp
@@ -91,7 +93,7 @@ Comm <- R6::R6Class("Comm",
     )
 )
 
-Message <- R6::R6Class("Message",
+Message <- R6Class("Message",
     public = list(
         initialize = function(xp) {
             private$xp <- xp
