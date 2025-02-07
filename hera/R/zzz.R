@@ -53,6 +53,7 @@ hera_dot_call <- function(fn, ...) {
   eval.parent(call)
 }
 
+#' @importFrom grDevices pdf png
 get_null_device <- function() {
   os <- get_os()
 
