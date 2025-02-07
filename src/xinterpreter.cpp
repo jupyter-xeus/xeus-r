@@ -145,11 +145,9 @@ void interpreter::configure_impl()
     SEXP sym_library = Rf_install("library");
     SEXP str_hera = PROTECT(Rf_mkString("hera"));
     SEXP call_library_hera = PROTECT(Rf_lang2(sym_library, str_hera));
-    SEXP out = PROTECT(Rf_eval(call_library_hera, R_GlobalEnv));
+    Rf_eval(call_library_hera, R_GlobalEnv);
 
-    r::invoke_hera_fn("configure");
-
-    UNPROTECT(3);
+    UNPROTECT(2);
 }
 
 nl::json interpreter::is_complete_request_impl(const std::string& code_)
