@@ -30,7 +30,7 @@ View <- function(x, title) {
 
 ns_utils <- asNamespace("utils")
 unlockBinding("print.vignette", ns_utils)
-print.vignette <- function(x, ...) {
+print_vignette <- function(x, ...) {
   file <- x$PDF
   if (nzchar(file) == 0) {
     warning(gettextf("vignette %s has no PDF/HTML", sQuote(x$Topic)), call. = FALSE, domain = NA)
@@ -49,7 +49,7 @@ print.vignette <- function(x, ...) {
     display_data(
       data = list(
         "text/html" = paste(html, collapse = "\n")
-      ), 
+      ),
       metadata = list(
         "text/html" = list(isolated = TRUE)
       )
@@ -58,5 +58,5 @@ print.vignette <- function(x, ...) {
 
   invisible(x)
 }
-assign("print.vignette", print.vignette, ns_utils)
+assign("print.vignette", print_vignette, ns_utils)
 lockBinding("print.vignette", ns_utils)
