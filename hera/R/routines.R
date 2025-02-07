@@ -1,25 +1,25 @@
 publish_stream <- function(name, text) {
-  .Call("xeusr_publish_stream", name, text, PACKAGE = "(embedding)")
+  hera_dot_call("xeusr_publish_stream", name, text)
 }
 
 display_data <- function(data = NULL, metadata = NULL) {
-  invisible(.Call("xeusr_display_data", jsonlite::toJSON(data), jsonlite::toJSON(metadata), PACKAGE = "(embedding)"))
+  invisible(hera_dot_call("xeusr_display_data", jsonlite::toJSON(data), jsonlite::toJSON(metadata)))
 }
 
 update_display_data <- function(data = NULL, metadata = NULL) {
-  invisible(.Call("xeusr_update_display_data", jsonlite::toJSON(data), jsonlite::toJSON(metadata), PACKAGE = "(embedding)"))
+  invisible(hera_dot_call("xeusr_update_display_data", jsonlite::toJSON(data), jsonlite::toJSON(metadata)))
 }
 
 kernel_info_request <- function() {
-  .Call("xeusr_kernel_info_request", PACKAGE = "(embedding)")
+  hera_dot_call("xeusr_kernel_info_request")
 }
 
 clear_output <- function(wait = FALSE) {
-  invisible(.Call("xeusr_clear_output", isTRUE(wait), PACKAGE = "(embedding)"))
+  invisible(hera_dot_call("xeusr_clear_output", isTRUE(wait)))
 }
 
 is_complete_request <- function(code) {
-  .Call("xeusr_is_complete_request", code, PACKAGE = "(embedding)")
+  hera_dot_call("xeusr_is_complete_request", code)
 }
 
 View <- function(x, title) {
