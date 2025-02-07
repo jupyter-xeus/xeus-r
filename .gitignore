@@ -52,4 +52,6 @@ Untitled*.ipynb
 /*.ipynb
 .Rproj.user
 .Rhistory
+hera.Rcheck
+hera_*.tar.gz
 
