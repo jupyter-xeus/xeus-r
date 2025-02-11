@@ -110,12 +110,9 @@ if(R_COMMAND)
     set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
 
     set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
-    
-    # find_library(R_LIBRARY_BASE NAMES R
-    #             HINTS ${R_ROOT_DIR}/lib/R/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-    #             DOC "R library (example libR.a, libR.dylib, etc.).")
-
-    set(R_LIBRARY_BASE "${R_HOME}/lib/libR.dylib" CACHE PATH "R library (example libR.a, libR.dylib, etc.).")
+    find_library(R_LIBRARY_BASE R
+                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                 DOC "R library (example libR.a, libR.dylib, etc.).")
 
     find_library(R_LIBRARY_BLAS NAMES Rblas blas
                  HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
