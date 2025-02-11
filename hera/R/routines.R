@@ -14,6 +14,13 @@ kernel_info_request <- function() {
   hera_dot_call("xeusr_kernel_info_request")
 }
 
+
+#' Clear output
+#'
+#' @param wait Should this wait
+#'
+#' @return NULL invisibly
+#' @export
 clear_output <- function(wait = FALSE) {
   invisible(hera_dot_call("xeusr_clear_output", isTRUE(wait)))
 }
