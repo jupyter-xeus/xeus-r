@@ -3,7 +3,7 @@ triple_colon <- function(pkg, fun) {
 }
 
 utils___assignLineBuffer    <- triple_colon("utils", ".assignLinebuffer")
-utils___assignEnd           <- triple_colon("utils", ".assignLinebuffer")
+utils___assignEnd           <- triple_colon("utils", ".assignEnd")
 utils___guessTokenFromLine  <- triple_colon("utils", ".guessTokenFromLine")
 utils___completeToken       <- triple_colon("utils", ".completeToken")
 utils___retrieveCompletions <- triple_colon("utils", ".retrieveCompletions")
