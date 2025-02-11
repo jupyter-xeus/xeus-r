@@ -21,7 +21,10 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     completion_samples = [
         {"text": "rnorm(",   "matches": {"n=", "mean=", "sd="}}
     ]
-    code_execute_result = [{"code": "6*7", "result": ["[1] 42"]}]
+    code_execute_result = [
+        {"code": "6*7"       , "result": ["[1] 42"]}, 
+        {"code": "is_xeusr()", "result": ["[1] TRUE"]}
+    ]
     #code_display_data = [
     #    {"code": "plot(0)", "mime": "image/png"}, 
     #    {"code": "ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width)) + ggplot2::geom_point()", "mime": "image/png"}, 
