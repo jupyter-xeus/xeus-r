@@ -18,6 +18,8 @@ dependencies:
   # Run dependencies
   - r-rlang
   - r-evaluate
+  - r-glue
+  - r-r6
   - r-jsonlite
   - r-glue
   - r-cli >=3.6.3
