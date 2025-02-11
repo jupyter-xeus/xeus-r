@@ -8,7 +8,14 @@ utils___guessTokenFromLine  <- triple_colon("utils", ".guessTokenFromLine")
 utils___completeToken       <- triple_colon("utils", ".completeToken")
 utils___retrieveCompletions <- triple_colon("utils", ".retrieveCompletions")
 
-# This is mostly inspired from IRkernel::completions()
+#' Code completion
+#'
+#' @param code R code to complete
+#' @param cursor_pos position of the cursor
+#'
+#' @return a list that contains potential completions as the first item
+#'
+#' @export
 complete <- function(code, cursor_pos = nchar(code)) {
     # Find which line we're on and position within that line
     lines <- strsplit(code, '\n', fixed = TRUE)[[1]]
@@ -37,6 +44,8 @@ complete <- function(code, cursor_pos = nchar(code)) {
     start_position <- chars_before_line + info$start
     comps <- utils___retrieveCompletions()
 
-    # TODO: use jsonlite::toJSON() here
-    list(comps, c(start_position, start_position + nchar(info$token)))
+    list(
+      comps,
+      c(start_position, start_position + nchar(info$token))
+    )
 }
