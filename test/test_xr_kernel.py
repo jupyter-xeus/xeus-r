@@ -32,7 +32,7 @@ class KernelTests(jupyter_kernel_test.KernelTests):
     #]
     
     # code_page_something = "?cat"
-    # code_clear_output = "clear_output()"
+    code_clear_output = "clear_output()"
     code_generate_error = "stop('ouch')"
     code_inspect_sample = "print"
     
