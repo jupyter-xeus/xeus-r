@@ -88,12 +88,13 @@ is_xeusr <- function() {
 hera_dot_call <- function(fn, ..., error_call = caller_env()) {
   call <- rlang::call2(".Call", fn, ..., PACKAGE = "(embedding)")
 
-  # if (!is_xeusr()) {
-  #   cli::cli_abort(c(
-  #     "{.fn {fn}} must be called inside a xeusr kernel.",
-  #     i = "Full call: {.code {call}}"
-  #   ), call = error_call)
-  # }
+  if (!is_xeusr()) {
+    cli::cli_abort(c(
+      "The {.val {fn}} routine must be called inside a xeusr kernel.",
+      i   = "Full internal call to the xeusr routine:",
+      " " = "{deparse(call)}"
+    ), call = error_call)
+  }
   eval.parent(call)
 }
 
