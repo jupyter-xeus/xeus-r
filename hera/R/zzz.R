@@ -1,5 +1,5 @@
 #' @importFrom grDevices pdf png
-#' @importFrom jsonlite toJSON unbox
+#' @importFrom jsonlite toJSON unbox fromJSON
 #' @importFrom utils head tail capture.output
 #' @importFrom R6 R6Class
 #' @importFrom rlang caller_env

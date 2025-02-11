@@ -45,22 +45,22 @@ Comm <- R6Class("Comm",
         },
 
         open = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+            js_metadata <- toJSON(metadata)
+            js_data <- toJSON(data)
 
             invisible(hera_dot_call("Comm__open", private$xp, js_metadata, js_data))
         },
 
         close = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+            js_metadata <- toJSON(metadata)
+            js_data <- toJSON(data)
 
             invisible(hera_dot_call("Comm__close", private$xp, js_metadata, js_data))
         },
 
         send = function(metadata = NULL, data = NULL) {
-            js_metadata <- jsonlite::toJSON(metadata)
-            js_data <- jsonlite::toJSON(data)
+            js_metadata <- toJSON(metadata)
+            js_data <- toJSON(data)
 
             invisible(hera_dot_call("Comm__send", private$xp, js_metadata, js_data))
         },
@@ -116,19 +116,19 @@ Message <- R6Class("Message",
 
     active = list(
         content = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_content", private$xp))
+            fromJSON(hera_dot_call("Message__get_content", private$xp))
         },
 
         header = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_header", private$xp))
+            fromJSON(hera_dot_call("Message__get_header", private$xp))
         },
 
         parent_header = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_parent_header", private$xp))
+            fromJSON(hera_dot_call("Message__get_parent_header", private$xp))
         },
 
         metadata = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_metadata", private$xp))
+            fromJSON(hera_dot_call("Message__get_metadata", private$xp))
         }
     ),
 

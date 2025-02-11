@@ -25,11 +25,11 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         {"code": "6*7"       , "result": ["[1] 42"]}, 
         {"code": "is_xeusr()", "result": ["[1] TRUE"]}
     ]
-    #code_display_data = [
-    #    {"code": "plot(0)", "mime": "image/png"}, 
-    #    {"code": "ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width)) + ggplot2::geom_point()", "mime": "image/png"}, 
-    #    {"code": "View(head(iris))", "mime": "text/html"}
-    #]
+    code_display_data = [
+        {"code": "plot(0)", "mime": "image/png"}, 
+        {"code": "ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width)) + ggplot2::geom_point()", "mime": "image/png"}, 
+        {"code": "View(head(iris))", "mime": "text/html"}
+    ]
     
     # code_page_something = "?cat"
     code_clear_output = "clear_output()"
