@@ -2,6 +2,7 @@
 #' @importFrom jsonlite toJSON unbox
 #' @importFrom utils head tail capture.output
 #' @importFrom R6 R6Class
+#' @importFrom rlang caller_env
 NULL
 
 print_vignette <- function(x, ...) {
@@ -75,20 +76,25 @@ hera_new <- function(class, xp) {
     get(class, envir = NAMESPACE)$new(xp)
 }
 
-is_xeus <- function() {
+#' Is this a running xeusr jupyter kernel
+#'
+#' @return TRUE if the current session is running in a xeusr kernel
+#' @export
+is_xeusr <- function() {
   embedding <- getLoadedDLLs()[["(embedding)"]]
-  !is.null(embedding) && "xeusr_kernel_info_request" %in% getDLLRegisteredRoutines()$.Call
+  !is.null(embedding) && "xeusr_kernel_info_request" %in% getDLLRegisteredRoutines(embedding)$.Call
 }
 
-hera_dot_call <- function(fn, ...) {
-  # TODO: check that we are indeed withing xeus-r
-  # and have some sort of plan B
-
-  # if (!is_xeusr()) {
-  #   ...
-  # }
-
+hera_dot_call <- function(fn, ..., error_call = caller_env()) {
   call <- rlang::call2(".Call", fn, ..., PACKAGE = "(embedding)")
+
+  if (!is_xeusr()) {
+    cli::cli_abort(c(
+      "{.fn {fn}} must be called inside a xeusr kernel.",
+      i = "Full call: {.code {call}}"
+    ), call = error_call)
+  }
+
   eval.parent(call)
 }
 
