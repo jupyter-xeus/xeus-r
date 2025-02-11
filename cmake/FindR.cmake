@@ -112,6 +112,7 @@ if(R_COMMAND)
     set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
     find_library(R_LIBRARY_BASE R
                  HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                 NO_DEFAULT_PATH
                  DOC "R library (example libR.a, libR.dylib, etc.).")
 
     find_library(R_LIBRARY_BLAS NAMES Rblas blas
