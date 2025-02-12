@@ -1,2 +1,0 @@
-NAMESPACE <- environment()
-the <- NULL

@@ -34,11 +34,16 @@ print_vignette <- function(x, ...) {
   invisible(x)
 }
 
+the <- NULL
+
 .onLoad <- function(libname, pkgname) {
   # - verify this is running within xeus-r
   # - handshake
   the <<- new.env()
   the$frame_cell_execute <- NULL
+  the$last_plot <- NULL
+  the$last_visible <- TRUE
+  the$last_error <- NULL
 
   ns_utils <- asNamespace("utils")
   get("unlockBinding", envir = baseenv())("print.vignette", ns_utils)
@@ -68,6 +73,7 @@ init_options <- function() {
   }
 }
 
+NAMESPACE <- environment()
 hera_call <- function(fn, ...) {
     get(fn, envir = NAMESPACE)(...)
 }

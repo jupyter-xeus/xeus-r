@@ -2,7 +2,7 @@
 % Please edit documentation in R/cell_options.R
 \name{cell_options}
 \alias{cell_options}
-\title{Options for current cell}
+\title{Options for current jupyter cell}
 \usage{
 cell_options(...)
 }
@@ -12,5 +12,5 @@ values defining new option values. For \code{peek_options()}, strings
 or character vectors of option names.}
 }
 \description{
-Options for current cell
+Options for current jupyter cell
 }

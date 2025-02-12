@@ -1,8 +1,3 @@
-# these might need to be become the$
-the$last_plot <- NULL
-the$last_visible <- TRUE
-the$last_error <- NULL
-
 handle_message <- function(msg) {
   publish_stream("stderr", conditionMessage(msg))
 }
