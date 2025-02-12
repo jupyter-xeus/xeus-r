@@ -99,7 +99,7 @@ SEXP CommManager__register_target(SEXP name_) {
         SEXP xptr_comm = PROTECT(R_MakeExternalPtr(
             reinterpret_cast<void*>(ptr_comm), R_NilValue, R_NilValue
         ));
-        SEXP r6_comm = PROTECT(r::new_r6("Comm", xptr_comm));
+        SEXP r6_comm = PROTECT(r::new_hera_r6("Comm", xptr_comm));
 
         // request
         auto ptr_request = new xeus::xmessage(std::move(request));
@@ -110,10 +110,10 @@ SEXP CommManager__register_target(SEXP name_) {
             delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
         }, FALSE);
 
-        SEXP r6_request = PROTECT(r::new_r6("Message", xptr_request));
+        SEXP r6_request = PROTECT(r::new_hera_r6("Message", xptr_request));
 
         // callback
-        r::invoke_xeusr_fn(".CommManager__register_target_callback", r6_comm, r6_request);
+        r::invoke_hera_fn(".CommManager__register_target_callback", r6_comm, r6_request);
 
         UNPROTECT(4);
     };
@@ -204,13 +204,12 @@ public:
         
         SEXP call = PROTECT(r::r_call(
             m_handler, 
-            r::new_r6("Message", xptr_message))
+            r::new_hera_r6("Message", xptr_message))
         );
 
         Rf_eval(call, R_GlobalEnv);
 
         UNPROTECT(2);
-
     }
 
 private:

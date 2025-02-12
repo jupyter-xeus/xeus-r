@@ -66,8 +66,15 @@ message(STATUS "R_LDFLAGS        = ${R_LDFLAGS}")
 message(STATUS "R_LIBRARY_BASE   = ${R_LIBRARY_BASE}")
 message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
 message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
-message(STATUS "R_VERSION_MAJOR = ${R_VERSION_MAJOR}")
-message(STATUS "R_VERSION_MINOR = ${R_VERSION_MINOR}")
+message(STATUS "R_VERSION_MAJOR  = ${R_VERSION_MAJOR}")
+message(STATUS "R_VERSION_MINOR  = ${R_VERSION_MINOR}")
+
+# Install R package hera
+# ======================
+
+message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
+execute_process(COMMAND ${R_COMMAND} CMD INSTALL --preclean --no-staged-install --build ../hera)
+execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
 
 # Configuration
 # =============

@@ -34,26 +34,30 @@ SEXP r_call(SEXP head, Types... tail) {
 }
 
 template<class... Types>
-SEXP invoke_xeusr_fn(const char* f, Types... args) {
-    SEXP sym_xeus_call = Rf_install(".xeus_call");
-    
-    SEXP call = PROTECT(r_call(sym_xeus_call, Rf_mkString(f), args...));
+SEXP invoke_hera_fn(const char* f, Types... args) {
+    SEXP sym_hera = Rf_install("hera");
+    SEXP sym_hera_call = Rf_install("hera_call");
+    SEXP sym_triple_colon = Rf_install(":::");
+
+    SEXP call_triple_colon = PROTECT(r_call(sym_triple_colon, sym_hera, sym_hera_call));
+    SEXP call = PROTECT(r_call(call_triple_colon, Rf_mkString(f), args...));
     SEXP result = Rf_eval(call, R_GlobalEnv);
 
-    UNPROTECT(1);
+    UNPROTECT(2);
     return result;
 }
 
-inline SEXP new_r6(const char* klass, SEXP xp) {
-    SEXP sym_new_r6 = Rf_install(".xeus_new");
+inline SEXP new_hera_r6(const char* klass, SEXP xp) {
+    SEXP sym_hera = Rf_install("hera");
+    SEXP sym_hera_new = Rf_install("hera_new");
+    SEXP sym_triple_colon = Rf_install(":::");
 
-    SEXP call = PROTECT(r_call(sym_new_r6, Rf_mkString(klass), xp));
+    SEXP call = PROTECT(r_call(sym_triple_colon, Rf_mkString(klass), xp));
     SEXP result = Rf_eval(call, R_GlobalEnv);
 
-    UNPROTECT(1);
+    UNPROTECT(2);
     return result;
 }
-
 
 }
 }

@@ -70,7 +70,6 @@ jobs:
           python -m pip install jupyterlite-xeus
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
-              --XeusAddon.mounts=${{ env.PREFIX }}/share/jupyter/kernels/xr/resources:/share/jupyter/kernels/xr/resources \
               --contents README.md \
               --contents notebooks/xeus-r.ipynb \
               --output-dir dist

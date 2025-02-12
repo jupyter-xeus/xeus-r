@@ -13,11 +13,11 @@ namedlist <- function() {
 }
 
 set_last_value <- function(obj, visible) {
-    last_visible <<- visible
+    the$last_visible <- visible
 
-    unlockBinding(".Last.value", .BaseNamespaceEnv)
+    get("unlockBinding", envir = baseenv())(".Last.value", .BaseNamespaceEnv)
     assign(".Last.value", obj, .BaseNamespaceEnv)
-    lockBinding(".Last.value", .BaseNamespaceEnv)
+    get("lockBinding", envir = baseenv())(".Last.value", .BaseNamespaceEnv)
 }
 
 # borrowed from IRkernel
@@ -25,9 +25,9 @@ plot_builds_upon <- function(prev, current) {
     if (is.null(prev)) {
         return(TRUE)
     }
-    
+
     lprev <- length(prev[[1]])
     lcurrent <- length(current[[1]])
-    
+
     lcurrent >= lprev && identical(current[[1]][1:lprev], prev[[1]][1:lprev])
 }
