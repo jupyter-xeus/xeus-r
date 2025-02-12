@@ -71,12 +71,11 @@ message(STATUS "R_VERSION_MINOR  = ${R_VERSION_MINOR}")
 
 # Install R package hera
 # ======================
-if(EMSCRIPTEN)
-# 
-else()
-    execute_process(COMMAND ${R_COMMAND} CMD INSTALL ../hera)
-endif()
 
+message(STATUS "Installing R 📦 hera to temporary library")
+execute_process(COMMAND ${R_COMMAND} CMD INSTALL --preclean --no-staged-install --library=temp_r_lib --build ../hera)
+install(DIRECTORY temp_r_lib/ DESTINATION ${R_HOME}/library)
+execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
 
 # Configuration
 # =============
