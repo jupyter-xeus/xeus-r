@@ -52,9 +52,9 @@ handle_error <- function(e) {
 
     trace_back <- c(
       cli::col_red("--- Error"),
-      format(e, backtrace = FALSE), 
+      format(e, backtrace = FALSE),
       "",
-      cli::col_red("--- Traceback"), 
+      cli::col_red("--- Traceback"),
       format(e$trace)
     )
     the$last_error <- structure(list(ename = "ERROR", evalue = "", trace_back), class = "error_reply")
@@ -66,9 +66,9 @@ handle_error <- function(e) {
     evalue <- paste(conditionMessage(e), collapse = "\n")
     trace_back <- c(
       cli::col_red("--- Error"),
-      evalue, 
+      evalue,
       "",
-      cli::col_red("--- Traceback (most recent call last)"), 
+      cli::col_red("--- Traceback (most recent call last)"),
       stack
     )
     the$last_error <- structure(list(ename = "ERROR", evalue = evalue, trace_back), class = "error_reply")
@@ -90,7 +90,7 @@ handle_graphics <- function(plot) {
   attr(plot, ".irkernel_height") <- getOption('repr.plot.height', repr::repr_option_defaults$repr.plot.height)
   attr(plot, ".irkernel_res")    <- getOption('repr.plot.res', repr::repr_option_defaults$repr.plot.res)
   attr(plot, ".irkernel_ppi")    <- attr(plot, ".irkernel_res") / getOption('jupyter.plot_scale', 2)
-  
+
   if (!plot_builds_upon(the$last_plot, plot)) {
     send_plot(the$last_plot)
   }
@@ -127,31 +127,33 @@ send_plot <- function(plot) {
   display_data(data, metadata)
 }
 
+# currently not exported, because it is only meant to be called
+# from xeus-r / interpreter::execute_request_impl
 execute <- function(code, execution_counter, silent = FALSE) {
   the$last_error <- NULL
-  
+
   parsed <- tryCatch(
-    parse(text = code), 
+    parse(text = code),
     error = function(e) {
       msg <- paste(conditionMessage(e), collapse = "\n")
       the$last_error <- structure(list(ename = "PARSE ERROR", evalue = msg), class = "error_reply")
     }
   )
   if (!is.null(the$last_error)) return(the$last_error)
-  
+
   output_handler <- if (silent) {
     evaluate::new_output_handler()
   } else {
     evaluate::new_output_handler(
-      text = function(txt) publish_stream("stdout", txt), 
+      text = function(txt) publish_stream("stdout", txt),
       graphics = handle_graphics,
-      message = handle_message, 
-      warning = handle_warning, 
-      error = handle_error, 
+      message = handle_message,
+      warning = handle_warning,
+      error = handle_error,
       value = handle_value
-    )  
+    )
   }
-  
+
   the$last_plot <- NULL
   the$last_visible <- FALSE
 
@@ -162,7 +164,7 @@ execute <- function(code, execution_counter, silent = FALSE) {
     code,
     envir = globalenv(),
     output_handler = output_handler,
-    stop_on_error = 1L, 
+    stop_on_error = 1L,
     filename = filename
   )
   if (!is.null(the$last_error)) return(the$last_error)
@@ -181,10 +183,10 @@ execute <- function(code, execution_counter, silent = FALSE) {
     } else {
       "text/plain"
     }
-    
+
     bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
-    
-    structure(class = "execution_result", 
+
+    structure(class = "execution_result",
       list(toJSON(bundle$data), toJSON(bundle$metadata))
     )
   }

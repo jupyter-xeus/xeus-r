@@ -140,14 +140,17 @@ void interpreter::execute_request_impl(
 
 void interpreter::configure_impl()
 {
-    std::stringstream ss;
+    SEXP sym_library       = Rf_install("require");
+    SEXP str_hera          = PROTECT(Rf_mkString("hera"));
+    SEXP sym_quietly       = Rf_install("quietly");
+    SEXP call_library_hera = PROTECT(xeus_r::r::r_call(sym_library, str_hera, /* quietly = */ Rf_ScalarLogical(TRUE)));
+    SET_TAG(CDDR(call_library_hera), sym_quietly);
+    SEXP out = PROTECT(Rf_eval(call_library_hera, R_GlobalEnv));
+    if (LOGICAL_ELT(out, 0) == FALSE) {
+        // TODO: suicide the kernel because hera is not installed
+    }
 
-    SEXP sym_library = Rf_install("library");
-    SEXP str_hera = PROTECT(Rf_mkString("hera"));
-    SEXP call_library_hera = PROTECT(Rf_lang2(sym_library, str_hera));
-    Rf_eval(call_library_hera, R_GlobalEnv);
-
-    UNPROTECT(2);
+    UNPROTECT(3);
 }
 
 nl::json interpreter::is_complete_request_impl(const std::string& code_)
