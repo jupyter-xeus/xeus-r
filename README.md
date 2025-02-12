@@ -38,7 +38,7 @@ Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installa
 prefix if need be)
 
 ```bash
-mkdir build && cd build
+mkdir build && cd build && mkdir temp_r_lib
 cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib
 make && make install
 ```
