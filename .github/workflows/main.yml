@@ -90,6 +90,7 @@ jobs:
          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
          mkdir -p build
          cd build
+         mkdir temp_r_lib
          cmake .. ^
            -G "NMake Makefiles" ^
            -DCMAKE_BUILD_TYPE=Release ^
