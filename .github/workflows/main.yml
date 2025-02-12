@@ -33,7 +33,6 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          mkdir temp_r_lib
           cmake .. \
            -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
            -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
@@ -91,7 +90,6 @@ jobs:
          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
          mkdir -p build
          cd build
-         mkdir temp_r_lib
          cmake .. ^
            -G "NMake Makefiles" ^
            -DCMAKE_BUILD_TYPE=Release ^
