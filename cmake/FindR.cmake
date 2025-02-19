@@ -37,8 +37,15 @@ endif()
 
 set(TEMP_CMAKE_FIND_APPBUNDLE ${CMAKE_FIND_APPBUNDLE})
 set(CMAKE_FIND_APPBUNDLE "NEVER")
-find_program(R_COMMAND R DOC "R executable.")
-find_program(R_SCRIPT_COMMAND Rscript DOC "Rscript executable.")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  set(R_COMMAND "${CMAKE_BUILD_PREFIX}/bin/R" CACHE FILEPATH "R executable in Emscripten")
+  set(R_SCRIPT_COMMAND "${CMAKE_BUILD_PREFIX}/bin/Rscript" CACHE FILEPATH "Rscript executable in Emscripten")
+else()
+  find_program(R_COMMAND R DOC "R executable.")
+  find_program(R_SCRIPT_COMMAND Rscript DOC "Rscript executable.")
+endif()
+
 set(CMAKE_FIND_APPBUNDLE ${TEMP_CMAKE_FIND_APPBUNDLE})
 
 if(R_COMMAND)
