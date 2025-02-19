@@ -90,7 +90,7 @@ else()
     execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
 endif()
 
-if(NOT result EQUAL "0")
+if(NOT hera_result EQUAL "0")
     message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
 endif()
 
