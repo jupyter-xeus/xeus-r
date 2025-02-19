@@ -68,13 +68,31 @@ message(STATUS "R_LIBRARY_BLAS   = ${R_LIBRARY_BLAS}")
 message(STATUS "R_LIBRARY_LAPACK = ${R_LIBRARY_LAPACK}")
 message(STATUS "R_VERSION_MAJOR  = ${R_VERSION_MAJOR}")
 message(STATUS "R_VERSION_MINOR  = ${R_VERSION_MINOR}")
+message(STATUS "R_COMMAND        = ${R_COMMAND}")
+message(STATUS "R_SCRIPT_COMMAND = ${R_SCRIPT_COMMAND}")
 
 # Install R package hera
 # ======================
 
 message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
-execute_process(COMMAND ${R_COMMAND} CMD INSTALL --preclean --no-staged-install --build ../hera)
-execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
+if(EMSCRIPTEN)
+    execute_process(COMMAND ${R_COMMAND} CMD INSTALL
+        --preclean --no-staged-install --no-byte-compile --no-test-load
+        --build ../hera --library=${R_HOME}/library
+        RESULT_VARIABLE hera_result
+    )
+
+else()
+    execute_process(COMMAND ${R_COMMAND} CMD INSTALL
+        --preclean --no-staged-install --build ../hera
+        RESULT_VARIABLE hera_result
+    )
+    execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
+endif()
+
+if(NOT result EQUAL "0")
+    message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
+endif()
 
 # Configuration
 # =============
