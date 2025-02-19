@@ -50,6 +50,24 @@ jobs:
           export CMAKE_PREFIX_PATH=$PREFIX
           export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
 
+          # NOTE: this is needed to build hera without cross-r-base
+          export BUILD_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-build
+          echo "R_HOME=${PREFIX}/lib/R"       > "${BUILD_PREFIX}/lib/R/etc/Makeconf"
+          cat "${PREFIX}/lib/R/etc/Makeconf" >> "${BUILD_PREFIX}/lib/R/etc/Makeconf"
+
+          # Dependencies for hera
+          libraries=(
+            jsonlite
+            rlang
+          )
+
+          for library in "${libraries[@]}"; do
+              # Create a backup
+              echo "Backup $library"
+              mv $PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so.bak
+              cp $BUILD_PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so
+          done
+
           emcmake cmake \
             -DCMAKE_BUILD_TYPE=Release                        \
             -DCMAKE_PREFIX_PATH=$PREFIX                       \
@@ -58,6 +76,12 @@ jobs:
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON            \
             ..
           emmake make -j ${{ env.ncpus }} install
+
+          # Restore libraries
+          for library in "${libraries[@]}"; do
+              rm $PREFIX/lib/R/library/$library/libs/$library.so
+              mv $PREFIX/lib/R/library/$library/libs/$library.so.bak $PREFIX/lib/R/library/$library/libs/$library.so
+          done
 
       - name: Jupyter Lite integration
         shell: bash -l {0}
