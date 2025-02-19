@@ -42,6 +42,8 @@ jobs:
         run: |
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
 
+          set -eux
+
           mkdir build
           pushd build
 
@@ -71,6 +73,7 @@ jobs:
           emcmake cmake \
             -DCMAKE_BUILD_TYPE=Release                        \
             -DCMAKE_PREFIX_PATH=$PREFIX                       \
+            -DCMAKE_BUILD_PREFIX=$BUILD_PREFIX                \
             -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
             -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON                 \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON            \
