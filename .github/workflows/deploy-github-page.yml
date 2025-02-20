@@ -66,11 +66,7 @@ jobs:
             fastmap
             htmltools
             cli
-            evaluate
             glue
-            IRdisplay
-            r6
-            repr
           )
 
           for library in "${libraries[@]}"; do

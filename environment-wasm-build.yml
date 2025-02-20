@@ -16,11 +16,7 @@ dependencies:
   - r-fastmap
   - r-htmltools
   - r-cli
-  - r-evaluate
   - r-glue
-  - r-IRdisplay
-  - r-r6
-  - r-repr
   # JupyterLite
   - jupyterlite-core
   - jupyter_server
