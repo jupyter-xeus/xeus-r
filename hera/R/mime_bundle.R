@@ -3,6 +3,7 @@
 #' @param x an object
 #'
 #' @return a character vector of its supported mime types
+#' @export
 mime_types <- function(x) {
   UseMethod("mime_types")
 }
