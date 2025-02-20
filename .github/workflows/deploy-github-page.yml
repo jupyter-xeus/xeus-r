@@ -63,6 +63,7 @@ jobs:
             rlang
             base64enc
             digest
+            fastmap
           )
 
           for library in "${libraries[@]}"; do

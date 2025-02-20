@@ -13,6 +13,7 @@ dependencies:
   - r-jsonlite
   - r-base64enc
   - r-digest
+  - r-fastmap
   # JupyterLite
   - jupyterlite-core
   - jupyter_server
