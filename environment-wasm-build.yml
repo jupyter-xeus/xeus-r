@@ -17,6 +17,7 @@ dependencies:
   - r-htmltools
   - r-cli
   - r-glue
+  - r-vctrs
   # JupyterLite
   - jupyterlite-core
   - jupyter_server
