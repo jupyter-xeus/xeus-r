@@ -64,6 +64,7 @@ jobs:
             base64enc
             digest
             fastmap
+            htmltools
           )
 
           for library in "${libraries[@]}"; do
