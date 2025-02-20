@@ -50,3 +50,8 @@ bld
 Untitled*.ipynb
 *.log
 /*.ipynb
+.Rproj.user
+.Rhistory
+hera.Rcheck
+hera_*.tar.gz
+hera_*.tgz

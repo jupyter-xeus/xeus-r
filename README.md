@@ -4,6 +4,7 @@
 [![Documentation Status](http://readthedocs.org/projects/xeus-r/badge/?version=latest)](https://xeus-r.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb)
 [![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyter-xeus.github.io/xeus-r/)
+[![R-CMD-check](https://github.com/jupyter-xeus/xeus-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jupyter-xeus/xeus-r/actions/workflows/R-CMD-check.yaml)
 
 `xeus-r` is a Jupyter kernel for the R programming language.
 
@@ -38,7 +39,7 @@ Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installa
 prefix if need be)
 
 ```bash
-mkdir build && cd build
+mkdir build && cd build && mkdir temp_r_lib
 cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib
 make && make install
 ```

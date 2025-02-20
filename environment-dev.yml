@@ -13,13 +13,14 @@ dependencies:
   - nlohmann_json=3.11.3
   - r-base >=4
   # Run dependencies
-  - r-rlang
-  - r-evaluate
-  - r-jsonlite
-  - r-glue
   - r-cli
-  - r-repr
+  - r-evaluate
+  - r-glue
   - r-IRdisplay
+  - r-jsonlite
+  - r-r6
+  - r-repr
+  - r-rlang
   # Test dependencies
   - pytest
   - jupyter_kernel_test>=0.5,<0.6

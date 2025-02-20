@@ -10,7 +10,7 @@ inspect <- function(code, cursor_pos) {
     # check them by a loop. Use get since R CMD check does not like :::
     token <- ''
     for (i in seq(cursor_pos, nchar(code))) {
-        token_candidate <- utils:::.guessTokenFromLine(code, i)
+        token_candidate <- utils___guessTokenFromLine(code, i)
         if (nchar(token_candidate) == 0) break
         token <- token_candidate
     }
