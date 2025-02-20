@@ -67,6 +67,7 @@ jobs:
             htmltools
             cli
             glue
+            vctrs
           )
 
           for library in "${libraries[@]}"; do
