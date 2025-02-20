@@ -51,6 +51,8 @@ the <- NULL
   assign("print.vignette", print_vignette, ns_utils)
   get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
 
+  CommManager <<- CommManagerClass$new()
+
   init_options()
 }
 
@@ -78,8 +80,8 @@ hera_call <- function(fn, ...) {
     get(fn, envir = NAMESPACE)(...)
 }
 
-hera_new <- function(class, xp) {
-    get(class, envir = NAMESPACE)$new(xp)
+hera_new <- function(class, xp, ...) {
+    get(class, envir = NAMESPACE)$new(xp, ...)
 }
 
 #' Is this a running xeusr jupyter kernel
