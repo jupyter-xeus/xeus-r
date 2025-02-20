@@ -11,6 +11,13 @@ dependencies:
   - r-base
   - r-rlang
   - r-jsonlite
+  - r-base64enc
+  - r-digest
+  - r-fastmap
+  - r-htmltools
+  - r-cli
+  - r-glue
+  - r-vctrs
   # JupyterLite
   - jupyterlite-core
   - jupyter_server

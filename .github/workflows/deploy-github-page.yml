@@ -61,6 +61,13 @@ jobs:
           libraries=(
             jsonlite
             rlang
+            base64enc
+            digest
+            fastmap
+            htmltools
+            cli
+            glue
+            vctrs
           )
 
           for library in "${libraries[@]}"; do

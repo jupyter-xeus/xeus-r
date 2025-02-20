@@ -114,3 +114,6 @@ get_null_device <- function() {
   null_device
 }
 
+#' @importFrom IRdisplay display
+#' @export
+IRdisplay::display
