@@ -1,32 +1,48 @@
+#' MIME types supported by an object
+#'
+#' @param x an object
+#'
+#' @return a character vector of its supported mime types
+mime_types <- function(x) {
+  UseMethod("mime_types")
+}
+
+#' @export
+mime_types.default <- function(x) {
+  "text/plain"
+}
+
+#' @export
+mime_types.htmlwidget <- function(x) {
+  c("text/plain", "text/html")
+}
+
+#' @export
+mime_types.shiny.tag.list <- function(x) {
+  c("text/plain", "text/html")
+}
+
+#' @export
+mime_types.shiny.tag <- function(x) {
+  c("text/plain", "text/html")
+}
+
+
 #' bundle an object
 #'
-#' @inheritParams IRdisplay::prepare_mimebundle
+#' @param x an object
+#' @param mimetypes mime types
 #' @param ... extra currently unused parameters
 #'
 #' @seealso IRdisplay::prepare_mimebundle which this currently wraps around
 #'
 #' @export
-mime_bundle <- function(obj, mimetypes = getOption("jupyter.display_mimetypes"), ...) {
+mime_bundle <- function(x, mimetypes = mime_types(x), ...) {
   UseMethod("mime_bundle")
 }
 
 #' @importFrom IRdisplay prepare_mimebundle
 #' @export
-mime_bundle.default <- function(obj, mimetypes = "text/plain", ...) {
-  prepare_mimebundle(obj, mimetypes = mimetypes, ...)
-}
-
-#' @export
-mime_bundle.htmlwidget <- function(obj, mimetypes = c("text/plain", "text/html"), ...) {
-  prepare_mimebundle(obj, mimetypes = mimetypes, ...)
-}
-
-#' @export
-mime_bundle.shiny.tag.list <- function(obj, mimetypes = c("text/plain", "text/html"), ...) {
-  prepare_mimebundle(obj, mimetypes = mimetypes, ...)
-}
-
-#' @export
-mime_bundle.shiny.tag <- function(obj, mimetypes = c("text/plain", "text/html"), ...) {
-  prepare_mimebundle(obj, mimetypes = mimetypes, ...)
+mime_bundle.default <- function(x, mimetypes = mime_types(x), ...) {
+  prepare_mimebundle(x, mimetypes = mimetypes, ...)
 }

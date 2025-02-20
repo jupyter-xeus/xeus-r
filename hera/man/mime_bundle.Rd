@@ -4,12 +4,12 @@
 \alias{mime_bundle}
 \title{bundle an object}
 \usage{
-mime_bundle(obj, mimetypes = getOption("jupyter.display_mimetypes"), ...)
+mime_bundle(x, mimetypes = mime_types(x), ...)
 }
 \arguments{
-\item{obj}{The object to create representations for}
+\item{x}{an object}
 
-\item{mimetypes}{Mimetypes to create reprs for. The defaults are defined by the option \code{jupyter.display_mimetypes}. (see: \link[IRdisplay]{IRdisplay-options})}
+\item{mimetypes}{mime types}
 
 \item{...}{extra currently unused parameters}
 }
