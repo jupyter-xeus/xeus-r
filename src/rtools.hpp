@@ -47,12 +47,13 @@ SEXP invoke_hera_fn(const char* f, Types... args) {
     return result;
 }
 
-inline SEXP new_hera_r6(const char* klass, SEXP xp) {
+template <class... Types>
+inline SEXP new_hera_r6(const char* klass, SEXP xp, Types... args) {
     SEXP sym_hera = Rf_install("hera");
     SEXP sym_hera_new = Rf_install("hera_new");
     SEXP sym_triple_colon = Rf_install(":::");
 
-    SEXP call = PROTECT(r_call(sym_triple_colon, Rf_mkString(klass), xp));
+    SEXP call = PROTECT(r_call(sym_triple_colon, Rf_mkString(klass), xp, args...));
     SEXP result = Rf_eval(call, R_GlobalEnv);
 
     UNPROTECT(2);
