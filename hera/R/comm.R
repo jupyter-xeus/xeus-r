@@ -48,6 +48,9 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
 )
 
 # set later in zzz.R
+
+#' Comm manager
+#'
 #' @export
 CommManager <- NULL
 
