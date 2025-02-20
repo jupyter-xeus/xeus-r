@@ -53,7 +53,8 @@ inline SEXP new_hera_r6(const char* klass, SEXP xp, Types... args) {
     SEXP sym_hera_new = Rf_install("hera_new");
     SEXP sym_triple_colon = Rf_install(":::");
 
-    SEXP call = PROTECT(r_call(sym_triple_colon, Rf_mkString(klass), xp, args...));
+    SEXP call_triple_colon = PROTECT(r_call(sym_triple_colon, sym_hera, sym_hera_new));
+    SEXP call = PROTECT(r_call(call_triple_colon, Rf_mkString(klass), xp, args...));
     SEXP result = Rf_eval(call, R_GlobalEnv);
 
     UNPROTECT(2);
