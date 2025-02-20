@@ -3,6 +3,7 @@
 #' @importFrom utils head tail capture.output
 #' @importFrom R6 R6Class
 #' @importFrom rlang caller_env
+#' @import glue
 NULL
 
 print_vignette <- function(x, ...) {

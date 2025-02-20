@@ -152,7 +152,7 @@ execute <- function(code, execution_counter, silent = FALSE) {
   the$last_plot <- NULL
   the$last_visible <- FALSE
 
-  filename <- glue::glue("[{execution_counter}]")
+  filename <- glue("[{execution_counter}]")
 
   the$frame_cell_execute <- environment()
   evaluate::evaluate(
