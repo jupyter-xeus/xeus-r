@@ -152,7 +152,7 @@ execute <- function(code, execution_counter, silent = FALSE) {
   the$last_plot <- NULL
   the$last_visible <- FALSE
 
-  filename <- glue::glue("[{execution_counter}]")
+  filename <- glue("[{execution_counter}]")
 
   the$frame_cell_execute <- environment()
   evaluate::evaluate(
@@ -172,17 +172,13 @@ execute <- function(code, execution_counter, silent = FALSE) {
   if (isTRUE(the$last_visible)) {
     obj <- .Last.value
 
-    # TODO: This probably needs to be generalized
-    mimetypes <- if (inherits(obj, c("htmlwidget", "shiny.tag.list", "shiny.tag"))) {
-      c("text/plain", "text/html")
-    } else {
-      "text/plain"
-    }
-
-    bundle <- IRdisplay::prepare_mimebundle(obj, mimetypes = mimetypes)
+    bundle <- mime_bundle(obj)
 
     structure(class = "execution_result",
-      list(toJSON(bundle$data), toJSON(bundle$metadata))
+      list(
+        data     = toJSON(bundle$data),
+        metadata = toJSON(bundle$metadata)
+      )
     )
   }
 

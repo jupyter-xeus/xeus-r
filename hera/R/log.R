@@ -2,7 +2,7 @@
 logger <- function(level, name) {
     function(...) {
         if (isTRUE(getOption('jupyter.log_level') >= level)) {
-            msg <- glue::glue(...)
+            msg <- glue(...)
             hera_dot_call("xeusr_log", name, msg)
         }
         invisible(NULL)
