@@ -11,6 +11,7 @@ dependencies:
   - r-base
   - r-rlang
   - r-jsonlite
+  - r-base64enc
   # JupyterLite
   - jupyterlite-core
   - jupyter_server

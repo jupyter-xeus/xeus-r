@@ -61,6 +61,7 @@ jobs:
           libraries=(
             jsonlite
             rlang
+            base64enc
           )
 
           for library in "${libraries[@]}"; do
