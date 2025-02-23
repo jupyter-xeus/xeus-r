@@ -38,6 +38,8 @@ option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of
 option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus-r shared library (instead of the static library)" ON)
 option(XEUS_R_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
+option(INSTALL_HERA "Install the hera R package" ON)
+
 if(EMSCRIPTEN)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
     message("Build with emscripten")
@@ -74,24 +76,28 @@ message(STATUS "R_SCRIPT_COMMAND = ${R_SCRIPT_COMMAND}")
 # Install R package hera
 # ======================
 
-message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
-if(EMSCRIPTEN)
-    execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-        --preclean --no-staged-install --no-byte-compile --no-test-load
-        --build ../hera --library=${R_HOME}/library
-        RESULT_VARIABLE hera_result
-    )
+if(INSTALL_HERA)
 
-else()
-    execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-        --preclean --no-staged-install --build ../hera
-        RESULT_VARIABLE hera_result
-    )
-    execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
-endif()
+    message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
+    if(EMSCRIPTEN)
+        execute_process(COMMAND ${R_COMMAND} CMD INSTALL
+            --preclean --no-staged-install --no-byte-compile --no-test-load
+            --build ../hera --library=${R_HOME}/library
+            RESULT_VARIABLE hera_result
+        )
 
-if(NOT hera_result EQUAL "0")
-    message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
+    else()
+        execute_process(COMMAND ${R_COMMAND} CMD INSTALL
+            --preclean --no-staged-install --build ../hera
+            RESULT_VARIABLE hera_result
+        )
+        execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
+    endif()
+
+    if(NOT hera_result EQUAL "0")
+        message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
+    endif()
+
 endif()
 
 # Configuration
