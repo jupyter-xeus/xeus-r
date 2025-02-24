@@ -76,7 +76,8 @@ message(STATUS "R_SCRIPT_COMMAND = ${R_SCRIPT_COMMAND}")
 # Install R package hera
 # ======================
 
-if(CMAKE_CROSSCOMPILING)
+# When cross-compiling, hera should be installed before building the project
+if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "${CMAKE_HOST_SYSTEM_NAME}")
     if(NOT EXISTS "${R_HOME}/library/hera")
         message(FATAL_ERROR "R 📦 hera is not installed")
     endif()
