@@ -76,14 +76,13 @@ jobs:
 
           ${BUILD_PREFIX}/bin/R CMD INSTALL ./hera --no-byte-compile --no-test-load --library=$PREFIX/lib/R/library/
 
-          emcmake cmake \
+          emcmake cmake . \
             -DCMAKE_BUILD_TYPE=Release                        \
             -DCMAKE_PREFIX_PATH=$PREFIX                       \
             -DCMAKE_BUILD_PREFIX=$BUILD_PREFIX                \
             -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
             -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON                 \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON            \
-            ..
           emmake make -j ${{ env.ncpus }} install
 
           # Restore libraries
