@@ -77,6 +77,8 @@ jobs:
               cp $BUILD_PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so
           done
 
+          ${BUILD_PREFIX}/bin/R CMD INSTALL hera --no-byte-compile --no-test-load --library=$PREFIX/lib/R/library/
+
           emcmake cmake \
             -DCMAKE_BUILD_TYPE=Release                        \
             -DCMAKE_PREFIX_PATH=$PREFIX                       \
