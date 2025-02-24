@@ -80,8 +80,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release                        \
             -DCMAKE_PREFIX_PATH=$PREFIX                       \
             -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
-            -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON                 \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=NEVER
+            -DCMAKE_FIND_ROOT_PATH=$PREFIX                    \
+            -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON
           emmake make -j ${{ env.ncpus }} install
 
           # Restore libraries
