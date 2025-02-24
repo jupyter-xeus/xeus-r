@@ -44,9 +44,6 @@ jobs:
 
           set -eux
 
-          mkdir build
-          pushd build
-
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           export CMAKE_PREFIX_PATH=$PREFIX
@@ -77,7 +74,7 @@ jobs:
               cp $BUILD_PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so
           done
 
-          ${BUILD_PREFIX}/bin/R CMD INSTALL hera --no-byte-compile --no-test-load --library=$PREFIX/lib/R/library/
+          ${BUILD_PREFIX}/bin/R CMD INSTALL ./hera --no-byte-compile --no-test-load --library=$PREFIX/lib/R/library/
 
           emcmake cmake \
             -DCMAKE_BUILD_TYPE=Release                        \
