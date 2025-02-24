@@ -308,10 +308,10 @@ if(EMSCRIPTEN)
     xeus_wasm_compile_options(xr)
     xeus_wasm_link_options(xr "web,worker")
     target_link_options(xr
-        PUBLIC "SHELL: --pre-js ../src/env_vars.js"
+        PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
+        PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
         PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
         PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"PATH\",\"LDSO\",\"getDylinkMetadata\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
-        PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
     )
 endif()
 
