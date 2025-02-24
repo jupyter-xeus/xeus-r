@@ -76,28 +76,21 @@ message(STATUS "R_SCRIPT_COMMAND = ${R_SCRIPT_COMMAND}")
 # Install R package hera
 # ======================
 
-if(INSTALL_HERA)
-
-    message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
-    if(EMSCRIPTEN)
-        execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-            --preclean --no-staged-install --no-byte-compile --no-test-load
-            --build ${CMAKE_CURRENT_SOURCE_DIR}/hera --library=${R_HOME}/library
-            RESULT_VARIABLE hera_result
-        )
-
-    else()
-        execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-            --preclean --no-staged-install --build ${CMAKE_CURRENT_SOURCE_DIR}/hera
-            RESULT_VARIABLE hera_result
-        )
-        execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
+if(CMAKE_CROSSCOMPILING)
+    if(NOT EXISTS "${R_HOME}/library/hera")
+        message(FATAL_ERROR "R 📦 hera is not installed")
     endif()
+else()
+    message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
+    execute_process(COMMAND ${R_COMMAND} CMD INSTALL
+        --preclean --no-staged-install --build ${CMAKE_CURRENT_SOURCE_DIR}/hera
+        RESULT_VARIABLE hera_result
+    )
+    execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
 
     if(NOT hera_result EQUAL "0")
         message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
     endif()
-
 endif()
 
 # Configuration
