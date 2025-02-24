@@ -82,13 +82,13 @@ if(INSTALL_HERA)
     if(EMSCRIPTEN)
         execute_process(COMMAND ${R_COMMAND} CMD INSTALL
             --preclean --no-staged-install --no-byte-compile --no-test-load
-            --build ../hera --library=${R_HOME}/library
+            --build ${CMAKE_CURRENT_SOURCE_DIR}/hera --library=${R_HOME}/library
             RESULT_VARIABLE hera_result
         )
 
     else()
         execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-            --preclean --no-staged-install --build ../hera
+            --preclean --no-staged-install --build ${CMAKE_CURRENT_SOURCE_DIR}/hera
             RESULT_VARIABLE hera_result
         )
         execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
