@@ -13,6 +13,13 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "${CMAKE_HOST_SYSTEM_NAME}")
+    set(XEUS_R_CROSS_COMPILING ON)
+else()
+    set(XEUS_R_CROSS_COMPILING OFF)
+endif()
+message(STATUS "Cross-compiling: ${XEUS_R_CROSS_COMPILING}")
+
 # Versioning
 # ===========
 
@@ -29,6 +36,19 @@ message(STATUS "Building xeus-r v${${PROJECT_NAME}_VERSION}")
 
 # Build options
 # =============
+
+if(XEUS_R_CROSS_COMPILING)
+    # Location of the target environment
+    set(CMAKE_FIND_ROOT_PATH  ${CMAKE_PREFIX_PATH})
+
+    # Adjust the default behavior of the FIND_XXX() commands:
+    # Search executable programs in the host environment
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+
+    # Search headers and libraries in the target environment
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+endif()
 
 option(XEUS_R_BUILD_STATIC "Build xeus-r static library" ON)
 option(XEUS_R_BUILD_SHARED "Split xr build into executable and library" ON)
