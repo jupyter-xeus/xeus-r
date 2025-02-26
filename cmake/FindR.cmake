@@ -87,17 +87,11 @@ if(R_COMMAND)
 
   set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
 
-  # FIXME: the pre.js needs to be removed from r-base
-  if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    message(STATUS "Setting R_LDFLAGS for Emscripten")
-    set(R_LDFLAGS "-L${CMAKE_PREFIX_PATH}/lib -L${CMAKE_PREFIX_PATH}/lib/R/lib -lRblas -lFortranRuntime -lpcre2-8 -llzma -lbz2 -lz -lrt -ldl -lm -liconv" CACHE STRING "Linker flags for R libraries in Emscripten")
-  else()
-    execute_process(WORKING_DIRECTORY .
-                    COMMAND ${R_COMMAND} CMD config --ldflags
-                    OUTPUT_VARIABLE R_LDFLAGS
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
-  endif()
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_COMMAND} CMD config --ldflags
+                  OUTPUT_VARIABLE R_LDFLAGS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
 
   set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
   find_library(R_LIBRARY_BASE R
