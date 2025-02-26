@@ -263,7 +263,7 @@ macro(xeus_r_create_target target_name linkage output_name)
 
     if (EMSCRIPTEN)
         target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET}
-            PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_LDFLAGS})
+            PRIVATE ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_LDFLAGS})
     else ()
         target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} PRIVATE ${R_LIBRARY_BASE})
     endif ()
