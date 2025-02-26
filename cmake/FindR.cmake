@@ -38,13 +38,8 @@ endif()
 set(TEMP_CMAKE_FIND_APPBUNDLE ${CMAKE_FIND_APPBUNDLE})
 set(CMAKE_FIND_APPBUNDLE "NEVER")
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-  set(R_COMMAND "${CMAKE_BUILD_PREFIX}/bin/R" CACHE FILEPATH "R executable in Emscripten")
-  set(R_SCRIPT_COMMAND "${CMAKE_BUILD_PREFIX}/bin/Rscript" CACHE FILEPATH "Rscript executable in Emscripten")
-else()
-  find_program(R_COMMAND R DOC "R executable.")
-  find_program(R_SCRIPT_COMMAND Rscript DOC "Rscript executable.")
-endif()
+find_program(R_COMMAND R DOC "R executable.")
+find_program(R_SCRIPT_COMMAND Rscript DOC "Rscript executable.")
 
 set(CMAKE_FIND_APPBUNDLE ${TEMP_CMAKE_FIND_APPBUNDLE})
 
@@ -53,9 +48,7 @@ if(R_COMMAND)
   set(OLD_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES} ".dll")
 
-  if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    message(STATUS "Configuring for Emscripten...")
-
+  if(XEUS_R_CROSS_COMPILING)
     # Find the pkg-config executable
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
 
@@ -71,27 +64,10 @@ if(R_COMMAND)
         string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ ${R_VERSION})
         set(R_VERSION_MAJOR ${CMAKE_MATCH_1})
         set(R_VERSION_MINOR ${CMAKE_MATCH_2}.${CMAKE_MATCH_3})
-
-        message(STATUS "Found R version ${R_VERSION_MAJOR}.${R_VERSION_MINOR}")
     else()
         message(FATAL_ERROR "pkg-config executable not found")
     endif()
-
-    set(R_HOME "${CMAKE_PREFIX_PATH}/lib/R" CACHE PATH "R home directory for Emscripten")
-
-    set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
-
-    set(R_LDFLAGS "-L${CMAKE_PREFIX_PATH}/lib -L${CMAKE_PREFIX_PATH}/lib/R/lib -lRblas -lFortranRuntime -lpcre2-8 -llzma -lbz2 -lz -lrt -ldl -lm -liconv" CACHE STRING "Linker flags for R libraries in Emscripten")
-
-    set(R_LIBRARY_BASE "${R_HOME}/lib/libR.a" CACHE FILEPATH "R library (libR.a) in Emscripten")
-
-    set(R_LIBRARY_BLAS "${R_HOME}/lib/libRblas.so" CACHE FILEPATH "Rblas library (libRblas.so) in Emscripten")
-
-    set(R_LIBRARY_LAPACK "${R_HOME}/lib/libRlapack.so" CACHE FILEPATH "Rlapack library (libRlapack.so) in Emscripten")
-
   else()
-    message(STATUS "Configuring for non-Emscripten environment...")
-
     execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "cat(R.Version()$major)"
                     OUTPUT_VARIABLE R_VERSION_MAJOR
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -102,40 +78,47 @@ if(R_COMMAND)
 
     set(R_VERSION_MAJOR ${R_VERSION_MAJOR} CACHE STRING "Major version of R")
     set(R_VERSION_MINOR ${R_VERSION_MINOR} CACHE STRING "Minor version of R")
+  endif()
 
-    execute_process(WORKING_DIRECTORY .
-                    COMMAND ${R_COMMAND} RHOME
-                    OUTPUT_VARIABLE R_ROOT_DIR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(WORKING_DIRECTORY .
+                  COMMAND ${R_COMMAND} RHOME
+                  OUTPUT_VARIABLE R_ROOT_DIR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
+  set(R_HOME ${R_ROOT_DIR} CACHE PATH "R home directory obtained from R RHOME")
 
+  # FIXME: the pre.js needs to be removed from r-base
+  if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    message(STATUS "Setting R_LDFLAGS for Emscripten")
+    set(R_LDFLAGS "-L${CMAKE_PREFIX_PATH}/lib -L${CMAKE_PREFIX_PATH}/lib/R/lib -lRblas -lFortranRuntime -lpcre2-8 -llzma -lbz2 -lz -lrt -ldl -lm -liconv" CACHE STRING "Linker flags for R libraries in Emscripten")
+  else()
     execute_process(WORKING_DIRECTORY .
                     COMMAND ${R_COMMAND} CMD config --ldflags
                     OUTPUT_VARIABLE R_LDFLAGS
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
     set(R_LDFLAGS ${R_LDFLAGS} CACHE PATH "R CMD config --ldflags")
-
-    set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
-    find_library(R_LIBRARY_BASE R
-                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-                 NO_DEFAULT_PATH
-                 DOC "R library (example libR.a, libR.dylib, etc.).")
-
-    find_library(R_LIBRARY_BLAS NAMES Rblas blas
-                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-                 DOC "Rblas library (example libRblas.a, libRblas.dylib, etc.).")
-
-    find_library(R_LIBRARY_LAPACK NAMES Rlapack lapack
-                 HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
-                 DOC "Rlapack library (example libRlapack.a, libRlapack.dylib, etc.).")
-
-    find_library(R_LIBRARY_READLINE readline
-                 DOC "(Optional) system readline library. Only required if the R libraries were built with readline support.")
   endif()
+
+  set(R_INCLUDE_DIR "${R_HOME}/include" CACHE PATH "Path to R include directory")
+  find_library(R_LIBRARY_BASE R
+                HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                NO_DEFAULT_PATH
+                DOC "R library (example libR.a, libR.dylib, etc.).")
+
+  find_library(R_LIBRARY_BLAS NAMES Rblas blas
+                HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                DOC "Rblas library (example libRblas.a, libRblas.dylib, etc.).")
+
+  find_library(R_LIBRARY_LAPACK NAMES Rlapack lapack
+                HINTS ${R_ROOT_DIR}/lib ${R_ROOT_DIR}/bin/${R_LIB_ARCH}
+                DOC "Rlapack library (example libRlapack.a, libRlapack.dylib, etc.).")
+
+  find_library(R_LIBRARY_READLINE readline
+                DOC "(Optional) system readline library. Only required if the R libraries were built with readline support.")
 
   # reset cmake find_library to initial value
   set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_SUFFIXES})
+
 
 else()
   message(SEND_ERROR "FindR.cmake requires the following variables to be set: R_COMMAND")

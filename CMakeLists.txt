@@ -13,6 +13,13 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 set(XEUS_R_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "${CMAKE_HOST_SYSTEM_NAME}")
+    set(XEUS_R_CROSS_COMPILING ON)
+else()
+    set(XEUS_R_CROSS_COMPILING OFF)
+endif()
+message(STATUS "Cross-compiling: ${XEUS_R_CROSS_COMPILING}")
+
 # Versioning
 # ===========
 
@@ -30,6 +37,19 @@ message(STATUS "Building xeus-r v${${PROJECT_NAME}_VERSION}")
 # Build options
 # =============
 
+if(XEUS_R_CROSS_COMPILING)
+    # Location of the target environment
+    set(CMAKE_FIND_ROOT_PATH  ${CMAKE_PREFIX_PATH})
+
+    # Adjust the default behavior of the FIND_XXX() commands:
+    # Search executable programs in the host environment
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+
+    # Search headers and libraries in the target environment
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+endif()
+
 option(XEUS_R_BUILD_STATIC "Build xeus-r static library" ON)
 option(XEUS_R_BUILD_SHARED "Split xr build into executable and library" ON)
 option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
@@ -37,6 +57,8 @@ option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
 option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus-r shared library (instead of the static library)" ON)
 option(XEUS_R_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
+
+option(INSTALL_HERA "Install the hera R package" ON)
 
 if(EMSCRIPTEN)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
@@ -74,24 +96,22 @@ message(STATUS "R_SCRIPT_COMMAND = ${R_SCRIPT_COMMAND}")
 # Install R package hera
 # ======================
 
-message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
-if(EMSCRIPTEN)
-    execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-        --preclean --no-staged-install --no-byte-compile --no-test-load
-        --build ../hera --library=${R_HOME}/library
-        RESULT_VARIABLE hera_result
-    )
-
+# When cross-compiling, hera should be installed before building the project
+if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "${CMAKE_HOST_SYSTEM_NAME}")
+    if(NOT EXISTS "${R_HOME}/library/hera")
+        message(FATAL_ERROR "R 📦 hera is not installed")
+    endif()
 else()
+    message(STATUS "Installing R 📦 hera to ${R_HOME}/library")
     execute_process(COMMAND ${R_COMMAND} CMD INSTALL
-        --preclean --no-staged-install --build ../hera
+        --preclean --no-staged-install --build ${CMAKE_CURRENT_SOURCE_DIR}/hera
         RESULT_VARIABLE hera_result
     )
     execute_process(COMMAND ${R_SCRIPT_COMMAND} -e "writeLines(paste('Installed 📦 hera version', as.character(packageVersion('hera'))))")
-endif()
 
-if(NOT hera_result EQUAL "0")
-    message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
+    if(NOT hera_result EQUAL "0")
+        message(FATAL_ERROR "Hera installation failed with return code ${hera_result}")
+    endif()
 endif()
 
 # Configuration
@@ -309,10 +329,10 @@ if(EMSCRIPTEN)
     xeus_wasm_compile_options(xr)
     xeus_wasm_link_options(xr "web,worker")
     target_link_options(xr
-        PUBLIC "SHELL: --pre-js ../src/env_vars.js"
+        PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
+        PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
         PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
         PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"PATH\",\"LDSO\",\"getDylinkMetadata\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
-        PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
     )
 endif()
 
