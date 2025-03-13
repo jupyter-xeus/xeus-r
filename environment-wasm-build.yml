@@ -21,4 +21,5 @@ dependencies:
   # JupyterLite
   - jupyterlite-core
   - jupyter_server
-  - jupyterlite-xeus
+  - pip:
+    - jupyterlite-xeus==4.0.0a1
