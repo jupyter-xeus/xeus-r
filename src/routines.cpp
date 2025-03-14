@@ -152,6 +152,22 @@ SEXP CommManager__new_comm(SEXP target_name_, SEXP s_description) {
     return r6_comm;
 }
 
+SEXP CommManager__get_comm_info() {
+    auto comms = get_interpreter()->comm_manager().comms();
+    size_t size = comms.size();
+    SEXP out = PROTECT(Rf_allocVector(STRSXP, size));
+    SEXP names = PROTECT(Rf_allocVector(STRSXP, size));
+    auto comm_it = comms.begin();
+    
+    for (size_t i = 0; i < size; i++, ++comm_it) {
+        SET_STRING_ELT(names, i, Rf_mkChar(comm_it->first.c_str()));
+        SET_STRING_ELT(out, i, Rf_mkChar(comm_it->second->target().name().c_str()));
+    }
+    Rf_namesgets(out, names);
+    UNPROTECT(2);
+    return out;
+}
+
 SEXP Comm__id(SEXP xp_comm) {
     auto comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
     return Rf_mkString(comm->id().c_str());
@@ -271,6 +287,7 @@ void register_r_routines() {
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
         {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
         {"CommManager__new_comm"           , (DL_FUNC) &routines::CommManager__new_comm, 2},
+        {"CommManager__get_comm_info"      , (DL_FUNC) &routines::CommManager__get_comm_info, 0},
         
         // Comm
         {"Comm__id"                        , (DL_FUNC) &routines::Comm__id, 1},
