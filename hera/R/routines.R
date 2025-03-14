@@ -46,3 +46,11 @@ View <- function(x, title) {
   IRdisplay::display(x)
   invisible(x)
 }
+
+xeusr_input <- function(prompt) {
+  hera_dot_call("xeusr_input", prompt)
+}
+
+xeusr_getpass <- function(prompt) {
+  hera_dot_call("xeusr_getpass", prompt)
+}

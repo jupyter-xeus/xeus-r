@@ -10,6 +10,7 @@
 #include "xeus/xmessage.hpp"
 #include "xeus/xcomm.hpp"
 #include "xeus/xlogger.hpp"
+#include "xeus/xinput.hpp"
 
 #include <functional>
 
@@ -86,6 +87,24 @@ SEXP xeusr_log(SEXP level_, SEXP msg_) {
 
     // TODO: actually do some logging
     return R_NilValue;
+}
+
+SEXP xeusr_input(SEXP prompt_) {
+    std::string prompt = CHAR(STRING_ELT(prompt_, 0));
+    
+    std::string msg = xeus::blocking_input_request(prompt, false);
+    SEXP out = Rf_mkString(msg.c_str());
+
+    return out;
+}
+
+SEXP xeusr_getpass(SEXP prompt_) {
+    std::string prompt = CHAR(STRING_ELT(prompt_, 0));
+    
+    std::string msg = xeus::blocking_input_request(prompt, true);
+    SEXP out = Rf_mkString(msg.c_str());
+
+    return out;
 }
 
 SEXP CommManager__register_target(SEXP name_) {
@@ -266,6 +285,8 @@ void register_r_routines() {
         {"xeusr_clear_output"              , (DL_FUNC) &routines::clear_output            , 1},
         {"xeusr_is_complete_request"       , (DL_FUNC) &routines::is_complete_request     , 1},
         {"xeusr_log"                       , (DL_FUNC) &routines::xeusr_log               , 2},
+        {"xeusr_input"                     , (DL_FUNC) &routines::xeusr_input             , 1},
+        {"xeusr_getpass"                   , (DL_FUNC) &routines::xeusr_getpass           , 1},
 
         // CommManager
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
