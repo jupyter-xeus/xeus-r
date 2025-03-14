@@ -10,9 +10,6 @@
 #include "xeus/xmessage.hpp"
 #include "xeus/xcomm.hpp"
 #include "xeus/xlogger.hpp"
-#include "xeus/xinput.hpp"
-
-#include <functional>
 
 namespace xeus_r {
 namespace routines {
@@ -87,13 +84,6 @@ SEXP xeusr_log(SEXP level_, SEXP msg_) {
 
     // TODO: actually do some logging
     return R_NilValue;
-}
-
-SEXP xeusr_input(SEXP prompt_) {
-    std::string prompt = CHAR(STRING_ELT(prompt_, 0));
-    
-    std::string msg = xeus::blocking_input_request(prompt, false);
-    return Rf_mkString(msg.c_str());
 }
 
 SEXP CommManager__register_target(SEXP name_) {
