@@ -33,6 +33,8 @@
 #endif
 
 #include "rtools.hpp"
+#include <algorithm>
+#include <cstddef>
 
 namespace xeus_r {
 
@@ -60,6 +62,17 @@ void capture_WriteConsoleEx(const char *buf, int buflen, int otype) {
     }
 }
 
+int ReadConsole(const char *prompt, unsigned char *buffer, int length, int /*addtohistory*/) {
+    std::string res = xeus::blocking_input_request(prompt, false);
+    
+    std::size_t size = std::min(res.size(), std::size_t(length));
+    std::copy(res.c_str(), res.c_str() + size , buffer);
+    buffer[size] = '\n';
+
+    // TODO: return 0 when xeus::blocking_input_request fails
+    return 1;
+}
+
 interpreter::interpreter(int argc, char* argv[])
 {
     // When building with Emscripten, pass --no-readline to disable
@@ -80,6 +93,7 @@ interpreter::interpreter(int argc, char* argv[])
 
     ptr_R_WriteConsole = nullptr;
     ptr_R_WriteConsoleEx = WriteConsoleEx;
+    ptr_R_ReadConsole = ReadConsole;
 #endif
 
     xeus::register_interpreter(this);
