@@ -4,7 +4,6 @@ channels:
   - conda-forge
 dependencies:
   # Host dependencies
-  - emscripten-abi==3.1.73
   - nlohmann_json
   - xeus-lite
   - xeus
