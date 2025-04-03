@@ -152,16 +152,36 @@ SEXP CommManager__new_comm(SEXP target_name_, SEXP s_description) {
     return r6_comm;
 }
 
-SEXP CommManager__get_comm_info() {
+SEXP CommManager__get_comm_info(SEXP target_name_) {
     auto comms = get_interpreter()->comm_manager().comms();
-    size_t size = comms.size();
+    
+    bool keep_all = Rf_isNull(target_name_);
+    std::string target_name(keep_all ? "" : CHAR(STRING_ELT(target_name_, 0)));
+    
+    size_t comms_size = comms.size(); 
+    size_t size = 0;
+    if (keep_all) {
+        size = comms_size;
+    } else {
+        auto comm_it = comms.begin();
+        for (size_t i = 0; i < comms_size; i++, ++comm_it) {
+            if (target_name == comm_it->second->target().name()) {
+                size++;
+            }
+        }
+    }
+
     SEXP out = PROTECT(Rf_allocVector(STRSXP, size));
     SEXP names = PROTECT(Rf_allocVector(STRSXP, size));
     auto comm_it = comms.begin();
     
-    for (size_t i = 0; i < size; i++, ++comm_it) {
-        SET_STRING_ELT(names, i, Rf_mkChar(comm_it->first.c_str()));
-        SET_STRING_ELT(out, i, Rf_mkChar(comm_it->second->target().name().c_str()));
+    for (size_t i = 0; comm_it != comms.end(); ++comm_it) {
+        auto* comm = comm_it->second;
+        if (keep_all || target_name == comm->target().name()) {
+            SET_STRING_ELT(names, i, Rf_mkChar(comm_it->first.c_str()));
+            SET_STRING_ELT(out, i, Rf_mkChar(comm_it->second->target().name().c_str()));
+            i++;
+        }
     }
     Rf_namesgets(out, names);
     UNPROTECT(2);
@@ -287,7 +307,7 @@ void register_r_routines() {
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
         {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
         {"CommManager__new_comm"           , (DL_FUNC) &routines::CommManager__new_comm, 2},
-        {"CommManager__get_comm_info"      , (DL_FUNC) &routines::CommManager__get_comm_info, 0},
+        {"CommManager__get_comm_info"      , (DL_FUNC) &routines::CommManager__get_comm_info, 1},
         
         // Comm
         {"Comm__id"                        , (DL_FUNC) &routines::Comm__id, 1},
