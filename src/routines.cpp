@@ -11,8 +11,6 @@
 #include "xeus/xcomm.hpp"
 #include "xeus/xlogger.hpp"
 
-#include <functional>
-
 namespace xeus_r {
 namespace routines {
 
@@ -309,7 +307,7 @@ void register_r_routines() {
         {"xeusr_clear_output"              , (DL_FUNC) &routines::clear_output            , 1},
         {"xeusr_is_complete_request"       , (DL_FUNC) &routines::is_complete_request     , 1},
         {"xeusr_log"                       , (DL_FUNC) &routines::xeusr_log               , 2},
-
+        
         // CommManager
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
         {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
