@@ -10,45 +10,14 @@ handle_warning <- function(w) {
   publish_stream("stderr", msg)
 }
 
-trim_rlang_error <- function(e) {
-  trace <- e$trace
-  if (is.null(trace) && !is.null(e$parent)) {
-    trace <- e$parent$trace
-  }
-  if (is.null(trace)) return(e)
-
-  # adjust the parent column
-  n <- nrow(trace)
-  parent <- trace$parent
-  root <- 0
-  node <- 0
-  for (i in 1:n) {
-    if (parent[i] == 0) {
-      root <- i
-      node <- root
-    } else {
-      parent[i] <- node
-      node <- node + 1
-    }
-  }
-  trace$parent <- parent
-  e$trace <- trace
-  e
-}
-
 handle_error <- function(e) {
   if (inherits(e, "rlang_error") && isNamespaceLoaded("rlang")) {
-    e <- trim_rlang_error(e)
     assign("last_error", e, triple_colon("rlang", "the"))
 
-    trace_back <- c(
-      cli::col_red("--- Error"),
-      format(e, backtrace = FALSE),
-      "",
-      cli::col_red("--- Traceback"),
-      format(e$trace)
+    the$last_error <- structure(
+      list(ename = "ERROR", evalue = "", format(e, backtrace = TRUE)),
+      class = "error_reply"
     )
-    the$last_error <- structure(list(ename = "ERROR", evalue = "", trace_back), class = "error_reply")
   } else {
     sys_calls <- sys.calls()
     sys_calls <- head(tail(sys_calls, -16), -3)
