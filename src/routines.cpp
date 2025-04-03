@@ -171,21 +171,28 @@ SEXP CommManager__get_comm_info(SEXP target_name_) {
         }
     }
 
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, size));
-    SEXP names = PROTECT(Rf_allocVector(STRSXP, size));
+    SEXP info = PROTECT(Rf_allocVector(VECSXP, size));
+    SEXP info_names = PROTECT(Rf_allocVector(STRSXP, size));
+    SEXP str_target_name = PROTECT(Rf_mkString("target_name"));
     auto comm_it = comms.begin();
     
     for (size_t i = 0; comm_it != comms.end(); ++comm_it) {
         auto* comm = comm_it->second;
         if (keep_all || target_name == comm->target().name()) {
-            SET_STRING_ELT(names, i, Rf_mkChar(comm_it->first.c_str()));
-            SET_STRING_ELT(out, i, Rf_mkChar(comm_it->second->target().name().c_str()));
+            SEXP x = PROTECT(Rf_allocVector(STRSXP, 1));
+            Rf_namesgets(x, str_target_name);
+            SET_STRING_ELT(x, 0, Rf_mkChar(comm_it->second->target().name().c_str()));
+            
+            SET_VECTOR_ELT(info, i, x);
+            UNPROTECT(1);
+
+            SET_STRING_ELT(info_names, i, Rf_mkChar(comm_it->first.c_str()));
             i++;
         }
     }
-    Rf_namesgets(out, names);
-    UNPROTECT(2);
-    return out;
+    Rf_namesgets(info, info_names);
+    UNPROTECT(3);
+    return info;
 }
 
 SEXP Comm__id(SEXP xp_comm) {
