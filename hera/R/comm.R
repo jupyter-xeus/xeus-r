@@ -38,6 +38,10 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
 
         release = function(comm) {
             rm(list = comm$id, envir = private$env_comms)
+        },
+
+        get_comm_info = function(target_name = NULL) {
+            hera_dot_call("CommManager__get_comm_info", target_name)
         }
     ),
 

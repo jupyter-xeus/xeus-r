@@ -150,6 +150,49 @@ SEXP CommManager__new_comm(SEXP target_name_, SEXP s_description) {
     return r6_comm;
 }
 
+SEXP CommManager__get_comm_info(SEXP target_name_) {
+    auto comms = get_interpreter()->comm_manager().comms();
+    
+    bool keep_all = Rf_isNull(target_name_);
+    std::string target_name(keep_all ? "" : CHAR(STRING_ELT(target_name_, 0)));
+    
+    size_t comms_size = comms.size(); 
+    size_t size = 0;
+    if (keep_all) {
+        size = comms_size;
+    } else {
+        auto comm_it = comms.begin();
+        for (size_t i = 0; i < comms_size; i++, ++comm_it) {
+            if (target_name == comm_it->second->target().name()) {
+                size++;
+            }
+        }
+    }
+
+    SEXP info = PROTECT(Rf_allocVector(VECSXP, size));
+    SEXP info_names = PROTECT(Rf_allocVector(STRSXP, size));
+    SEXP str_target_name = PROTECT(Rf_mkString("target_name"));
+    auto comm_it = comms.begin();
+    
+    for (size_t i = 0; comm_it != comms.end(); ++comm_it) {
+        auto* comm = comm_it->second;
+        if (keep_all || target_name == comm->target().name()) {
+            SEXP x = PROTECT(Rf_allocVector(STRSXP, 1));
+            Rf_namesgets(x, str_target_name);
+            SET_STRING_ELT(x, 0, Rf_mkChar(comm_it->second->target().name().c_str()));
+            
+            SET_VECTOR_ELT(info, i, x);
+            UNPROTECT(1);
+
+            SET_STRING_ELT(info_names, i, Rf_mkChar(comm_it->first.c_str()));
+            i++;
+        }
+    }
+    Rf_namesgets(info, info_names);
+    UNPROTECT(3);
+    return info;
+}
+
 SEXP Comm__id(SEXP xp_comm) {
     auto comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
     return Rf_mkString(comm->id().c_str());
@@ -269,6 +312,7 @@ void register_r_routines() {
         {"CommManager__register_target"    , (DL_FUNC) &routines::CommManager__register_target, 1},
         {"CommManager__unregister_target"  , (DL_FUNC) &routines::CommManager__unregister_target, 1},
         {"CommManager__new_comm"           , (DL_FUNC) &routines::CommManager__new_comm, 2},
+        {"CommManager__get_comm_info"      , (DL_FUNC) &routines::CommManager__get_comm_info, 1},
         
         // Comm
         {"Comm__id"                        , (DL_FUNC) &routines::Comm__id, 1},
