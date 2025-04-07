@@ -5,7 +5,7 @@
 \alias{CommManager}
 \title{Comm manager}
 \format{
-An object of class \code{CommManagerClass} (inherits from \code{R6}) of length 10.
+An object of class \code{CommManagerClass} (inherits from \code{R6}) of length 11.
 }
 \usage{
 CommManager
