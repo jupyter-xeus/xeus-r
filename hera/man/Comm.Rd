@@ -42,7 +42,7 @@ Comm class
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{xp}}{external pointer to an instance of the C++ class \code{xeus::xcomm}}
+\item{\code{xp}}{external pointer to an instance of the C++ class 'xeus::xcomm'}
 
 \item{\code{description}}{description of this comm}
 }

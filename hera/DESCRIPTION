@@ -1,5 +1,5 @@
 Package: hera
-Title: Companion to the 'xeus-r' 'Jupyter' kernel for R
+Title: Companion to the 'xeus-r' 'Jupyter' Kernel for R
 Version: 0.1.0
 Authors@R: c(
     person("Romain", "François", email = "romain@tada.science", role = c("aut", "cre")), 

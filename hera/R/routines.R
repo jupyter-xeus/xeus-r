@@ -50,6 +50,7 @@ is_complete_request <- function(code) {
 #' @param x something to display
 #' @param title title of the display
 #'
+#' @examples
 #' \dontrun{
 #'   View(mtcars)
 #' }
