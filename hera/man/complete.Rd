@@ -17,3 +17,7 @@ a list that contains potential completions as the first item
 \description{
 Code completion
 }
+\examples{
+complete("rnorm(")
+
+}

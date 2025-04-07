@@ -13,6 +13,9 @@ utils___retrieveCompletions <- triple_colon("utils", ".retrieveCompletions")
 #' @param code R code to complete
 #' @param cursor_pos position of the cursor
 #'
+#' @examples
+#' complete("rnorm(")
+#'
 #' @return a list that contains potential completions as the first item
 #'
 #' @export
