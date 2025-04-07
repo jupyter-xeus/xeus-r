@@ -16,6 +16,10 @@ mime_bundle(x, mimetypes = mime_types(x), ...)
 \description{
 bundle an object
 }
+\examples{
+mime_bundle(letters)
+
+}
 \seealso{
 IRdisplay::prepare_mimebundle which this currently wraps around
 }

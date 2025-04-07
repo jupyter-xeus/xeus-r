@@ -88,6 +88,10 @@ hera_new <- function(class, xp, ...) {
 #' Is this a running xeusr jupyter kernel
 #'
 #' @return TRUE if the current session is running in a xeusr kernel
+#'
+#' @examples
+#' is_xeusr()
+#'
 #' @export
 is_xeusr <- function() {
   embedding <- getLoadedDLLs()[["(embedding)"]]

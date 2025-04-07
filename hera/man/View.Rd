@@ -9,7 +9,11 @@ View(x, title)
 \arguments{
 \item{x}{something to display}
 
-\item{title}{title of the display}
+\item{title}{title of the display
+
+\dontrun{
+  View(mtcars)
+}}
 }
 \description{
 View

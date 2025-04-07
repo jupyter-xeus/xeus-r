@@ -15,3 +15,8 @@ a character vector of its supported mime types
 \description{
 MIME types supported by an object
 }
+\examples{
+mime_types(letters)
+mime_types(mtcars)
+
+}
