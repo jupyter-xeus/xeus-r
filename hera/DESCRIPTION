@@ -21,3 +21,5 @@ Imports:
     rlang,
     tools,
     utils
+URL: https://github.com/jupyter-xeus/xeus-r
+BugReports: https://github.com/jupyter-xeus/xeus-r/issues
