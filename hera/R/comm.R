@@ -49,12 +49,12 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
         private$env_targets[[target_name]]
     },
 
-    #' @param comm comm instance to preserve
+    #' @param comm [Comm] instance to preserve
     preserve = function(comm) {
         assign(comm$id, comm, envir = private$env_comms)
     },
 
-    #' @param comm comm instance to release
+    #' @param comm [Comm] instance to release
     release = function(comm) {
         rm(list = comm$id, envir = private$env_comms)
     },

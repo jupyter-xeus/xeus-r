@@ -146,7 +146,7 @@ the callback for that target name
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{comm}}{comm instance to preserve}
+\item{\code{comm}}{\link{Comm} instance to preserve}
 }
 \if{html}{\out{</div>}}
 }
@@ -162,7 +162,7 @@ the callback for that target name
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{comm}}{comm instance to release}
+\item{\code{comm}}{\link{Comm} instance to release}
 }
 \if{html}{\out{</div>}}
 }
