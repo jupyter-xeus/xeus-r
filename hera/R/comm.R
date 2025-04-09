@@ -143,11 +143,6 @@ Comm <- R6::R6Class("Comm",
       } else {
         writeLines(glue("<Comm id={self$id} target_name='{self$target_name}' description='{private$description}' >"))
       }
-    },
-
-    #' @return nothing
-    finalize = function() {
-        CommManager$release(self)
     }
   ),
 
@@ -167,53 +162,57 @@ Comm <- R6::R6Class("Comm",
   ),
 
   private = list(
-      xp = NULL,
-      description = "",
-      close_handler = NULL,
-      message_handler = NULL
+    xp = NULL,
+    description = "",
+    close_handler = NULL,
+    message_handler = NULL,
+
+    finalize = function() {
+      CommManager$release(self)
+    }
   )
 )
 
 Message <- R6::R6Class("Message",
-    public = list(
-        initialize = function(xp) {
-            private$xp <- xp
-        },
+  public = list(
+    initialize = function(xp) {
+      private$xp <- xp
+    },
 
-        print = function() {
-            print(cli::rule("$content"))
-            str(self$content)
+    print = function() {
+      print(cli::rule("$content"))
+      str(self$content)
 
-            print(cli::rule("$header"))
-            str(self$header)
+      print(cli::rule("$header"))
+      str(self$header)
 
-            print(cli::rule("$parent_header"))
-            str(self$parent_header)
+      print(cli::rule("$parent_header"))
+      str(self$parent_header)
 
-            print(cli::rule("$metadata"))
-            str(self$metadata)
-        }
-    ),
+      print(cli::rule("$metadata"))
+      str(self$metadata)
+    }
+  ),
 
-    active = list(
-        content = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_content", private$xp))
-        },
+  active = list(
+    content = function() {
+      jsonlite::fromJSON(hera_dot_call("Message__get_content", private$xp))
+    },
 
-        header = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_header", private$xp))
-        },
+    header = function() {
+      jsonlite::fromJSON(hera_dot_call("Message__get_header", private$xp))
+    },
 
-        parent_header = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_parent_header", private$xp))
-        },
+    parent_header = function() {
+      jsonlite::fromJSON(hera_dot_call("Message__get_parent_header", private$xp))
+    },
 
-        metadata = function() {
-            jsonlite::fromJSON(hera_dot_call("Message__get_metadata", private$xp))
-        }
-    ),
+    metadata = function() {
+      jsonlite::fromJSON(hera_dot_call("Message__get_metadata", private$xp))
+    }
+  ),
 
-    private = list(
-        xp = NULL
-    )
+  private = list(
+    xp = NULL
+  )
 )

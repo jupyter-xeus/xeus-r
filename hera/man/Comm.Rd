@@ -27,7 +27,6 @@ Comm class
 \item \href{#method-Comm-on_close}{\code{Comm$on_close()}}
 \item \href{#method-Comm-on_message}{\code{Comm$on_message()}}
 \item \href{#method-Comm-print}{\code{Comm$print()}}
-\item \href{#method-Comm-finalize}{\code{Comm$finalize()}}
 \item \href{#method-Comm-clone}{\code{Comm$clone()}}
 }
 }
@@ -145,18 +144,6 @@ Comm class
 
 \subsection{Returns}{
 information about the comm
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Comm-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-Comm-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Comm$finalize()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-nothing
 }
 }
 \if{html}{\out{<hr>}}
