@@ -1,7 +1,7 @@
-inspect <- function(code, cursor_pos) {
-    # This is the approach used in IRkernel, it would perhaps 
+inspect <- function(code, cursor_pos, eval_env = rlang::global_env()) {
+    # This is the approach used in IRkernel, it would perhaps
     # be better to use parsing instead, e.g. with the internal R
-    # parser, but the expression has to be complete, or a more 
+    # parser, but the expression has to be complete, or a more
     # forgiving parser, e.g. tree-sitter and the grammar for R:
     # https://github.com/r-lib/tree-sitter-r/tree/next
 
@@ -20,7 +20,7 @@ inspect <- function(code, cursor_pos) {
         'text/plain' = '# %s:\n',
         'text/html' = '<h1>%s:</h1>\n'
     )
-    
+
     add_new_section <- function(data, section_name, new_data) {
         for (mime in names(title_templates)) {
             new_content <- new_data[[mime]]
@@ -37,10 +37,10 @@ inspect <- function(code, cursor_pos) {
         # In many cases `get(token)` works, but it does not
         # in the cases such as `token` is a numeric constant or a reserved word.
         # Therefore `eval()` is used here.
-        obj <- tryCatch(eval(parse(text = token), envir = .GlobalEnv), error = function(e) NULL)
+        obj <- tryCatch(eval(parse(text = token), envir = eval_env), error = function(e) NULL)
         class_data <- if (!is.null(obj)) IRdisplay::prepare_mimebundle(class(obj))$data
         print_data <- if (!is.null(obj)) IRdisplay::prepare_mimebundle(obj)$data
-        
+
         # `help(token)` is not used here because it does not works
         # in the cases `token` is in `pkg::topic`or `pkg:::topic` form.
         help_data <- tryCatch({
@@ -49,7 +49,7 @@ inspect <- function(code, cursor_pos) {
                 IRdisplay::prepare_mimebundle(help_obj)$data
             }
         }, error = function(e) NULL)
-        
+
         # only show help if we have a function
         if ('function' %in% class(obj) && !is.null(help_data)) {
             data <- help_data
