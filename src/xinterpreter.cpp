@@ -117,7 +117,7 @@ void interpreter::execute_request_impl(
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_count));
     SEXP silent_ = PROTECT(Rf_ScalarLogical(config.silent));
 
-    SEXP result = r::invoke_hera_fn("execute", code_, execution_counter_, silent_, R_GlobalEnv);
+    SEXP result = r::invoke_hera_fn("execute", code_, execution_counter_, silent_);
 
     if (Rf_inherits(result, "error_reply")) {
         std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
@@ -251,7 +251,7 @@ nl::json interpreter::inspect_request_impl(const std::string& code, int cursor_p
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP cursor_pos_ = PROTECT(Rf_ScalarInteger(cursor_pos));
 
-    SEXP result = PROTECT(r::invoke_hera_fn("inspect", code_, cursor_pos_, R_GlobalEnv));
+    SEXP result = PROTECT(r::invoke_hera_fn("inspect", code_, cursor_pos_));
     bool found = LOGICAL_ELT(VECTOR_ELT(result, 0), 0);
     if (!found) {
         UNPROTECT(3);
