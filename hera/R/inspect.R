@@ -1,4 +1,4 @@
-inspect <- function(code, cursor_pos, eval_env = rlang::global_env()) {
+inspect <- function(code, cursor_pos, eval_env) {
     # This is the approach used in IRkernel, it would perhaps
     # be better to use parsing instead, e.g. with the internal R
     # parser, but the expression has to be complete, or a more
