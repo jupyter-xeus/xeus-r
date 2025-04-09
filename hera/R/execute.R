@@ -89,7 +89,7 @@ send_plot <- function(plot) {
 
 # currently not exported, because it is only meant to be called
 # from xeus-r / interpreter::execute_request_impl
-execute <- function(code, execution_counter, silent = FALSE, eval_env) {
+execute <- function(code, execution_counter, silent = FALSE, eval_env = rlang::global_env()) {
   the$last_error <- NULL
 
   parsed <- tryCatch(
