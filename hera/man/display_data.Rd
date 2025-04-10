@@ -14,3 +14,9 @@ display_data(data = NULL, metadata = NULL)
 \description{
 Display data
 }
+\examples{
+\dontrun{
+  display_data(mtcars)
+}
+
+}

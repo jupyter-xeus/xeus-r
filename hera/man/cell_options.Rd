@@ -7,10 +7,14 @@
 cell_options(...)
 }
 \arguments{
-\item{...}{For \code{local_options()} and \code{push_options()}, named
-values defining new option values. For \code{peek_options()}, strings
-or character vectors of option names.}
+\item{...}{options to set locally to the notebook cell. Forwarded to \code{\link[rlang:local_options]{rlang::local_options()}}.}
 }
 \description{
 Options for current jupyter cell
+}
+\examples{
+\dontrun{
+  cell_options(repr.plot.bg = "gray")
+}
+
 }

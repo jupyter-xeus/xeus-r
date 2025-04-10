@@ -12,3 +12,7 @@ TRUE if the current session is running in a xeusr kernel
 \description{
 Is this a running xeusr jupyter kernel
 }
+\examples{
+is_xeusr()
+
+}

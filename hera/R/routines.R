@@ -7,6 +7,11 @@ publish_stream <- function(name, text) {
 #' @param data data to display
 #' @param metadata potential metadata
 #'
+#' @examples
+#' \dontrun{
+#'   display_data(mtcars)
+#' }
+#'
 #' @export
 display_data <- function(data = NULL, metadata = NULL) {
   invisible(hera_dot_call("xeusr_display_data", toJSON(data), toJSON(metadata)))
@@ -25,6 +30,11 @@ kernel_info_request <- function() {
 #'
 #' @param wait Should this wait
 #'
+#' @examples
+#' \dontrun{
+#'   clear_output()
+#' }
+#'
 #' @return NULL invisibly
 #' @export
 clear_output <- function(wait = FALSE) {
@@ -39,6 +49,11 @@ is_complete_request <- function(code) {
 #'
 #' @param x something to display
 #' @param title title of the display
+#'
+#' @examples
+#' \dontrun{
+#'   View(mtcars)
+#' }
 #'
 #' @export
 View <- function(x, title) {

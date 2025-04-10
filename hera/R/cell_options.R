@@ -1,6 +1,11 @@
 #' Options for current jupyter cell
 #'
-#' @inheritParams rlang::local_options
+#' @param ... options to set locally to the notebook cell. Forwarded to [rlang::local_options()].
+#'
+#' @examples
+#' \dontrun{
+#'   cell_options(repr.plot.bg = "gray")
+#' }
 #'
 #' @export
 cell_options <- function(...) {

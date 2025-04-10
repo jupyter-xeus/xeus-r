@@ -35,12 +35,13 @@ print_vignette <- function(x, ...) {
   invisible(x)
 }
 
+NAMESPACE <- environment()
 the <- NULL
 
 .onLoad <- function(libname, pkgname) {
   # - verify this is running within xeus-r
   # - handshake
-  the <<- new.env()
+  NAMESPACE$the <- new.env()
   the$frame_cell_execute <- NULL
   the$last_plot <- NULL
   the$last_visible <- TRUE
@@ -52,7 +53,7 @@ the <- NULL
   assign("print.vignette", print_vignette, ns_utils)
   get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
 
-  CommManager <<- CommManagerClass$new()
+  NAMESPACE$CommManager <- CommManagerClass$new()
 
   init_options()
 }
@@ -88,6 +89,10 @@ hera_new <- function(class, xp, ...) {
 #' Is this a running xeusr jupyter kernel
 #'
 #' @return TRUE if the current session is running in a xeusr kernel
+#'
+#' @examples
+#' is_xeusr()
+#'
 #' @export
 is_xeusr <- function() {
   embedding <- getLoadedDLLs()[["(embedding)"]]

@@ -15,3 +15,9 @@ NULL invisibly
 \description{
 Clear output
 }
+\examples{
+\dontrun{
+  clear_output()
+}
+
+}

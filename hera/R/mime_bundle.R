@@ -2,6 +2,10 @@
 #'
 #' @param x an object
 #'
+#' @examples
+#' mime_types(letters)
+#' mime_types(mtcars)
+#'
 #' @return a character vector of its supported mime types
 #' @export
 mime_types <- function(x) {
@@ -28,12 +32,14 @@ mime_types.shiny.tag <- function(x) {
   c("text/plain", "text/html")
 }
 
-
 #' bundle an object
 #'
 #' @param x an object
 #' @param mimetypes mime types
 #' @param ... extra currently unused parameters
+#'
+#' @examples
+#' mime_bundle(letters)
 #'
 #' @seealso IRdisplay::prepare_mimebundle which this currently wraps around
 #'

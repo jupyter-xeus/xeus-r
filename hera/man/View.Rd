@@ -14,3 +14,9 @@ View(x, title)
 \description{
 View
 }
+\examples{
+\dontrun{
+  View(mtcars)
+}
+
+}
