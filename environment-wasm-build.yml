@@ -9,7 +9,7 @@ dependencies:
   - emscripten_emscripten-wasm32==3.1.73
   # Hera
   - r-base
-  - r-rlang==1.1.5
+  - r-rlang
   - r-jsonlite
   - r-base64enc
   - r-digest
