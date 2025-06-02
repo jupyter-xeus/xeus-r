@@ -9,7 +9,7 @@ dependencies:
   - emscripten_emscripten-wasm32==3.1.73
   # Hera
   - r-base
-  - r-rlang
+  - r-rlang==1.1.5
   - r-jsonlite
   - r-base64enc
   - r-digest
@@ -22,4 +22,4 @@ dependencies:
   - jupyterlite-core
   - jupyter_server
   - pip:
-    - jupyterlite-xeus==4.0.0a1
+    - jupyterlite-xeus==4.0.0rc0
