@@ -14,7 +14,7 @@ dependencies:
   - libiconv
   - r-base >=4.4.3
   # Run dependencies
-  - r-rlang ==1.1.5
+  - r-rlang
   - r-evaluate
   - r-glue
   - r-r6
