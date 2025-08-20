@@ -66,7 +66,7 @@ xeus_url <- function(description, open = "r", ...) {
     download.file(description, tmp, quiet = FALSE)
 
     # return a connection to the temp file
-    con <- file(tmp, open = open, encoding = encoding)
+    con <- file(tmp, open = open)
     con
 }
 xeus_file <- function(description, open = "", blocking = TRUE,
