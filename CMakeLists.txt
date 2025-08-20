@@ -341,12 +341,8 @@ if(EMSCRIPTEN)
     target_link_options(xr
         PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
         PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
-        PUBLIC "SHELL: -fexceptions"
         PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
         PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"PATH\",\"LDSO\",\"getDylinkMetadata\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
-    )
-    target_compile_options(xr
-        PUBLIC "SHELL: -fexceptions"
     )
 endif()
 

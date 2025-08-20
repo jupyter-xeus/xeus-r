@@ -25,7 +25,6 @@ namespace xeus_r
         wasm_interpreter();
         virtual ~wasm_interpreter() = default;
 
-
         emval m_download_file_function;
     };
 }

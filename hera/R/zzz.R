@@ -37,7 +37,6 @@ print_vignette <- function(x, ...) {
 
 NAMESPACE <- environment()
 the <- NULL
-IS_WASM <- R.version$platform == "wasm32-unknown-emscripten"
 original_file <- base::file
 
 xeus_download_file <- function(
@@ -99,13 +98,6 @@ xeus_file <- function(description, open = "", blocking = TRUE,
                       blocking = blocking, encoding = encoding, ...))
   }
 }
-
-
-
-onLoadWasm <- function(libname, pkgname) {
-
-}
-
 
 .onLoad <- function(libname, pkgname) {
     # - verify this is running within xeus-r
