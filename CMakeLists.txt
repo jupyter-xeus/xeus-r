@@ -182,8 +182,7 @@ macro(xeus_r_set_common_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 
         if (EMSCRIPTEN)
-            target_compile_options(${target_name} PRIVATE -fPIC -fexceptions)
-            target_link_options(${target_name} PRIVATE -fexceptions)
+            target_compile_options(${target_name} PRIVATE -fPIC)
         else ()
             target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
         endif()
@@ -197,6 +196,8 @@ macro(xeus_r_set_common_options target_name)
                 message(FATAL_ERROR "Unsupported compiler -- xeus-r requires C++17 support!")
             endif ()
         else()
+            # when building for emscripten **on a mac**
+            # this seems to be the only way to set the C++ standard
             set(CMAKE_CXX_STANDARD 17)
         endif()
     endif ()
