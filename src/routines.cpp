@@ -13,12 +13,11 @@
 
 
 #ifdef EMSCRIPTEN
+#include "xeus-r/xinterpreter_wasm.hpp"
+
 #include <emscripten/val.h>
-#include <iostream>
 #include <fstream>
 #include <vector>
-#include <sstream>
-#include "xeus-r/xinterpreter_wasm.hpp"
 #include <tuple>
 #include <optional>
 #endif
@@ -79,9 +78,6 @@ wrapped_return<std::map<std::string, std::string>> namedCharToMap(SEXP x) {
         const char* key = Rf_translateCharUTF8(k);
         // treat NA values as empty string (or skip—your choice)
         const char* val = (v == NA_STRING) ? "" : Rf_translateCharUTF8(v);
-
-        // optional: debug
-        // std::cout << "Key: " << key << ", Value: " << val << std::endl;
 
         out[std::string(key)] = std::string(val);
     }
@@ -174,27 +170,18 @@ SEXP xeus_download_file(
     emval result = wasm_interpreter.m_download_file_function(
         url_str, quiet_mode, cache_ok, js_headers
     );
-    std::cout<<"donwload finished"<<std::endl;
     if (result["has_error"].as<bool>()) {
-        std::cout<<"has error: "<<std::endl;
         std::string error_msg = result["error_msg"].as<std::string>();
-        std::cout<<"error_msg: "<<error_msg<<std::endl;
         // instead of throwing an error, we return the error message itself.
         // when there is no error we return null
         return Rf_mkString(error_msg.c_str());
     }
-    std::cout<<"get data"<<std::endl;
     emval arrayBuffer = result["data"];
     emval js_uint8array = emval::global("Uint8Array").new_(arrayBuffer);
 
     
     
-    
-    // copy values from js side to vectors mem
-    // - create a javascript "UInt8(!) (not Int8) array"
-    //   which is using the vector ptr as buffer
     const size_t length = js_uint8array["length"].as<size_t>();
-    std::cout<<"length: "<<length<<std::endl;
     std::vector<uint8_t> vec_data(length);
     emval heap = emval::module_property("HEAPU8");
     emval memory = heap["buffer"];
@@ -202,11 +189,8 @@ SEXP xeus_download_file(
                 reinterpret_cast<uintptr_t>(vec_data.data()), 
                 length);
 
-
     // - copy the js arrays content into the c++ arrays content
     memory_view.call<void>("set", js_uint8array);
-
-
 
     // write the data to the file
     std::ofstream ofs(destfile_str, std::ios::binary);
@@ -223,21 +207,9 @@ SEXP xeus_download_file(
         return Rf_mkString("Failed to close destination file: ");
     }
 
-
-
     return R_NilValue; // Return NULL to indicate success
 }
 #endif
-
-
-
-
-
-
-
-
-
-
 
 SEXP to_r_json(const nl::json& js) {
     SEXP out = PROTECT(Rf_mkString(js.dump(4).c_str()));
