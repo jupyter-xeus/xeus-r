@@ -109,45 +109,59 @@ void interpreter::execute_request_impl(
     nl::json /*user_expressions*/
 )
 {
-    if (config.store_history) {
-        const_cast<xeus::xhistory_manager&>(get_history_manager()).store_inputs(0, execution_count, code);
-    }
-
-    SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
-    SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_count));
-    SEXP silent_ = PROTECT(Rf_ScalarLogical(config.silent));
-
-    SEXP result = r::invoke_hera_fn("execute", code_, execution_counter_, silent_);
-
-    if (Rf_inherits(result, "error_reply")) {
-        std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
-        std::string ename = CHAR(STRING_ELT(VECTOR_ELT(result, 1), 0));
-
-        std::vector<std::string> trace_back;
-        if (XLENGTH(result) > 2) {
-            SEXP trace_back_ = VECTOR_ELT(result, 2);
-            auto n = XLENGTH(trace_back_);
-            for (decltype(n) i = 0; i < n; i++) {
-                trace_back.push_back(CHAR(STRING_ELT(trace_back_, i)));
-            }
+    try{
+        if (config.store_history) {
+            const_cast<xeus::xhistory_manager&>(get_history_manager()).store_inputs(0, execution_count, code);
         }
 
-        publish_execution_error(evalue, ename, trace_back);
+        SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
+        SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_count));
+        SEXP silent_ = PROTECT(Rf_ScalarLogical(config.silent));
+
+        SEXP result = r::invoke_hera_fn("execute", code_, execution_counter_, silent_);
+
+        if (Rf_inherits(result, "error_reply")) {
+            std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
+            std::string ename = CHAR(STRING_ELT(VECTOR_ELT(result, 1), 0));
+
+            std::vector<std::string> trace_back;
+            if (XLENGTH(result) > 2) {
+                SEXP trace_back_ = VECTOR_ELT(result, 2);
+                auto n = XLENGTH(trace_back_);
+                for (decltype(n) i = 0; i < n; i++) {
+                    trace_back.push_back(CHAR(STRING_ELT(trace_back_, i)));
+                }
+            }
+
+            publish_execution_error(evalue, ename, trace_back);
+
+            UNPROTECT(3);
+            cb(xeus::create_error_reply(evalue, ename, std::move(trace_back)));
+        }
+
+        if (Rf_inherits(result, "execution_result")) {
+            SEXP data_ = VECTOR_ELT(result, 0);
+            SEXP metadata_ = VECTOR_ELT(result, 1);
+            auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
+            auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
+            publish_execution_result(execution_count, data, metadata);
+        }
 
         UNPROTECT(3);
+        cb(xeus::create_successful_reply(/*payload, user_expressions*/));
+    } catch (const std::exception& e) {
+        std::string evalue = e.what();
+        std::string ename = "xeus-r execution error";
+        std::vector<std::string> trace_back;
+        publish_execution_error(evalue, ename, trace_back);
+        cb(xeus::create_error_reply(evalue, ename, std::move(trace_back)));
+    } catch (...) {
+        std::string evalue = "xeus-r execution error";
+        std::string ename = "xeus-r execution error";
+        std::vector<std::string> trace_back;
+        publish_execution_error(evalue, ename, trace_back);
         cb(xeus::create_error_reply(evalue, ename, std::move(trace_back)));
     }
-
-    if (Rf_inherits(result, "execution_result")) {
-        SEXP data_ = VECTOR_ELT(result, 0);
-        SEXP metadata_ = VECTOR_ELT(result, 1);
-        auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
-        auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
-        publish_execution_result(execution_count, data, metadata);
-    }
-
-    UNPROTECT(3);
-    cb(xeus::create_successful_reply(/*payload, user_expressions*/));
 }
 
 void interpreter::configure_impl()

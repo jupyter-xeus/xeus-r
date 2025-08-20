@@ -6,6 +6,13 @@
 #The full license is in the file LICENSE, distributed with this software. 
 #############################################################################
 
+string(REPLACE "-headerpad_max_install_names" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+string(REPLACE "-headerpad_max_install_names" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+
+string(REPLACE "-dead_strip_dylibs" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+string(REPLACE "-dead_strip_dylibs" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+
+
 cmake_minimum_required(VERSION 3.24)
 project(xeus-r)
 
@@ -176,18 +183,23 @@ macro(xeus_r_set_common_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 
         if (EMSCRIPTEN)
-            target_compile_options(${target_name} PRIVATE -fPIC)
+            target_compile_options(${target_name} PRIVATE -fPIC -fexceptions)
+            target_link_options(${target_name} PRIVATE -fexceptions)
         else ()
             target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
         endif()
 
-        # C++17 flag
-        CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
-        if (HAS_CPP_17_FLAG)
-            target_compile_features(${target_name} PRIVATE cxx_std_17)
-        else ()
-            message(FATAL_ERROR "Unsupported compiler -- xeus-r requires C++17 support!")
-        endif ()
+        if(NOT EMSCRIPTEN)
+            # C++17 flag
+            CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
+            if (HAS_CPP_17_FLAG)
+                target_compile_features(${target_name} PRIVATE cxx_std_17)
+            else ()
+                message(FATAL_ERROR "Unsupported compiler -- xeus-r requires C++17 support!")
+            endif ()
+        else()
+            set(CMAKE_CXX_STANDARD 17)
+        endif()
     endif ()
 
     if (APPLE)
@@ -329,8 +341,12 @@ if(EMSCRIPTEN)
     target_link_options(xr
         PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
         PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
+        PUBLIC "SHELL: -fexceptions"
         PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
         PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"PATH\",\"LDSO\",\"getDylinkMetadata\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
+    )
+    target_compile_options(xr
+        PUBLIC "SHELL: -fexceptions"
     )
 endif()
 

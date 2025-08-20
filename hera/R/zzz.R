@@ -37,25 +37,131 @@ print_vignette <- function(x, ...) {
 
 NAMESPACE <- environment()
 the <- NULL
+IS_WASM <- R.version$platform == "wasm32-unknown-emscripten"
+original_file <- base::file
+
+xeus_download_file <- function(
+    url, 
+    destfile,
+    method = "auto",
+    quiet = FALSE,
+    mode = "w",
+    cacheOK = TRUE,
+    extra =  getOption("download.file.extra"),
+    headers = NULL
+)
+{
+    ret <- hera_dot_call( "xeus_download_file", url, destfile, method, quiet, mode, cacheOK, extra, headers)
+    # when ret is not NULL, it is an error message
+    if (!is.null(ret) && ret != "") {
+        stop(ret)
+    }
+}
+
+xeus_url <- function(description, open = "r", ...) {
+
+    # message("Faked url() call for: ", description)
+
+    # temp file to hold content
+    tmp <- tempfile(fileext = ".tempfile")
+    download.file(description, tmp, quiet = FALSE)
+
+    # return a connection to the temp file
+    con <- file(tmp, open = open, encoding = encoding)
+    con
+}
+xeus_file <- function(description, open = "", blocking = TRUE,
+                      encoding = getOption("encoding"), ...) {
+  if (grepl("^https?://", description)) {
+    # message("Intercepted file() call for URL: ", description)
+    tmp <- tempfile(fileext = ".txt")
+    download.file(description, tmp, quiet = TRUE)
+
+    con <- original_file(tmp, open = open, blocking = blocking, encoding = encoding, ...)
+
+    # wrap in environment
+    wrapper <- new.env(parent = emptyenv())
+    wrapper$con <- con
+    wrapper$tmp <- tmp
+
+
+    # attach finalizer to connection object
+    reg.finalizer(wrapper, function(e) {
+      if (file.exists(tmp)) {
+        try(unlink(tmp), silent = TRUE)
+      }
+    }, onexit = TRUE)
+
+    return(con)
+
+  } else {
+    return(original_file(description, open = open,
+                      blocking = blocking, encoding = encoding, ...))
+  }
+}
+
+
+
+onLoadWasm <- function(libname, pkgname) {
+
+}
+
 
 .onLoad <- function(libname, pkgname) {
-  # - verify this is running within xeus-r
-  # - handshake
-  NAMESPACE$the <- new.env()
-  the$frame_cell_execute <- NULL
-  the$last_plot <- NULL
-  the$last_visible <- TRUE
-  the$last_error <- NULL
+    # - verify this is running within xeus-r
+    # - handshake
+    NAMESPACE$the <- new.env()
+    the$frame_cell_execute <- NULL
+    the$last_plot <- NULL
+    the$last_visible <- TRUE
+    the$last_error <- NULL
 
-  ns_utils <- asNamespace("utils")
-  get("unlockBinding", envir = baseenv())("print.vignette", ns_utils)
+    ns_utils <- asNamespace("utils")
+    get("unlockBinding", envir = baseenv())("print.vignette", ns_utils)
 
-  assign("print.vignette", print_vignette, ns_utils)
-  get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
+    assign("print.vignette", print_vignette, ns_utils)
+    get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
 
-  NAMESPACE$CommManager <- CommManagerClass$new()
+    NAMESPACE$CommManager <- CommManagerClass$new()
 
-  init_options()
+    init_options()
+
+    if(R.version$platform == "wasm32-unknown-emscripten") {
+
+        ###################################################
+        # download.file
+        ###################################################
+        utils_ns <- asNamespace("utils")
+        utils_pkg <- as.environment("package:utils")
+        for (env in list(utils_ns, utils_pkg)) {
+            unlockBinding("download.file", env)
+            assign("download.file", xeus_download_file, envir = env)
+            lockBinding("download.file", env)
+        }
+
+        ###################################################
+        # url
+        ###################################################
+        base_ns <- asNamespace("base")
+        base_pkg <- as.environment("package:base")
+        for (env in list(base_ns, base_pkg)) {
+            unlockBinding("url", env)
+            assign("url", xeus_url, envir = env)
+            lockBinding("url", env)
+        }
+
+        ###################################################
+        # file
+        ###################################################
+        base_ns <- asNamespace("base")
+        base_pkg <- as.environment("package:base")
+        for (env in list(base_ns, base_pkg)) {
+            unlockBinding("file", env)
+            assign("file", xeus_file, envir = env)
+            lockBinding("file", env)
+        }
+    }
+   
 }
 
 init_options <- function() {
