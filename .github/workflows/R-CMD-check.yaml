@@ -50,4 +50,5 @@ jobs:
         with:
           working-directory: hera
           upload-snapshots: true
+          error-on: '"error"'
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
