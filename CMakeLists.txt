@@ -6,8 +6,6 @@
 #The full license is in the file LICENSE, distributed with this software. 
 #############################################################################
 
-
-
 cmake_minimum_required(VERSION 3.24)
 project(xeus-r)
 
