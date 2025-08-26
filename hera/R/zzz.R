@@ -73,7 +73,7 @@ xeus_download_file <- function(
             " - URL not found",
             " - File not found",
             "",
-            "A informative error message might be accessible via the developer console.",
+            "An informative error message might be accessible via the developer console.",
             "",
             "Traceback:",
             "",
