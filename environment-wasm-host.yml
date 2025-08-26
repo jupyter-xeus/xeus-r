@@ -1,10 +1,10 @@
-name: praylib-wasm-host
+name: xeus-r-wasm-host
 channels:
   - https://repo.prefix.dev/emscripten-forge-dev
   - conda-forge
 dependencies:
   # Host dependencies
-  - pyjs
+  - nlohmann_json
   - xeus-lite
   - xeus
   - pcre2>=10.43
