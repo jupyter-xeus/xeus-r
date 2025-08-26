@@ -59,15 +59,19 @@ namespace xeus_r
                         }
 
 
-
-
                         try{
                             var xhr = new XMLHttpRequest();
                             xhr.open("GET", url, false);
                             xhr.responseType = "arraybuffer";
          
                             for (var key in headers) {
+                                console.log("Setting request header:", key, headers[key]);
                                 xhr.setRequestHeader(key, headers[key]);
+                            }
+
+                            if(!cacheOK)
+                            {
+                                // atm we do nothing in that case
                             }
 
                             xhr.send();
@@ -95,7 +99,6 @@ namespace xeus_r
                             };
 
                         } catch (e) {
-                            console.log("Caught exception during download:", e);
                             return {
                                 has_error: true,
                                 error_msg: errorToString(e)

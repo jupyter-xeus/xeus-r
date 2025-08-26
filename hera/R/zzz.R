@@ -50,23 +50,82 @@ xeus_download_file <- function(
     headers = NULL
 )
 {
-    ret <- hera_dot_call( "xeus_download_file", url, destfile, method, quiet, mode, cacheOK, extra, headers)
+    # if the method is not "auto" or "internal" we warn, but still try
+    # to continue with the download
+    if (method != "auto" && method != "internal" && method != "default") {
+        warning(gettextf("download.file method '%s' is not supported in xeus-r-lite, trying to continue with internal method", method), call. = FALSE)
+    } 
+
+    # if cacheOK is FALSE we show an warning
+    # that this will be ignored
+    if (!cacheOK) {
+        warning("cacheOK is FALSE, this will be ignored since its not supported in xeus-r-lite", call. = FALSE)
+    }
+
+    ret <- hera_dot_call( "xeus_download_file", url, destfile, method, quiet, mode, TRUE, extra, headers)
     # when ret is not NULL, it is an error message
     if (!is.null(ret) && ret != "") {
-        stop(ret)
+    
+        error_msg <- paste(
+            "Download failed, possible reasons:",
+            " - Missing CORS Headers",
+            " - Network Errors",
+            " - URL not found",
+            " - File not found",
+            "",
+            "A informative error message might be accessible via the developer console.",
+            "",
+            "Traceback:",
+            "",
+            ret,
+            sep = "\n"
+        )
+
+        stop(error_msg)
     }
 }
+xeus_url <- function(description, open = "", blocking=TRUE, encoding = getOption("encoding"), method = getOption("url.method", "auto"), headers = NULL) {
 
-xeus_url <- function(description, open = "r", ...) {
+    # warn when blocking is FALSE
+    if (!blocking) {
+        warning("blocking=FALSE is ignored as this is not implemented in xeus-r-lite", call. = FALSE)
+    }
+    # warn if encoding != "native.enc"
+    if (encoding != "native.enc") {
+        warning("Non-native encoding may give unexpected results in xeus-r-lite", call. = FALSE)
+    }
 
-    # message("Faked url() call for: ", description)
+    # warn if method is anything but "internal" or "auto" or "default"
+    if (method != "internal" && method != "auto" && method != "default") {
+        warning(gettextf("download.file method '%s' is not supported in xeus-r-lite, trying to continue with internal method", method), call. = FALSE)
+    }
 
-    # temp file to hold content
-    tmp <- tempfile(fileext = ".tempfile")
-    download.file(description, tmp, quiet = FALSE)
+    # try to extract file extension from URL
+    ext <- tools::file_ext(description)
+    if (nchar(ext) == 0) ext <- "tmp"
+    
+    # create temp file with appropriate extension
+    tmp <- tempfile(fileext = paste0(".", ext))
 
-    # return a connection to the temp file
+    
+    # download content into temp file
+    download.file(description, tmp, quiet = TRUE, mode='wb', headers = headers)
+
+    # open the connection
     con <- file(tmp, open = open)
+
+    # create a small environment to hold the temp file path
+    e <- new.env()
+    e$tmpfile <- tmp
+
+    # attach finalizer to environment, not to the connection
+    reg.finalizer(e, function(env) {
+        try(unlink(env$tmpfile), silent = TRUE)
+    }, onexit = TRUE)
+
+    # attach environment to connection so it is kept alive
+    attr(con, "tempfile_env") <- e
+
     con
 }
 xeus_file <- function(description, open = "", blocking = TRUE,
@@ -126,9 +185,9 @@ xeus_file <- function(description, open = "", blocking = TRUE,
         utils_ns <- asNamespace("utils")
         utils_pkg <- as.environment("package:utils")
         for (env in list(utils_ns, utils_pkg)) {
-            unlockBinding("download.file", env)
+            get("unlockBinding", envir = baseenv())("download.file", env)
             assign("download.file", xeus_download_file, envir = env)
-            lockBinding("download.file", env)
+            get("lockBinding", envir = baseenv())("download.file", env)
         }
 
         ###################################################
@@ -137,9 +196,9 @@ xeus_file <- function(description, open = "", blocking = TRUE,
         base_ns <- asNamespace("base")
         base_pkg <- as.environment("package:base")
         for (env in list(base_ns, base_pkg)) {
-            unlockBinding("url", env)
+            get("unlockBinding", envir = baseenv())("url", env)
             assign("url", xeus_url, envir = env)
-            lockBinding("url", env)
+            get("lockBinding", envir = baseenv())("url", env)
         }
 
         ###################################################
@@ -148,9 +207,9 @@ xeus_file <- function(description, open = "", blocking = TRUE,
         base_ns <- asNamespace("base")
         base_pkg <- as.environment("package:base")
         for (env in list(base_ns, base_pkg)) {
-            unlockBinding("file", env)
+            get("unlockBinding", envir = baseenv())("file", env)
             assign("file", xeus_file, envir = env)
-            lockBinding("file", env)
+            get("lockBinding", envir = baseenv())("file", env)
         }
     }
    
