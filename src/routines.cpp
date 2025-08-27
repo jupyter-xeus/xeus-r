@@ -11,18 +11,14 @@
 #include "xeus/xcomm.hpp"
 #include "xeus/xlogger.hpp"
 
-
 #ifdef EMSCRIPTEN
 #include "xeus-r/xinterpreter_wasm.hpp"
-
 #include <emscripten/val.h>
 #include <fstream>
 #include <vector>
 #include <tuple>
 #include <optional>
 #endif
-
-
 
 namespace xeus_r {
 namespace routines {
@@ -38,8 +34,6 @@ using wrapped_return = std::tuple<
     std::optional<T>, // result
     std::optional<std::string> // error message
 >;
-
-
 
 // Convert a named character vector to std::map<std::string, std::string>
 // when x is NULL we return an empty map
