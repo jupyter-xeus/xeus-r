@@ -68,6 +68,12 @@ if(EMSCRIPTEN)
     set(XEUS_R_USE_SHARED_XEUS_R OFF)
     # ENV (https://github.com/emscripten-core/emscripten/commit/6d9681ad04f60b41ef6345ab06c29bbc9eeb84e0)
     set(EMSCRIPTEN_FEATURES "${EMSCRIPTEN_FEATURES} -s \"EXTRA_EXPORTED_RUNTIME_METHODS=[ENV']\"")
+
+    # these make problems on the mac
+    string(REPLACE "-headerpad_max_install_names" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+    string(REPLACE "-headerpad_max_install_names" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "-dead_strip_dylibs" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+    string(REPLACE "-dead_strip_dylibs" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
 # Dependencies
@@ -181,13 +187,19 @@ macro(xeus_r_set_common_options target_name)
             target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
         endif()
 
-        # C++17 flag
-        CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
-        if (HAS_CPP_17_FLAG)
-            target_compile_features(${target_name} PRIVATE cxx_std_17)
-        else ()
-            message(FATAL_ERROR "Unsupported compiler -- xeus-r requires C++17 support!")
-        endif ()
+        if(NOT EMSCRIPTEN)
+            # C++17 flag
+            CHECK_CXX_COMPILER_FLAG("-std=c++17" HAS_CPP_17_FLAG)
+            if (HAS_CPP_17_FLAG)
+                target_compile_features(${target_name} PRIVATE cxx_std_17)
+            else ()
+                message(FATAL_ERROR "Unsupported compiler -- xeus-r requires C++17 support!")
+            endif ()
+        else()
+            # when building for emscripten **on a mac**
+            # this seems to be the only way to set the C++ standard
+            set(CMAKE_CXX_STANDARD 17)
+        endif()
     endif ()
 
     if (APPLE)

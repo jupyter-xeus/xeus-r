@@ -39,23 +39,60 @@ NAMESPACE <- environment()
 the <- NULL
 
 .onLoad <- function(libname, pkgname) {
-  # - verify this is running within xeus-r
-  # - handshake
-  NAMESPACE$the <- new.env()
-  the$frame_cell_execute <- NULL
-  the$last_plot <- NULL
-  the$last_visible <- TRUE
-  the$last_error <- NULL
+    # - verify this is running within xeus-r
+    # - handshake
+    NAMESPACE$the <- new.env()
+    the$frame_cell_execute <- NULL
+    the$last_plot <- NULL
+    the$last_visible <- TRUE
+    the$last_error <- NULL
 
-  ns_utils <- asNamespace("utils")
-  get("unlockBinding", envir = baseenv())("print.vignette", ns_utils)
+    ns_utils <- asNamespace("utils")
+    get("unlockBinding", envir = baseenv())("print.vignette", ns_utils)
 
-  assign("print.vignette", print_vignette, ns_utils)
-  get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
+    assign("print.vignette", print_vignette, ns_utils)
+    get("lockBinding", envir = baseenv())("print.vignette", ns_utils)
 
-  NAMESPACE$CommManager <- CommManagerClass$new()
+    NAMESPACE$CommManager <- CommManagerClass$new()
 
-  init_options()
+    init_options()
+
+    if(R.version$platform == "wasm32-unknown-emscripten") {
+
+        ###################################################
+        # download.file
+        ###################################################
+        utils_ns <- asNamespace("utils")
+        utils_pkg <- as.environment("package:utils")
+        for (env in list(utils_ns, utils_pkg)) {
+            get("unlockBinding", envir = baseenv())("download.file", env)
+            assign("download.file", xeus_download_file, envir = env)
+            get("lockBinding", envir = baseenv())("download.file", env)
+        }
+
+        ###################################################
+        # url
+        ###################################################
+        base_ns <- asNamespace("base")
+        base_pkg <- as.environment("package:base")
+        for (env in list(base_ns, base_pkg)) {
+            get("unlockBinding", envir = baseenv())("url", env)
+            assign("url", xeus_url, envir = env)
+            get("lockBinding", envir = baseenv())("url", env)
+        }
+
+        ###################################################
+        # file
+        ###################################################
+        base_ns <- asNamespace("base")
+        base_pkg <- as.environment("package:base")
+        for (env in list(base_ns, base_pkg)) {
+            get("unlockBinding", envir = baseenv())("file", env)
+            assign("file", xeus_file, envir = env)
+            get("lockBinding", envir = baseenv())("file", env)
+        }
+    }
+   
 }
 
 init_options <- function() {

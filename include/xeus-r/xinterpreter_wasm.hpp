@@ -12,6 +12,10 @@
 #include "xinterpreter.hpp"
 #include "xeus_r_config.hpp"
 
+#include <emscripten/val.h>
+using emval = emscripten::val;
+
+
 namespace xeus_r
 {
     class XEUS_R_API wasm_interpreter : public interpreter
@@ -21,6 +25,7 @@ namespace xeus_r
         wasm_interpreter();
         virtual ~wasm_interpreter() = default;
 
+        emval m_download_file_function;
     };
 }
 

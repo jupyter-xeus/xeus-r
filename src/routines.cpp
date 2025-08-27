@@ -11,8 +11,204 @@
 #include "xeus/xcomm.hpp"
 #include "xeus/xlogger.hpp"
 
+#ifdef EMSCRIPTEN
+#include "xeus-r/xinterpreter_wasm.hpp"
+#include <emscripten/val.h>
+#include <fstream>
+#include <vector>
+#include <tuple>
+#include <optional>
+#endif
+
 namespace xeus_r {
 namespace routines {
+
+
+#ifdef EMSCRIPTEN
+
+using emval = emscripten::val;
+
+// some adh-hoc error handling helpers
+template<class T>
+using wrapped_return = std::tuple<
+    std::optional<T>, // result
+    std::optional<std::string> // error message
+>;
+
+// Convert a named character vector to std::map<std::string, std::string>
+// when x is NULL we return an empty map
+wrapped_return<std::map<std::string, std::string>> namedCharToMap(SEXP x) {
+    std::map<std::string, std::string> out;
+
+    if (Rf_isNull(x)){
+         return {out, std::nullopt};
+    }
+
+    if (TYPEOF(x) != STRSXP) {
+        return {std::nullopt, "Expected a named character vector but got a " + std::string(Rf_type2char(TYPEOF(x)))};
+    }
+
+    SEXP nms = Rf_getAttrib(x, R_NamesSymbol);
+    if (Rf_isNull(nms) || TYPEOF(nms) != STRSXP) {
+        return {std::nullopt, "Expected a named character vector but got a vector without names"};
+    }
+
+    int n = Rf_length(x);
+    if (Rf_length(nms) != n) {
+        return {std::nullopt, "Names and values have different lengths"};
+    }
+
+    for (int i = 0; i < n; ++i) {
+        SEXP k = STRING_ELT(nms, i);
+        SEXP v = STRING_ELT(x, i);
+
+        // skip NA names
+        if (k == NA_STRING) continue;
+
+        const char* key = Rf_translateCharUTF8(k);
+        // treat NA values as empty string (or skip—your choice)
+        const char* val = (v == NA_STRING) ? "" : Rf_translateCharUTF8(v);
+
+        out[std::string(key)] = std::string(val);
+    }
+    return {out, std::nullopt};
+}
+
+// Convert a character string (scalar or vector) to std::string
+// if its null return empty string
+wrapped_return<std::string> sexpToString(SEXP s) {
+    if (Rf_isNull(s)) return {std::string(), std::nullopt};
+
+    if (TYPEOF(s) != STRSXP) {
+        return {std::nullopt, "Expected a character vector but got a " + std::string(Rf_type2char(TYPEOF(s)))};
+    }
+    if (Rf_length(s) < 1) return {
+        std::string(), std::nullopt
+    }; // return empty string for empty character vector
+
+    SEXP str_elt = STRING_ELT(s, 0);       // <- use s here
+
+    if (str_elt == NA_STRING) return {std::string(), std::nullopt};
+
+    // Use UTF-8 for consistency
+    return {std::string(Rf_translateCharUTF8(str_elt)), std::nullopt};
+}
+
+SEXP xeus_download_file(
+    SEXP url,
+    SEXP destfile, 
+    SEXP method,
+    SEXP quiet,
+    SEXP mode,
+    SEXP cacheOK,
+    SEXP extra,
+    SEXP headers 
+) {
+    // Validate logical args
+    if (TYPEOF(quiet) != LGLSXP || Rf_length(quiet) < 1)
+        return Rf_mkString("'quiet' must be a logical(1)");
+    if (TYPEOF(cacheOK) != LGLSXP || Rf_length(cacheOK) < 1)
+        return Rf_mkString("'cacheOK' must be a logical(1)");
+
+    // URL
+    auto [opt_url_str, opt_url_err] = sexpToString(url);
+    if (opt_url_err) {
+        return Rf_mkString(opt_url_err->c_str());
+    }
+    std::string url_str = *opt_url_str;
+
+    // destfile
+    auto [opt_destfile_str, opt_destfile_err] = sexpToString(destfile);
+    if (opt_destfile_err) {
+        return Rf_mkString(opt_destfile_err->c_str());
+    }
+    std::string destfile_str = *opt_destfile_str;
+
+    // method
+    auto [opt_method_str, opt_method_err] = sexpToString(method);
+    if (opt_method_err) {
+        return Rf_mkString(opt_method_err->c_str());
+    }
+    std::string method_str = *opt_method_str;
+
+    // quiet
+    bool quiet_mode = LOGICAL_ELT(quiet, 0) == TRUE;
+
+    // mode
+    auto [opt_mode_str, opt_mode_err] = sexpToString(mode);
+    if (opt_mode_err) {
+        return Rf_mkString(opt_mode_err->c_str());
+    }
+    std::string mode_str = *opt_mode_str;
+
+    // extra options
+    auto [opt_extra_str, opt_extra_err] = sexpToString(extra);
+    if (opt_extra_err) {
+        return Rf_mkString(opt_extra_err->c_str());
+    }
+    std::string extra_str = *opt_extra_str;
+
+    // cacheOK?
+    bool cache_ok = LOGICAL_ELT(cacheOK, 0) == TRUE;
+
+    // headers as c++map
+    auto [opt_headers_map, opt_headers_err] = namedCharToMap(headers);
+    if (opt_headers_err) {
+        return Rf_mkString(opt_headers_err->c_str());
+    }
+    std::map<std::string, std::string> headers_map = *opt_headers_map;
+
+    // convert to a javascript object
+    emval js_headers = emval::object();
+    for (const auto& kv : headers_map) js_headers.set(kv.first, kv.second);
+
+    // get the interpreter signleton as this is holding the js-function
+    // we need to call
+    auto& wasm_interpreter = static_cast<xeus_r::wasm_interpreter&>(xeus::get_interpreter());
+
+    // call the download file function
+    emval result = wasm_interpreter.m_download_file_function(
+        url_str, quiet_mode, cache_ok, js_headers
+    );
+    // check for errors
+    if (result["has_error"].as<bool>()) {
+        std::string error_msg = result["error_msg"].as<std::string>();
+        // instead of throwing an error, we return the error message itself.
+        // when there is no error we return null
+        return Rf_mkString(error_msg.c_str());
+    }
+    // no error:
+    // convert the ArrayBuffer to a std::vector<uint8_t>
+    emval arrayBuffer = result["data"];
+    emval js_uint8array = emval::global("Uint8Array").new_(arrayBuffer);
+    const size_t length = js_uint8array["length"].as<size_t>();
+    std::vector<uint8_t> vec_data(length);
+    emval heap = emval::module_property("HEAPU8");
+    emval memory = heap["buffer"];
+    emval memory_view = js_uint8array["constructor"].new_(memory, 
+                reinterpret_cast<uintptr_t>(vec_data.data()), 
+                length);
+    memory_view.call<void>("set", js_uint8array);
+
+    // write the data to the file
+    bool appending = mode_str.size()>= 1 && mode_str[0] == 'a';
+    std::ofstream ofs(destfile_str, std::ios::binary | (appending ? std::ios::app : std::ios::trunc));
+    if (!ofs) {
+        return Rf_mkString("Failed to open destination file: ");
+    }
+    ofs.write(reinterpret_cast<const char*>(vec_data.data()), vec_data.size());
+    if (!ofs) {
+        return Rf_mkString("Failed to write to destination file: ");
+    }
+
+    ofs.close();
+    if (!ofs) {
+        return Rf_mkString("Failed to close destination file: ");
+    }
+
+    return R_NilValue; // Return NULL to indicate success
+}
+#endif
 
 SEXP to_r_json(const nl::json& js) {
     SEXP out = PROTECT(Rf_mkString(js.dump(4).c_str()));
@@ -328,6 +524,11 @@ void register_r_routines() {
         {"Message__get_header"             , (DL_FUNC) &routines::Message__get_header, 1},
         {"Message__get_parent_header"      , (DL_FUNC) &routines::Message__get_parent_header, 1},
         {"Message__get_metadata"           , (DL_FUNC) &routines::Message__get_metadata, 1},
+
+        // lite methods / polyfills
+        #ifdef EMSCRIPTEN
+        {"xeus_download_file"                , (DL_FUNC) &routines::xeus_download_file, 8},
+        #endif
 
         {NULL, NULL, 0}
     };

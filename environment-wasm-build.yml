@@ -19,6 +19,6 @@ dependencies:
   - r-glue
   - r-vctrs
   # JupyterLite
-  - jupyterlite-core
   - jupyter_server
+  - jupyterlite-core
   - jupyterlite-xeus
