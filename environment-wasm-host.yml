@@ -5,14 +5,16 @@ channels:
 dependencies:
   # Host dependencies
   - nlohmann_json
+  - nlohmann_json-abi
   - xeus-lite
   - xeus
   - pcre2>=10.43
   - zlib>=1.2.13
-  - xz                        # for lzma
+  - xz
   - bzip2
   - libiconv
-  - r-base ==4.4.3
+  - libflang
+  - r-base ==4.5.1
   # Run dependencies
   - r-rlang
   - r-evaluate
