@@ -116,8 +116,7 @@ void interpreter::execute_request_impl(
     SEXP code_ = PROTECT(Rf_mkString(code.c_str()));
     SEXP execution_counter_ = PROTECT(Rf_ScalarInteger(execution_count));
     SEXP silent_ = PROTECT(Rf_ScalarLogical(config.silent));
-
-    SEXP result = r::invoke_hera_fn("execute", code_, execution_counter_, silent_);
+    SEXP result = PROTECT(r::invoke_hera_fn("execute", code_, execution_counter_, silent_));
 
     if (Rf_inherits(result, "error_reply")) {
         std::string evalue = CHAR(STRING_ELT(VECTOR_ELT(result, 0), 0));
@@ -134,20 +133,20 @@ void interpreter::execute_request_impl(
 
         publish_execution_error(evalue, ename, trace_back);
 
-        UNPROTECT(3);
         cb(xeus::create_error_reply(evalue, ename, std::move(trace_back)));
-    }
+    } else {
+        if (Rf_inherits(result, "execution_result")) {
+            SEXP data_ = VECTOR_ELT(result, 0);
+            SEXP metadata_ = VECTOR_ELT(result, 1);
+            auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
+            auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
+            publish_execution_result(execution_count, data, metadata);
+        }
 
-    if (Rf_inherits(result, "execution_result")) {
-        SEXP data_ = VECTOR_ELT(result, 0);
-        SEXP metadata_ = VECTOR_ELT(result, 1);
-        auto data = nl::json::parse(CHAR(STRING_ELT(data_, 0)));
-        auto metadata = nl::json::parse(CHAR(STRING_ELT(metadata_, 0)));
-        publish_execution_result(execution_count, data, metadata);
-    }
-
-    UNPROTECT(3);
-    cb(xeus::create_successful_reply(/*payload, user_expressions*/));
+        cb(xeus::create_successful_reply(/*payload, user_expressions*/));
+    } 
+    
+    UNPROTECT(4);
 }
 
 void interpreter::configure_impl()
