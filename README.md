@@ -5,6 +5,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-r/main?urlpath=/lab/tree/notebooks/xeus-r.ipynb)
 [![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyter-xeus.github.io/xeus-r/)
 [![R-CMD-check](https://github.com/jupyter-xeus/xeus-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jupyter-xeus/xeus-r/actions/workflows/R-CMD-check.yaml)
+[![Zulip](https://img.shields.io/badge/social_chat-zulip-blue.svg)](https://jupyter.zulipchat.com/#narrow/channel/539737-Jupyter-Kernels)
 
 `xeus-r` is a Jupyter kernel for the R programming language.
 
