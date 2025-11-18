@@ -14,11 +14,15 @@ publish_stream <- function(name, text) {
 #'
 #' @export
 display_data <- function(data = NULL, metadata = NULL) {
-  invisible(hera_dot_call("xeusr_display_data", toJSON(data), toJSON(metadata)))
+  invisible(hera_dot_call("xeusr_display_data",
+                          toJSON(data, auto_unbox = TRUE),
+                          toJSON(metadata, auto_unbox = TRUE)))
 }
 
 update_display_data <- function(data = NULL, metadata = NULL) {
-  invisible(hera_dot_call("xeusr_update_display_data", toJSON(data), toJSON(metadata)))
+  invisible(hera_dot_call("xeusr_update_display_data",
+                          toJSON(data, auto_unbox = TRUE),
+                          toJSON(metadata, auto_unbox = TRUE)))
 }
 
 kernel_info_request <- function() {

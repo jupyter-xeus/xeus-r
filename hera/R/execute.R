@@ -141,8 +141,8 @@ execute <- function(code, execution_counter, silent = FALSE, eval_env = rlang::g
 
     structure(class = "execution_result",
       list(
-        data     = toJSON(bundle$data),
-        metadata = toJSON(bundle$metadata)
+        data     = toJSON(bundle$data, auto_unbox = TRUE),
+        metadata = toJSON(bundle$metadata, auto_unbox = TRUE)
       )
     )
   }
