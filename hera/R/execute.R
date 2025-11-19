@@ -139,10 +139,19 @@ execute <- function(code, execution_counter, silent = FALSE, eval_env = rlang::g
 
     bundle <- mime_bundle(obj)
 
+    # Selectively unbox only single-element image MIME types to fix VS Code double-encoding
+    # while keeping text types as arrays for test compatibility
+    data_to_serialize <- bundle$data
+    for (mime in names(data_to_serialize)) {
+      if (grepl("^image/", mime) && length(data_to_serialize[[mime]]) == 1) {
+        data_to_serialize[[mime]] <- jsonlite::unbox(data_to_serialize[[mime]])
+      }
+    }
+
     structure(class = "execution_result",
       list(
-        data     = toJSON(bundle$data, auto_unbox = TRUE),
-        metadata = toJSON(bundle$metadata, auto_unbox = TRUE)
+        data     = toJSON(data_to_serialize, auto_unbox = FALSE),
+        metadata = toJSON(bundle$metadata, auto_unbox = FALSE)
       )
     )
   }
