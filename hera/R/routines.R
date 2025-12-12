@@ -14,33 +14,15 @@ publish_stream <- function(name, text) {
 #'
 #' @export
 display_data <- function(data = NULL, metadata = NULL) {
-  # Selectively unbox only single-element image MIME types to fix VS Code double-encoding
-  # while keeping text types as arrays for test compatibility
-  data_to_serialize <- data
-  for (mime in names(data_to_serialize)) {
-    if (grepl("^image/", mime) && length(data_to_serialize[[mime]]) == 1) {
-      data_to_serialize[[mime]] <- jsonlite::unbox(data_to_serialize[[mime]])
-    }
-  }
-
   invisible(hera_dot_call("xeusr_display_data",
-                          toJSON(data_to_serialize, auto_unbox = FALSE),
-                          toJSON(metadata, auto_unbox = FALSE)))
+                          toJSON(data, auto_unbox = TRUE),
+                          toJSON(metadata, auto_unbox = TRUE)))
 }
 
 update_display_data <- function(data = NULL, metadata = NULL) {
-  # Selectively unbox only single-element image MIME types to fix VS Code double-encoding
-  # while keeping text types as arrays for test compatibility
-  data_to_serialize <- data
-  for (mime in names(data_to_serialize)) {
-    if (grepl("^image/", mime) && length(data_to_serialize[[mime]]) == 1) {
-      data_to_serialize[[mime]] <- jsonlite::unbox(data_to_serialize[[mime]])
-    }
-  }
-
   invisible(hera_dot_call("xeusr_update_display_data",
-                          toJSON(data_to_serialize, auto_unbox = FALSE),
-                          toJSON(metadata, auto_unbox = FALSE)))
+                          toJSON(data, auto_unbox = TRUE),
+                          toJSON(metadata, auto_unbox = TRUE)))
 }
 
 kernel_info_request <- function() {
