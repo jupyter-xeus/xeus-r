@@ -22,8 +22,8 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         {"text": "rnorm(",   "matches": {"n=", "mean=", "sd="}}
     ]
     code_execute_result = [
-        {"code": "6*7"       , "result": ["[1] 42"]}, 
-        {"code": "is_xeusr()", "result": ["[1] TRUE"]}
+        {"code": "6*7"       , "result": "[1] 42"},
+        {"code": "is_xeusr()", "result": "[1] TRUE"}
     ]
     code_display_data = [
         {"code": "plot(0)", "mime": "image/png"}, 
@@ -45,8 +45,8 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         reply, output_msgs = self.execute_helper(code="library('htmltools'); h1('hello')")
         data = output_msgs[0]['content']['data']
         self.assertEqual(len(data), 2, data.keys())
-        self.assertIn("<html>", data["text/html"][0])
-        self.assertIn("<h1>hello</h1>", data["text/html"][0])
+        self.assertIn("<html>", data["text/html"])
+        self.assertIn("<h1>hello</h1>", data["text/html"])
 
 #########################################################################################
 #########################################################################################

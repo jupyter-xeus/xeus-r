@@ -276,7 +276,7 @@ nl::json interpreter::kernel_info_request_impl()
     const std::string  language_version = std::string(R_MAJOR) + "." + std::string(R_MINOR);
     const std::string  language_mimetype = "text/x-R";
     const std::string  language_file_extension = ".R";
-    const std::string  language_pygments_lexer = "";
+    const std::string  language_pygments_lexer = "r";
     const std::string  language_codemirror_mode = "";
     const std::string  language_nbconvert_exporter = "";
     const std::string  banner = "xr";

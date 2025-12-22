@@ -65,5 +65,5 @@ inspect <- function(code, cursor_pos, eval_env = rlang::global_env()) {
         data[[mime]] <- unbox(data[[mime]])
     }
 
-    list(found = length(data) > 0L, data = toJSON(data), metadata = NULL)
+    list(found = length(data) > 0L, data = toJSON(data, auto_unbox = TRUE), metadata = NULL)
 }
