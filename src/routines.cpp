@@ -183,12 +183,13 @@ SEXP xeus_download_file(
     emval js_uint8array = emval::global("Uint8Array").new_(arrayBuffer);
     const size_t length = js_uint8array["length"].as<size_t>();
     std::vector<uint8_t> vec_data(length);
-    emval heap = emval::module_property("HEAPU8");
-    emval memory = heap["buffer"];
-    emval memory_view = js_uint8array["constructor"].new_(memory, 
-                reinterpret_cast<uintptr_t>(vec_data.data()), 
-                length);
-    memory_view.call<void>("set", js_uint8array);
+
+    // Create a JS view *into* C++ memory
+    emval cpp_view = emval(emscripten::typed_memory_view(
+        length,
+        vec_data.data()
+    ));
+    cpp_view.call<void>("set", js_uint8array);
 
     // write the data to the file
     bool appending = mode_str.size()>= 1 && mode_str[0] == 'a';
