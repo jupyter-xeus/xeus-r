@@ -6,7 +6,7 @@ dependencies:
   # Xeus-R
   - cmake
   - pkg-config
-  - emscripten_emscripten-wasm32==3.1.73
+  - emscripten_emscripten-wasm32
   # Hera
   - r-base
   - r-rlang
