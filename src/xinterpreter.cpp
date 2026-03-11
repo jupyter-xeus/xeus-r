@@ -263,13 +263,19 @@ nl::json interpreter::inspect_request_impl(const std::string& code, int cursor_p
     return xeus::create_inspect_reply(found, data);
 }
 
-void interpreter::shutdown_request_impl() {
+nl::json interpreter::shutdown_request_impl(bool /*restart*/)
+{
     Rf_endEmbeddedR(0);
+    return xeus::create_shutdown_reply(false);
+}
+
+nl::json interpreter::interrupt_request_impl()
+{
+    return xeus::create_interrupt_reply();
 }
 
 nl::json interpreter::kernel_info_request_impl()
 {
-    const std::string  protocol_version = "5.3";
     const std::string  implementation = "xr";
     const std::string  implementation_version = XEUS_R_VERSION;
     const std::string  language_name = "R";
@@ -280,11 +286,9 @@ nl::json interpreter::kernel_info_request_impl()
     const std::string  language_codemirror_mode = "";
     const std::string  language_nbconvert_exporter = "";
     const std::string  banner = "xr";
-    const bool         debugger = false;
     const nl::json     help_links = nl::json::array();
 
     return xeus::create_info_reply(
-        protocol_version,
         implementation,
         implementation_version,
         language_name,
@@ -295,7 +299,6 @@ nl::json interpreter::kernel_info_request_impl()
         language_codemirror_mode,
         language_nbconvert_exporter,
         banner,
-        debugger,
         help_links
     );
 }

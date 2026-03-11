@@ -61,18 +61,6 @@ To get started with using `xeus-r`, check out the full documentation
 
 http://xeus-r.readthedocs.io
 
-## Dependencies
-
-`xeus-r` depends on
-
-- [xeus-zmq](https://github.com/jupyter-xeus/xeus-zmq)
-- [nlohmann_json](https://github.com/nlohmann/json)
-
-| `xeus-r`|   `xeus-zmq`     |`nlohmann_json` |
-|---------|------------------|----------------|
-|  main   |  >=3.0,<4.0      |  >=3.11.3      |
-|  0.2.x  |  >=3.0,<4.0      |  >=3.11.3      |
-
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) to know how to contribute and set up a

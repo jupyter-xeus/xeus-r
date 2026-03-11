@@ -13,6 +13,7 @@
       "libRlapack.so": "lib/R/lib/libRlapack.so"
     }
   },
+  "kernel_protocol_version": "5.6.0",
   "env": {
     "R_HOME": "@R_HOME@",
     "LD_LIBRARY_PATH": "@XEUS_R_LD_LIBRARY_PATH@"

@@ -6,7 +6,7 @@ dependencies:
   # Host dependencies
   - nlohmann_json
   - nlohmann_json-abi
-  - xeus-lite
+  - xeus-lite >=5.0,<6.0
   - xeus
   - pcre2>=10.43
   - zlib>=1.2.13

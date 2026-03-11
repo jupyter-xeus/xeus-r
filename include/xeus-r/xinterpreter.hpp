@@ -47,7 +47,7 @@ namespace xeus_r
             xeus::execute_request_config config,
             nl::json user_expressions
         ) override;
-                                      
+
         nl::json complete_request_impl(const std::string& code, int cursor_pos) override;
 
         nl::json inspect_request_impl(const std::string& code,
@@ -58,8 +58,9 @@ namespace xeus_r
 
         nl::json kernel_info_request_impl() override;
 
-        void shutdown_request_impl() override;
+        nl::json shutdown_request_impl(bool restart) override;
 
+        nl::json interrupt_request_impl() override;
     };
 
     interpreter* get_interpreter();

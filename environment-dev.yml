@@ -8,9 +8,9 @@ dependencies:
   - cxx-compiler
   - ninja
   # Host dependencies
-  - xeus>=5.0.0
-  - xeus-zmq>=3.0,<4.0
-  - nlohmann_json=3.11.3
+  - xeus>=6.0.0,<7
+  - xeus-zmq>=4.0,<5.0
+  - nlohmann_json
   - r-base >=4
   # Run dependencies
   - r-cli
@@ -23,7 +23,7 @@ dependencies:
   - r-rlang
   # Test dependencies
   - pytest
-  - jupyter_kernel_test>=0.5,<0.6
+  - jupyter_kernel_test<0.8
   - nbval
   - pytest-rerunfailures
   - r-ggplot2
