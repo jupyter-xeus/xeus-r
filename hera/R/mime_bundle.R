@@ -32,6 +32,16 @@ mime_types.shiny.tag <- function(x) {
   c("text/plain", "text/html")
 }
 
+# R help objects. Without this, mime_types.default returns "text/plain", which
+# repr::repr_text renders via tools::Rd2txt. Rd2txt emits nroff overstrike
+# ("_\bX" underline, "X\bX" bold), and Jupyter's stdout stream does not
+# interpret backspaces, so ?lm displays raw "_ l_ m" garbage. Advertising
+# text/html lets the frontend pick the HTML rendering instead.
+#' @export
+mime_types.help_files_with_topic <- function(x) {
+  c("text/plain", "text/html")
+}
+
 #' bundle an object
 #'
 #' @param x an object
