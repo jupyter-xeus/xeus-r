@@ -54,27 +54,9 @@ jobs:
           echo "R_HOME=${PREFIX}/lib/R"       > "${BUILD_PREFIX}/lib/R/etc/Makeconf"
           cat "${PREFIX}/lib/R/etc/Makeconf" >> "${BUILD_PREFIX}/lib/R/etc/Makeconf"
 
-          # Dependencies for hera
-          libraries=(
-            jsonlite
-            rlang
-            base64enc
-            digest
-            fastmap
-            htmltools
-            cli
-            glue
-            vctrs
-          )
-
-          for library in "${libraries[@]}"; do
-              # Create a backup
-              echo "Backup $library"
-              mv $PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so.bak
-              cp $BUILD_PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so
-          done
-
-          ${BUILD_PREFIX}/bin/R CMD INSTALL ./hera --no-byte-compile --no-test-load --library=$PREFIX/lib/R/library/
+          ${BUILD_PREFIX}/bin/R CMD INSTALL ./hera --no-byte-compile --no-test-load --library=${BUILD_PREFIX}/lib/R/library/
+          rm -rf ${PREFIX}/lib/R/library/hera
+          cp -r ${BUILD_PREFIX}/lib/R/library/hera ${PREFIX}/lib/R/library/hera
 
           emcmake cmake . \
             -DCMAKE_BUILD_TYPE=Release                        \
@@ -83,12 +65,6 @@ jobs:
             -DCMAKE_FIND_ROOT_PATH=$PREFIX                    \
             -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON
           emmake make -j ${{ env.ncpus }} install
-
-          # Restore libraries
-          for library in "${libraries[@]}"; do
-              rm $PREFIX/lib/R/library/$library/libs/$library.so
-              mv $PREFIX/lib/R/library/$library/libs/$library.so.bak $PREFIX/lib/R/library/$library/libs/$library.so
-          done
 
       - name: Jupyter Lite integration
         shell: bash -l {0}
