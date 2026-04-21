@@ -1,6 +1,6 @@
 name: xeus-r-wasm-host
 channels:
-  - https://repo.prefix.dev/emscripten-forge-dev
+  - https://repo.prefix.dev/emscripten-forge-4x
   - conda-forge
 dependencies:
   # Host dependencies
@@ -8,13 +8,13 @@ dependencies:
   - nlohmann_json-abi
   - xeus-lite >=5.0,<6.0
   - xeus
-  - pcre2>=10.43
-  - zlib>=1.2.13
+  - pcre2
+  - zlib
   - xz
   - bzip2
   - libiconv
   - libflang
-  - r-base ==4.5.1
+  - r-base
   # Run dependencies
   - r-rlang
   - r-evaluate
@@ -22,13 +22,13 @@ dependencies:
   - r-r6
   - r-jsonlite
   - r-glue
-  - r-cli >=3.6.3
+  - r-cli
   - r-repr
   - r-IRdisplay
   - r-dplyr
   # Test dependencies
   - r-htmltools
   - r-ggplot2
-  - r-munsell >=0.5.1
+  - r-munsell
   - r-colorspace
 
