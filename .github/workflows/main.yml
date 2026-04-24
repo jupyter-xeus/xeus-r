@@ -5,7 +5,7 @@ on:
   pull_request:
   push:
     branches:
-     - main
+    - main
 
   schedule:
     - cron: '0 2 * * *' # run at 2 AM UTC
@@ -21,10 +21,10 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install micromamba
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@v3
         with:
           environment-file: environment-dev.yml
 
@@ -34,9 +34,9 @@ jobs:
           mkdir -p build
           cd build
           cmake .. \
-           -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
-           -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
-           -D CMAKE_INSTALL_LIBDIR=lib
+            -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
+            -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+            -D CMAKE_INSTALL_LIBDIR=lib
 
       - name: build
         shell: bash -l {0}
@@ -54,62 +54,53 @@ jobs:
         shell: micromamba-shell {0}
         run: |
           cd test
-          pytest .  --reruns 5
+          pytest . --reruns 5
 
   win:
 
-   runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
-   strategy:
-     fail-fast: false
-     matrix:
-      include:
-       - name : windows
-         os: windows-latest
-         micromamba_shell_init: cmd.exe
+    steps:
+      - uses: actions/checkout@v6
 
-   steps:
-     - uses: actions/checkout@v4
+      - name: install mamba
+        uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-file: environment-dev.yml
+          init-shell: cmd.exe
+          environment-name: xeus-r
 
-     - name: install mamba
-       uses: mamba-org/setup-micromamba@v2
-       with:
-         environment-file: environment-dev.yml
-         init-shell: >-
-          ${{ matrix.micromamba_shell_init }}
-         environment-name: xeus-r
+      - name: micromamba shell hook
+        shell: powershell
+        run: |
+          micromamba shell hook -s cmd.exe --root-prefix C:\Users\runneradmin\micromamba-root
 
-     - name: micromamba shell hook
-       shell: powershell
-       run: |
-         micromamba shell hook -s cmd.exe --root-prefix C:\Users\runneradmin\micromamba-root
+      - name: cmake configure
+        shell: cmd /C call {0}
+        run: |
+          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
+          mkdir -p build
+          cd build
+          cmake .. ^
+            -G "NMake Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DXEUS_BUILD_TESTS=ON ^
+            -DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library" ^
+            -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library"
 
-     - name: cmake configure
-       shell: cmd /C call {0}
-       run: |
-         call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
-         mkdir -p build
-         cd build
-         cmake .. ^
-           -G "NMake Makefiles" ^
-           -DCMAKE_BUILD_TYPE=Release ^
-           -DXEUS_BUILD_TESTS=ON ^
-           -DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library" ^
-           -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library"
+      - name: build & install
+        shell: cmd /C call {0}
+        run: |
+          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
+          cd build
+          set CL=/MP
+          nmake install
+          md %CONDA_PREFIX%\share\jupyter\kernels\xr
+          xcopy %CONDA_PREFIX%\Library\share\jupyter\kernels\xr %CONDA_PREFIX%\share\jupyter\kernels\xr /F /Y
 
-     - name: build & install
-       shell: cmd /C call {0}
-       run: |
-         call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
-         cd build
-         set CL=/MP
-         nmake install
-         md %CONDA_PREFIX%\share\jupyter\kernels\xr
-         xcopy %CONDA_PREFIX%\Library\share\jupyter\kernels\xr %CONDA_PREFIX%\share\jupyter\kernels\xr /F /Y
-
-     - name: test
-       shell: cmd /C call {0}
-       run: |
-         call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
-         cd test
-         pytest -sv test_xr_kernel.py
+      - name: test
+        shell: cmd /C call {0}
+        run: |
+          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
+          cd test
+          pytest -sv test_xr_kernel.py
