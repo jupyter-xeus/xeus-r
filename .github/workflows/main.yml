@@ -28,7 +28,7 @@ jobs:
         with:
           environment-file: environment-dev.yml
 
-      - name: cmake configure
+      - name: CMake configure
         shell: bash -l {0}
         run: |
           mkdir -p build
@@ -38,19 +38,19 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
             -D CMAKE_INSTALL_LIBDIR=lib
 
-      - name: build
+      - name: Build
         shell: bash -l {0}
         run: |
           cd build
           make -j8
 
-      - name: install
+      - name: Install
         shell: bash -l {0}
         run: |
           cd build
           make install
 
-      - name: test
+      - name: Test
         shell: micromamba-shell {0}
         run: |
           cd test
@@ -63,19 +63,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: install mamba
+      - name: Install micromamba
         uses: mamba-org/setup-micromamba@v3
         with:
           environment-file: environment-dev.yml
           init-shell: cmd.exe
           environment-name: xeus-r
 
-      - name: micromamba shell hook
+      - name: Micromamba shell hook
         shell: powershell
         run: |
           micromamba shell hook -s cmd.exe --root-prefix C:\Users\runneradmin\micromamba-root
 
-      - name: cmake configure
+      - name: CMake configure
         shell: cmd /C call {0}
         run: |
           call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
@@ -88,7 +88,7 @@ jobs:
             -DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library" ^
             -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library"
 
-      - name: build & install
+      - name: Build & install
         shell: cmd /C call {0}
         run: |
           call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
@@ -98,7 +98,7 @@ jobs:
           md %CONDA_PREFIX%\share\jupyter\kernels\xr
           xcopy %CONDA_PREFIX%\Library\share\jupyter\kernels\xr %CONDA_PREFIX%\share\jupyter\kernels\xr /F /Y
 
-      - name: test
+      - name: Test
         shell: cmd /C call {0}
         run: |
           call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r

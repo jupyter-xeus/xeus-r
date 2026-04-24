@@ -24,10 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Install mamba
+      - name: Install micromamba
         uses: mamba-org/setup-micromamba@v3
         with:
           environment-file: environment-wasm-build.yml
@@ -66,7 +64,7 @@ jobs:
             -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON
           emmake make -j ${{ env.ncpus }} install
 
-      - name: Jupyter Lite integration
+      - name: JupyterLite integration
         shell: bash -l {0}
         run: |
           jupyter lite build \
