@@ -18,6 +18,10 @@ dependencies:
   - r-cli
   - r-glue
   - r-vctrs
+  - r-evaluate
+  - r-IRdisplay
+  - r-r6
+  - r-repr
   # JupyterLite
   - jupyter_server
   - jupyterlite-core
