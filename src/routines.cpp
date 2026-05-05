@@ -400,33 +400,50 @@ SEXP Comm__target_name(SEXP xp_comm) {
     return Rf_mkString(comm->target().name().c_str());
 }
 
-SEXP Comm__open(SEXP xp_comm, SEXP js_metadata, SEXP js_data) {
+namespace {
+xeus::buffer_sequence to_buffer_sequence(SEXP r_buffers) {
+    xeus::buffer_sequence out;
+    if (r_buffers == R_NilValue) {
+        return out;
+    }
+    R_xlen_t n = Rf_xlength(r_buffers);
+    out.reserve(n);
+    for (R_xlen_t i = 0; i < n; ++i) {
+        SEXP raw = VECTOR_ELT(r_buffers, i);
+        R_xlen_t len = Rf_xlength(raw);
+        out.emplace_back(RAW(raw), RAW(raw) + len);
+    }
+    return out;
+}
+}
+
+SEXP Comm__open(SEXP xp_comm, SEXP js_metadata, SEXP js_data, SEXP r_buffers) {
     auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
     auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
-    
+
     auto* comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
-    comm->open(metadata, data, xeus::buffer_sequence());
-    
+    comm->open(metadata, data, to_buffer_sequence(r_buffers));
+
     return R_NilValue;
 }
 
-SEXP Comm__close(SEXP xp_comm, SEXP js_metadata, SEXP js_data) {
+SEXP Comm__close(SEXP xp_comm, SEXP js_metadata, SEXP js_data, SEXP r_buffers) {
     auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
     auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
-    
+
     auto* comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
-    comm->close(metadata, data, xeus::buffer_sequence());
-    
+    comm->close(metadata, data, to_buffer_sequence(r_buffers));
+
     return R_NilValue;
 }
 
-SEXP Comm__send(SEXP xp_comm, SEXP js_metadata, SEXP js_data) {
+SEXP Comm__send(SEXP xp_comm, SEXP js_metadata, SEXP js_data, SEXP r_buffers) {
     auto metadata = nl::json::parse(CHAR(STRING_ELT(js_metadata, 0)));
     auto data = nl::json::parse(CHAR(STRING_ELT(js_data, 0)));
-    
+
     auto* comm = reinterpret_cast<xeus::xcomm*>(R_ExternalPtrAddr(xp_comm));
-    comm->send(metadata, data, xeus::buffer_sequence());
-    
+    comm->send(metadata, data, to_buffer_sequence(r_buffers));
+
     return R_NilValue;
 }
 
@@ -487,6 +504,20 @@ SEXP Message__get_metadata(SEXP xptr_msg) {
     return to_r_json(ptr_msg->metadata());
 }
 
+SEXP Message__get_buffers(SEXP xptr_msg) {
+    auto* msg = reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xptr_msg));
+    const auto& bufs = msg->buffers();
+    SEXP out = PROTECT(Rf_allocVector(VECSXP, bufs.size()));
+    for (size_t i = 0; i < bufs.size(); ++i) {
+        SEXP raw = PROTECT(Rf_allocVector(RAWSXP, bufs[i].size()));
+        std::memcpy(RAW(raw), bufs[i].data(), bufs[i].size());
+        SET_VECTOR_ELT(out, i, raw);
+        UNPROTECT(1);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
 }
 
 #ifdef __GNUC__
@@ -514,9 +545,9 @@ void register_r_routines() {
         // Comm
         {"Comm__id"                        , (DL_FUNC) &routines::Comm__id, 1},
         {"Comm__target_name"               , (DL_FUNC) &routines::Comm__target_name, 1},
-        {"Comm__open"                      , (DL_FUNC) &routines::Comm__open, 3},
-        {"Comm__close"                     , (DL_FUNC) &routines::Comm__close, 3},
-        {"Comm__send"                      , (DL_FUNC) &routines::Comm__send, 3},
+        {"Comm__open"                      , (DL_FUNC) &routines::Comm__open, 4},
+        {"Comm__close"                     , (DL_FUNC) &routines::Comm__close, 4},
+        {"Comm__send"                      , (DL_FUNC) &routines::Comm__send, 4},
         {"Comm__on_close"                  , (DL_FUNC) &routines::Comm__on_close, 2},
         {"Comm__on_message"                , (DL_FUNC) &routines::Comm__on_message, 2},
 
@@ -525,6 +556,7 @@ void register_r_routines() {
         {"Message__get_header"             , (DL_FUNC) &routines::Message__get_header, 1},
         {"Message__get_parent_header"      , (DL_FUNC) &routines::Message__get_parent_header, 1},
         {"Message__get_metadata"           , (DL_FUNC) &routines::Message__get_metadata, 1},
+        {"Message__get_buffers"            , (DL_FUNC) &routines::Message__get_buffers, 1},
 
         // lite methods / polyfills
         #ifdef EMSCRIPTEN
