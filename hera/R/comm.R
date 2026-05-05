@@ -96,29 +96,35 @@ Comm <- R6::R6Class("Comm",
 
     #' @param data data
     #' @param metadata metadata
-    open = function(data = NULL, metadata = NULL) {
+    #' @param buffers list of raw vectors to send as binary buffers
+    open = function(data = NULL, metadata = NULL, buffers = list()) {
+        stopifnot(is.list(buffers), all(vapply(buffers, is.raw, logical(1))))
         js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
         js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
-        invisible(hera_dot_call("Comm__open", private$xp, js_metadata, js_data))
+        invisible(hera_dot_call("Comm__open", private$xp, js_metadata, js_data, buffers))
     },
 
     #' @param data data
     #' @param metadata metadata
-    close = function(data = NULL, metadata = NULL) {
+    #' @param buffers list of raw vectors to send as binary buffers
+    close = function(data = NULL, metadata = NULL, buffers = list()) {
+        stopifnot(is.list(buffers), all(vapply(buffers, is.raw, logical(1))))
         js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
         js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
-        invisible(hera_dot_call("Comm__close", private$xp, js_metadata, js_data))
+        invisible(hera_dot_call("Comm__close", private$xp, js_metadata, js_data, buffers))
     },
 
     #' @param data data
     #' @param metadata metadata
-    send = function(data = NULL, metadata = NULL) {
+    #' @param buffers list of raw vectors to send as binary buffers
+    send = function(data = NULL, metadata = NULL, buffers = list()) {
+        stopifnot(is.list(buffers), all(vapply(buffers, is.raw, logical(1))))
         js_metadata <- jsonlite::toJSON(metadata, auto_unbox = TRUE, null = if (is.null(metadata)) "list" else "null")
         js_data <- jsonlite::toJSON(data, auto_unbox = TRUE, null = "null")
 
-        invisible(hera_dot_call("Comm__send", private$xp, js_metadata, js_data))
+        invisible(hera_dot_call("Comm__send", private$xp, js_metadata, js_data, buffers))
     },
 
     #' @param handler function to call when the comm is closed
@@ -138,7 +144,7 @@ Comm <- R6::R6Class("Comm",
 
     #' @return information about the comm
     print = function() {
-      if (identical(description, "")) {
+      if (identical(private$description, "")) {
         writeLines(glue("<Comm id={self$id} target_name='{self$target_name}'>"))
       } else {
         writeLines(glue("<Comm id={self$id} target_name='{self$target_name}' description='{private$description}' >"))
@@ -209,6 +215,10 @@ Message <- R6::R6Class("Message",
 
     metadata = function() {
       jsonlite::fromJSON(hera_dot_call("Message__get_metadata", private$xp))
+    },
+
+    buffers = function() {
+      hera_dot_call("Message__get_buffers", private$xp)
     }
   ),
 
