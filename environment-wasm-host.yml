@@ -24,7 +24,7 @@ dependencies:
   - r-glue
   - r-cli
   - r-repr
-  - r-IRdisplay
+  - r-irdisplay
   - r-dplyr
   # Test dependencies
   - r-htmltools
