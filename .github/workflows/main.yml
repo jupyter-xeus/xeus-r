@@ -70,19 +70,13 @@ jobs:
           init-shell: cmd.exe
           environment-name: xeus-r
 
-      - name: Micromamba shell hook
-        shell: powershell
-        run: |
-          micromamba shell hook -s cmd.exe --root-prefix C:\Users\runneradmin\micromamba-root
-
       - name: CMake configure
         shell: cmd /C call {0}
         run: |
-          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
           mkdir -p build
           cd build
           cmake .. ^
-            -G "NMake Makefiles" ^
+            -GNinja^
             -DCMAKE_BUILD_TYPE=Release ^
             -DXEUS_BUILD_TESTS=ON ^
             -DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library" ^
@@ -91,16 +85,14 @@ jobs:
       - name: Build & install
         shell: cmd /C call {0}
         run: |
-          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
           cd build
           set CL=/MP
-          nmake install
+          ninja install
           md %CONDA_PREFIX%\share\jupyter\kernels\xr
           xcopy %CONDA_PREFIX%\Library\share\jupyter\kernels\xr %CONDA_PREFIX%\share\jupyter\kernels\xr /F /Y
 
       - name: Test
         shell: cmd /C call {0}
         run: |
-          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-r
           cd test
           pytest -sv test_xr_kernel.py
