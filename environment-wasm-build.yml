@@ -19,7 +19,7 @@ dependencies:
   - r-glue
   - r-vctrs
   - r-evaluate
-  - r-IRdisplay
+  - r-irdisplay
   - r-r6
   - r-repr
   # JupyterLite

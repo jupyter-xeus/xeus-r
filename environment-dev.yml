@@ -16,7 +16,7 @@ dependencies:
   - r-cli
   - r-evaluate
   - r-glue
-  - r-IRdisplay
+  - r-irdisplay
   - r-jsonlite
   - r-r6
   - r-repr
