@@ -274,8 +274,16 @@ macro(xeus_r_create_target target_name linkage output_name)
 
     if (EMSCRIPTEN)
         link_directories(${R_HOME}/lib)
-        target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET}
-            PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK})
+        target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} 
+            PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${CMAKE_INSTALL_PREFIX}/lib/libpython3.13.a
+            )
+
+              
+    
+
+
+
+
     else ()
         target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} PRIVATE ${R_LIBRARY_BASE})
     endif ()
