@@ -274,8 +274,23 @@ macro(xeus_r_create_target target_name linkage output_name)
 
     if (EMSCRIPTEN)
         link_directories(${R_HOME}/lib)
+
+
+        SET(PYTHON_LIBRARIES
+            ${CMAKE_INSTALL_PREFIX}/lib/libbz2.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libz.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libsqlite3.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libffi.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libzstd.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libssl.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libcrypto.a
+            ${CMAKE_INSTALL_PREFIX}/lib/liblzma.a
+            ${CMAKE_INSTALL_PREFIX}/lib/libpython3.13.a
+        )
+
         target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} 
-            PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${CMAKE_INSTALL_PREFIX}/lib/libpython3.13.a
+            PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} 
+            ${PYTHON_LIBRARIES}
             )
 
               
@@ -347,7 +362,36 @@ if(EMSCRIPTEN)
 
     xeus_r_set_kernel_options(xr)
     xeus_wasm_compile_options(xr)
-    xeus_wasm_link_options(xr "web,worker")
+    # xeus_wasm_link_options(xr "web,worker")
+
+
+    target_compile_options(xr
+        PUBLIC --std=c++17
+        PUBLIC -Wno-deprecated
+        PUBLIC "SHELL: -fwasm-exceptions"
+    )
+
+
+    target_link_options(xr
+        PUBLIC -Wno-unused-command-line-argument
+        PUBLIC "SHELL: -lembind"
+        PUBLIC "SHELL: -fwasm-exceptions"
+        PUBLIC "SHELL: -s MODULARIZE=1"
+        PUBLIC "SHELL: -s EXPORT_NAME=\"createXeusModule\""
+        PUBLIC "SHELL: -s EXPORT_ES6=0"
+        PUBLIC "SHELL: -s ASSERTIONS=1"
+        PUBLIC "SHELL: -s ALLOW_MEMORY_GROWTH=1"
+        PUBLIC "SHELL: -s EXIT_RUNTIME=1"
+        PUBLIC "SHELL: -s WASM=1"
+        PUBLIC "SHELL: -s ENVIRONMENT=web,worker"
+        PUBLIC "SHELL: -s STACK_SIZE=64mb"
+        PUBLIC "SHELL: -s INITIAL_MEMORY=128MB"
+        PUBLIC "SHELL: -s WASM_BIGINT"
+        PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"ENV\",\"PATH\",\"ERRNO_CODES\",\"getExceptionMessage\",\"getCppExceptionTag\"]'"
+        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+        PUBLIC "SHELL: -s MAIN_MODULE=1"
+    )
+
     target_link_options(xr
         PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
         PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
