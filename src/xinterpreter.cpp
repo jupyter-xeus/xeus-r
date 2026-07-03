@@ -78,8 +78,10 @@ interpreter::interpreter(int argc, char* argv[])
     // When building with Emscripten, pass --no-readline to disable
     // readline support, as r-base is not compiled with readline
     // and will not read input from the command line.
+    // The remaining flags are --vanilla without --no-site-file and
+    // --no-init-file, so that Rprofile.site and .Rprofile are still read.
 #ifdef __EMSCRIPTEN__
-    const char* argvNew[] = {"--no-readline", "--vanilla"};
+    const char* argvNew[] = {"--no-readline", "--no-save", "--no-restore", "--no-environ"};
     Rf_initEmbeddedR(sizeof(argvNew) / sizeof(argvNew[0]), const_cast<char**>(argvNew));
 #else
     Rf_initEmbeddedR(argc, argv);

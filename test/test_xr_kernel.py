@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 #############################################################################
 
+import os
+import shutil
 import tempfile
 import unittest
 import jupyter_kernel_test
@@ -47,6 +49,50 @@ class KernelTests(jupyter_kernel_test.KernelTests):
         self.assertEqual(len(data), 2, data.keys())
         self.assertIn("<html>", data["text/html"])
         self.assertIn("<h1>hello</h1>", data["text/html"])
+
+
+class StartupProfileTests(jupyter_kernel_test.KernelTests):
+    """The kernel must source R's startup profiles in the documented order:
+    the site profile (Rprofile.site) first, then the user profile (.Rprofile),
+    so the user profile overrides the site profile."""
+
+    kernel_name = "xr"
+    language_name = "R"
+
+    @classmethod
+    def setUpClass(cls):
+        cls._profile_dir = tempfile.mkdtemp()
+        site = os.path.join(cls._profile_dir, "Rprofile.site")
+        user = os.path.join(cls._profile_dir, ".Rprofile")
+        # The site profile sets two options; the user profile overrides only
+        # one of them. A correct load therefore leaves the untouched option at
+        # its site value, which proves *both* files were sourced.
+        with open(site, "w") as fh:
+            fh.write('options(xeusr.startup.a = "site-a", xeusr.startup.b = "site-b")\n')
+        with open(user, "w") as fh:
+            fh.write('options(xeusr.startup.a = "user-a")\n')
+        os.environ["R_PROFILE"] = site
+        os.environ["R_PROFILE_USER"] = user
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        for var in ("R_PROFILE", "R_PROFILE_USER"):
+            os.environ.pop(var, None)
+        shutil.rmtree(cls._profile_dir, ignore_errors=True)
+
+    def test_startup_profiles_loaded_in_order(self):
+        self.flush_channels()
+        reply, output_msgs = self.execute_helper(
+            code='cat(getOption("xeusr.startup.a", "<unset>"),'
+                 ' getOption("xeusr.startup.b", "<unset>"))')
+        out = "".join(m["content"]["text"] for m in output_msgs
+                      if m.get("msg_type") == "stream")
+        # "site-b" proves Rprofile.site was sourced (only it sets b); "user-a"
+        # proves .Rprofile was sourced and overrides the site value. Under
+        # --vanilla both would be "<unset>".
+        self.assertEqual(out, "user-a site-b")
 
 #########################################################################################
 #########################################################################################
