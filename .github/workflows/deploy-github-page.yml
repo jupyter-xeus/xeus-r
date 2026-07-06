@@ -42,6 +42,13 @@ jobs:
 
           set -eux
 
+          # The conda compilers export host build flags the wasm toolchain rejects (em++ on
+          # -march=, wasm-ld on GNU-ld options like --sort-common); strip those, keep the rest.
+          _wasm_drop() { sed -E 's/(^| )-m(arch|tune|cpu)=[^ ]*//g'; }
+          export CFLAGS="$(printf %s "${CFLAGS-}"   | _wasm_drop)"
+          export CXXFLAGS="$(printf %s "${CXXFLAGS-}" | _wasm_drop)"
+          export LDFLAGS="$(printf %s "${LDFLAGS-}" | sed -E 's/(^| )-Wl,(--sort-common|--as-needed|--disable-new-dtags|--allow-shlib-undefined|-z,[^ ]*)//g')"
+
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           export CMAKE_PREFIX_PATH=$PREFIX
