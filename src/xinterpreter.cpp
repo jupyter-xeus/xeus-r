@@ -91,8 +91,8 @@ interpreter::interpreter(int argc, char* argv[])
     R_Outputfile = NULL;
     R_Consolefile = NULL;
 
-    // ptr_R_WriteConsole = nullptr;
-    // ptr_R_WriteConsoleEx = WriteConsoleEx;
+    ptr_R_WriteConsole = nullptr;
+    ptr_R_WriteConsoleEx = WriteConsoleEx;
     ptr_R_ReadConsole = ReadConsole;
 #endif
 
