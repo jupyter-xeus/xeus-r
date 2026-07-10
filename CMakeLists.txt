@@ -358,6 +358,11 @@ if(EMSCRIPTEN)
     xeus_r_set_kernel_options(xr)
     xeus_wasm_compile_options(xr)
     xeus_wasm_link_options(xr "web,worker")
+    target_link_options(xr
+        PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
+        PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
+        PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
+    )
 endif()
 
 
