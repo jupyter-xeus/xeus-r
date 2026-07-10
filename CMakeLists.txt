@@ -357,41 +357,7 @@ if(EMSCRIPTEN)
 
     xeus_r_set_kernel_options(xr)
     xeus_wasm_compile_options(xr)
-    # xeus_wasm_link_options(xr "web,worker")
-
-
-    target_compile_options(xr
-        PUBLIC --std=c++17
-        PUBLIC -Wno-deprecated
-        PUBLIC "SHELL: -fwasm-exceptions"
-    )
-
-
-    target_link_options(xr
-        PUBLIC -Wno-unused-command-line-argument
-        PUBLIC "SHELL: -lembind"
-        PUBLIC "SHELL: -fwasm-exceptions"
-        PUBLIC "SHELL: -s MODULARIZE=1"
-        PUBLIC "SHELL: -s EXPORT_NAME=\"createXeusModule\""
-        PUBLIC "SHELL: -s EXPORT_ES6=0"
-        PUBLIC "SHELL: -s ASSERTIONS=1"
-        PUBLIC "SHELL: -s ALLOW_MEMORY_GROWTH=1"
-        PUBLIC "SHELL: -s EXIT_RUNTIME=1"
-        PUBLIC "SHELL: -s WASM=1"
-        PUBLIC "SHELL: -s ENVIRONMENT=web,worker"
-        PUBLIC "SHELL: -s STACK_SIZE=64mb"
-        PUBLIC "SHELL: -s INITIAL_MEMORY=128MB"
-        PUBLIC "SHELL: -s WASM_BIGINT"
-        PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"ENV\",\"PATH\",\"ERRNO_CODES\",\"getExceptionMessage\",\"getCppExceptionTag\"]'"
-        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
-        PUBLIC "SHELL: -s MAIN_MODULE=1"
-    )
-
-    target_link_options(xr
-        PUBLIC "SHELL: --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/env_vars.js"
-        PUBLIC "SHELL: --post-js ${CMAKE_CURRENT_SOURCE_DIR}/wasm_patches/post.js"
-        PUBLIC "SHELL: -s ERROR_ON_UNDEFINED_SYMBOLS=1"
-    )
+    xeus_wasm_link_options(xr "web,worker")
 endif()
 
 
