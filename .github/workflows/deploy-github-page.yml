@@ -42,6 +42,13 @@ jobs:
 
           set -eux
 
+          # to avoid errors like:
+          #   clang++: error: unsupported option '-march=' for target 'wasm32-unknown-emscripten'
+          # we just clear the flags here
+          export CFLAGS=""
+          export CXXFLAGS=""
+          export LDFLAGS=""
+
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           export CMAKE_PREFIX_PATH=$PREFIX
