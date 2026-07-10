@@ -57,7 +57,7 @@ option(XEUS_R_BUILD_EXECUTABLE "Build the xr executable" ON)
 option(XEUS_R_USE_SHARED_XEUS "Link xr  with the xeus shared library (instead of the static library)" ON)
 option(XEUS_R_USE_SHARED_XEUS_R "Link xr  with the xeus-r shared library (instead of the static library)" ON)
 option(XEUS_R_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
-
+option(XEUS_R_LINK_LIBPYTHON "Link xr with libpython (only when building for emscripten)" OFF)
 if(EMSCRIPTEN)
     set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
     add_compile_definitions(XEUS_R_EMSCRIPTEN_WASM_BUILD)
@@ -274,30 +274,25 @@ macro(xeus_r_create_target target_name linkage output_name)
 
     if (EMSCRIPTEN)
         link_directories(${R_HOME}/lib)
-
-
-        SET(PYTHON_LIBRARIES
-            ${CMAKE_INSTALL_PREFIX}/lib/libbz2.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libz.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libsqlite3.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libffi.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libzstd.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libssl.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libcrypto.a
-            ${CMAKE_INSTALL_PREFIX}/lib/liblzma.a
-            ${CMAKE_INSTALL_PREFIX}/lib/libpython3.13.a
-        )
+        if(XEUS_R_LINK_LIBPYTHON)
+            SET(EXTRA_LIBS 
+                ${CMAKE_INSTALL_PREFIX}/lib/libbz2.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libz.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libsqlite3.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libffi.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libzstd.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libssl.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libcrypto.a
+                ${CMAKE_INSTALL_PREFIX}/lib/liblzma.a
+                ${CMAKE_INSTALL_PREFIX}/lib/libpython3.13.a
+            )
+        else()
+            SET(EXTRA_LIBS "")
+        endif()
 
         target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} 
             PRIVATE ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} 
-            ${PYTHON_LIBRARIES}
-            )
-
-              
-    
-
-
-
+            ${EXTRA_LIBS})
 
     else ()
         target_link_libraries(${target_name} PUBLIC ${XEUS_R_XEUS_TARGET} PRIVATE ${R_LIBRARY_BASE})
