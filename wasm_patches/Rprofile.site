@@ -1,0 +1,11 @@
+# Site-wide startup profile for the JupyterLite demo (mounted by
+# deploy-github-page.yml). Distributions can mount their own to configure the
+# kernel, e.g. options(repr.plot.width = 8, repr.plot.res = 180).
+#
+# Note: R silently ignores the final line of a startup profile unless it ends
+# with a newline — keep the trailing newline in this file.
+
+options(
+  xeusr.profile.order = "site",  # overridden by .Rprofile: proves load order
+  xeusr.profile.site  = TRUE     # set only here: proves the site file loaded
+)

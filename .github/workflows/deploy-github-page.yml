@@ -77,6 +77,8 @@ jobs:
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --XeusAddon.mounts=${{ env.PREFIX }}/lib/R/library/hera:/lib/R/library/hera \
+              --XeusAddon.mounts=wasm_patches/Rprofile.site:/lib/R/etc \
+              --XeusAddon.mounts=wasm_patches/.Rprofile:/home/web_user \
               --XeusAddon.default_channels=https://repo.prefix.dev/emscripten-forge-4x \
               --XeusAddon.default_channels=https://repo.prefix.dev/conda-forge \
               --contents README.md \
