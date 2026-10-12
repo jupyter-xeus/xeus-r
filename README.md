@@ -30,17 +30,17 @@ mamba install xeus-r -c conda-forge
 
 ### Installing from source
 
-Xeus-r can be built from sources. We recommend installing the dependencies with mamba.
+Xeus-r can be built from sources. We recommend using mamba to create a development environment with all the required dependencies:
 
 ```bash
-mamba install cmake cxx-compiler xeus-zmq nlohmann_json jupyterlab r-base r-evaluate r-rlang r-jsonlite r-glue r-cli r-repr r-irdisplay -c conda-forge
+mamba env create -f environment-dev.yml
+mamba activate xeus-r
 ```
 
-Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation
-prefix if need be)
+Then you can compile and install `xeus-r`
 
 ```bash
-mkdir build && cd build && mkdir temp_r_lib
+mkdir build && cd build
 cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib
 make && make install
 ```
