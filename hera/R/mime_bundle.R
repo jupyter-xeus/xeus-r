@@ -76,6 +76,7 @@ mime_bundle.htmlwidget <- function(x, mimetypes = mime_types(x), ...) {
   mime <- "application/vnd.xeus-r.htmlwidget+json"
   if (mime %in% mimetypes) {
     comm <- CommManager$new_comm("xeus-r.htmlwidget")
+    comm$open(data = list(comm_id = comm$id))
     data[[mime]] <- list(comm_id = comm$id)
   }
 
