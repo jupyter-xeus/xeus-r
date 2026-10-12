@@ -213,6 +213,7 @@ SEXP xeus_download_file(
 
 SEXP to_r_json(const nl::json& js) {
     SEXP out = PROTECT(Rf_mkString(js.dump(4).c_str()));
+    
     Rf_classgets(out, Rf_mkString("json"));
     UNPROTECT(1);
     
@@ -460,14 +461,12 @@ public:
             delete reinterpret_cast<xeus::xmessage*>(R_ExternalPtrAddr(xp));
         }, FALSE);
         
-        SEXP call = PROTECT(r::r_call(
-            m_handler, 
-            r::new_hera_r6("Message", xptr_message))
-        );
-
+        SEXP msg = PROTECT(r::new_hera_r6("Message", xptr_message));
+        SEXP call = PROTECT(r::r_call(m_handler, msg));
+        
         Rf_eval(call, R_GlobalEnv);
-
-        UNPROTECT(2);
+        
+        UNPROTECT(3);
     }
 
 private:
