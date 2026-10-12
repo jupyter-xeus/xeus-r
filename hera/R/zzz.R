@@ -92,7 +92,11 @@ the <- NULL
             get("lockBinding", envir = baseenv())("file", env)
         }
     }
-   
+
+    if (is_xeusr()) {
+      # maybe the jupyter lab extension should register the target instead
+      CommManager$register_comm_target("xeus-r.htmlwidget")
+    }
 }
 
 init_options <- function() {
