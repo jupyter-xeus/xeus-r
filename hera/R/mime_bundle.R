@@ -18,11 +18,6 @@ mime_types.default <- function(x) {
 }
 
 #' @export
-mime_types.htmlwidget <- function(x) {
-  c("text/plain", "text/html")
-}
-
-#' @export
 mime_types.shiny.tag.list <- function(x) {
   c("text/plain", "text/html")
 }

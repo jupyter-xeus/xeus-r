@@ -53,7 +53,7 @@ Comm class
 \if{latex}{\out{\hypertarget{method-Comm-open}{}}}
 \subsection{Method \code{open()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Comm$open(data = NULL, metadata = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Comm$open(data = NULL, metadata = NULL, buffers = list())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -62,6 +62,8 @@ Comm class
 \item{\code{data}}{data}
 
 \item{\code{metadata}}{metadata}
+
+\item{\code{buffers}}{list of raw vectors to send as binary buffers}
 }
 \if{html}{\out{</div>}}
 }
@@ -71,7 +73,7 @@ Comm class
 \if{latex}{\out{\hypertarget{method-Comm-close}{}}}
 \subsection{Method \code{close()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Comm$close(data = NULL, metadata = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Comm$close(data = NULL, metadata = NULL, buffers = list())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -80,6 +82,8 @@ Comm class
 \item{\code{data}}{data}
 
 \item{\code{metadata}}{metadata}
+
+\item{\code{buffers}}{list of raw vectors to send as binary buffers}
 }
 \if{html}{\out{</div>}}
 }
@@ -89,7 +93,7 @@ Comm class
 \if{latex}{\out{\hypertarget{method-Comm-send}{}}}
 \subsection{Method \code{send()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Comm$send(data = NULL, metadata = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Comm$send(data = NULL, metadata = NULL, buffers = list())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -98,6 +102,8 @@ Comm class
 \item{\code{data}}{data}
 
 \item{\code{metadata}}{metadata}
+
+\item{\code{buffers}}{list of raw vectors to send as binary buffers}
 }
 \if{html}{\out{</div>}}
 }
