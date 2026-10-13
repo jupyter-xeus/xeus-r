@@ -9,12 +9,25 @@ register_htmlwidget_handler <- function() {
 
 HTMLWidget <- R6::R6Class(
   "HTMLWidget",
+
+  private = list(
+    dependencies = NULL
+  ),
+
   public = list(
     widget = NULL,
     comm = NULL,
 
     initialize = function(widget) {
       self$widget <- widget
+
+      # resolve dependencies
+      # TODO: perhaps that can wait for the dependencies message ?
+      dependencies <- htmltools::resolveDependencies(widget$dependencies)
+      private$dependencies <- setNames(dependencies, vapply(dependencies, FUN.VALUE = character(1), \(dep) {
+        paste(dep$name, dep$version, sep = "@")
+      }))
+      
       self$comm <- CommManager$new_comm("xeus-r.htmlwidget")
 
       self$comm$on_message(self$on_message)
@@ -26,8 +39,9 @@ HTMLWidget <- R6::R6Class(
     on_message = function(message) {
       data <- message$content$data 
       switch(data$method, 
-        init = self$on_init(), 
-        dependencies = self$on_dependencies()
+        init         = self$on_init(), 
+        dependencies = self$on_dependencies(), 
+        dependency   = self$on_dependency(data)
       )
     },
 
@@ -41,28 +55,51 @@ HTMLWidget <- R6::R6Class(
     }, 
 
     on_dependencies = function() {
-      deps <- htmltools::resolveDependencies(
-        self$widget$dependencies
-      )
-
-      payload <- lapply(deps, function(dep) {
+      
+      payload <- lapply(private$dependencies, function(dep) {
         list(
           name = dep$name,
-          version = dep$version,
-          src = dep$src$file,
-          script = dep$script,
-          stylesheet = dep$stylesheet,
-          head = dep$head,
-          all_files = dep$all_files
+          version = dep$version
         )
       })
 
       self$comm$send(
         data = list(
           method = "dependencies",
-          payload = payload
+          payload = unname(payload)
         )
       )
+    }, 
+
+    on_dependency = function(data) {
+      key <- paste(data$name, data$version, sep = "@")
+      
+      dep <- private$dependencies[[key]]
+      
+      if (is.null(dep)) {
+        stop("Unknown dependency: ", key)
+      }
+
+      root <- normalizePath(dep$src$file, mustWork = TRUE)
+      paths <- c(dep$stylesheet, dep$script)
+      
+      files <- lapply(paths, \(path) {
+        file <- normalizePath(file.path(root, path), mustWork = TRUE)
+        content <- readBin(file, what = "raw", n = file.info(file)$size)
+
+        list(
+          path = path, 
+          content = content
+        )
+      })
+      
+      self$comm$send(data = list(
+        method = "dependency",
+        name = dep$name,
+        version = dep$version,
+        files = files
+      ))
+
     }
   )
 )
