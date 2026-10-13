@@ -50,7 +50,7 @@ mime_bundle.htmlwidget <- function(x, mimetypes = mime_types(x), ...) {
     data[["text/plain"]] <- glue::glue("HTML widget")
   }
 
-  mime <- "application/vnd.xeus-r.htmlwidget+json"
+  mime <- "application/vnd.jupyter.r-htmlwidget+json"
   if (mime %in% mimetypes) {
     model <- HTMLWidget$new(x)
     data[[mime]] <- list(comm_id = model$comm$id)

@@ -19,7 +19,7 @@ mime_types.default <- function(x) {
 
 #' @export
 mime_types.htmlwidget <- function(x) {
-  c("text/plain", "application/vnd.xeus-r.htmlwidget+json")
+  c("text/plain", "application/vnd.jupyter.r-htmlwidget+json")
 }
 
 #' @export
