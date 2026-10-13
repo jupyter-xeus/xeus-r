@@ -26,7 +26,8 @@ HTMLWidget <- R6::R6Class(
     on_message = function(message) {
       data <- message$content$data 
       switch(data$method, 
-        init = self$on_init()
+        init = self$on_init(), 
+        dependencies = self$on_dependencies()
       )
     },
 
@@ -35,6 +36,31 @@ HTMLWidget <- R6::R6Class(
         data = list(
           method = "init", 
           payload = repr::repr_html(self$widget)
+        )
+      )
+    }, 
+
+    on_dependencies = function() {
+      deps <- htmltools::resolveDependencies(
+        self$widget$dependencies
+      )
+
+      payload <- lapply(deps, function(dep) {
+        list(
+          name = dep$name,
+          version = dep$version,
+          src = dep$src$file,
+          script = dep$script,
+          stylesheet = dep$stylesheet,
+          head = dep$head,
+          all_files = dep$all_files
+        )
+      })
+
+      self$comm$send(
+        data = list(
+          method = "dependencies",
+          payload = payload
         )
       )
     }
