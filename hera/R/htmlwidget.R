@@ -42,12 +42,17 @@ HTMLWidget <- R6::R6Class(
 )
 
 #' @export
+mime_types.htmlwidget <- function(x) {
+  c("text/plain", "application/vnd.jupyter.r-htmlwidget+json")
+}
+
+#' @export
 mime_bundle.htmlwidget <- function(x, mimetypes = mime_types(x), ...) {
   data <- list()
   metadata <- list()
 
   if ("text/plain" %in% mimetypes) {
-    data[["text/plain"]] <- glue::glue("HTML widget")
+    data[["text/plain"]] <- "HTML widget requires support for application/vnd.jupyter.r-htmlwidget+json"
   }
 
   mime <- "application/vnd.jupyter.r-htmlwidget+json"
