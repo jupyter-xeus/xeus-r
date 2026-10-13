@@ -93,19 +93,7 @@ the <- NULL
         }
     }
 
-    if (is_xeusr()) {
-
-      # maybe the jupyter lab extension should register the target instead
-      CommManager$register_comm_target("xeus-r.htmlwidget", 
-
-        # this should live somewhere else
-        function(comm, message) {
-          comm$on_message(function(request) {
-            
-          })
-        }
-      )
-    }
+    register_htmlwidget_handler()
 }
 
 init_options <- function() {
