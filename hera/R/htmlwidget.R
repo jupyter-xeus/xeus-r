@@ -3,15 +3,7 @@ env_widgets <- new.env()
 register_htmlwidget_handler <- function() {
   if (is_xeusr()) {
     # maybe the jupyter lab extension should register the target instead
-    CommManager$register_comm_target("xeus-r.htmlwidget",
-
-      # this should live somewhere else
-      function(comm, message) {
-        comm$on_message(function(request) {
-
-        })
-      }
-    )
+    CommManager$register_comm_target("xeus-r.htmlwidget")
   }
 }
 
@@ -24,8 +16,27 @@ HTMLWidget <- R6::R6Class(
     initialize = function(widget) {
       self$widget <- widget
       self$comm <- CommManager$new_comm("xeus-r.htmlwidget")
+
+      self$comm$on_message(self$on_message)
+
       env_widgets[[self$comm$id]] <- self
       self$comm$open()
+    }, 
+
+    on_message = function(message) {
+      data <- message$content$data 
+      switch(data$method, 
+        init = self$on_init()
+      )
+    },
+
+    on_init = function() {
+      self$comm$send(
+        data = list(
+          method = "init", 
+          payload = repr::repr_html(self$widget)
+        )
+      )
     }
   )
 )
