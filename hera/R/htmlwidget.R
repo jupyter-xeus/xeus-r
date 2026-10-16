@@ -34,8 +34,14 @@ HTMLWidget <- R6::R6Class(
       switch(data$method,
         init         = self$on_init(),
         dependencies = self$on_dependencies(),
-        runtime      = self$on_runtime()
+        runtime      = self$on_runtime(), 
+        input        = self$on_input(data)
       )
+    },
+
+    on_input = function(data) {
+      cat("Received:", data$name, "\n")
+      str(data$value)
     },
 
     on_runtime = function() {
