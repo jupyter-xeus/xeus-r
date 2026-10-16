@@ -9,34 +9,89 @@ register_htmlwidget_handler <- function() {
 
 HTMLWidget <- R6::R6Class(
   "HTMLWidget",
+
+  private = list(
+    dependencies = NULL
+  ),
+
   public = list(
     widget = NULL,
     comm = NULL,
 
     initialize = function(widget) {
       self$widget <- widget
+
       self$comm <- CommManager$new_comm("xeus-r.htmlwidget")
 
       self$comm$on_message(self$on_message)
 
       env_widgets[[self$comm$id]] <- self
       self$comm$open()
-    }, 
+    },
 
     on_message = function(message) {
-      data <- message$content$data 
-      switch(data$method, 
-        init = self$on_init()
+      data <- message$content$data
+      switch(data$method,
+        init         = self$on_init(),
+        dependencies = self$on_dependencies(),
+        runtime      = self$on_runtime()
       )
     },
 
+    on_runtime = function() {
+      path <- system.file("www", "htmlwidgets.js", package = "htmlwidgets")
+
+      content <- readBin(
+        path,
+        what = "raw",
+        n = file.info(path)$size
+      )
+
+      self$comm$send(data = list(
+        method = "runtime",
+        content = jsonlite::base64_enc(content)
+      ))
+    },
+
     on_init = function() {
+
+      rendered <- htmltools::renderTags(
+        htmltools::as.tags(self$widget)
+      )
       self$comm$send(
         data = list(
-          method = "init", 
-          payload = repr::repr_html(self$widget)
+          method = "init",
+          payload = rendered$html
         )
       )
+    },
+
+    on_dependencies = function() {
+      private$dependencies <- dependencies <- htmltools::resolveDependencies(self$widget$dependencies)
+      
+      scripts <- list()
+      stylesheets <- list()
+
+      for (dep in dependencies) {
+        root <- dep$src$file
+        
+        for (path in dep$script) {
+          resource <- read_resource(dep$name, dep$version, root, path)
+          scripts <- append(scripts, list(resource))
+        }
+
+        for (path in dep$stylesheet) {
+          resource <- read_resource(dep$name, dep$version, root, path)
+          stylesheets <- append(stylesheets, list(resource))
+        }
+      }
+
+      self$comm$send(data = list(
+        method      = "dependencies",
+        scripts     = unname(scripts),
+        stylesheets = unname(stylesheets)
+      ))
+
     }
   )
 )
@@ -62,4 +117,16 @@ mime_bundle.htmlwidget <- function(x, mimetypes = mime_types(x), ...) {
   }
 
   list(data = data, metadata = metadata)
+}
+
+read_resource <- function(name, version, src, path) {
+  file <- file.path(src, path)
+  list(
+    name    = name,
+    version = version,
+    path    = path,
+    content = jsonlite::base64_enc(
+      readBin(file, "raw", n = file.info(file)$size)
+    )
+  )
 }
