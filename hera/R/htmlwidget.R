@@ -21,13 +21,6 @@ HTMLWidget <- R6::R6Class(
     initialize = function(widget) {
       self$widget <- widget
 
-      # resolve dependencies
-      # TODO: perhaps that can wait for the dependencies message ?
-      dependencies <- htmltools::resolveDependencies(widget$dependencies)
-      private$dependencies <- setNames(dependencies, vapply(dependencies, FUN.VALUE = character(1), \(dep) {
-        paste(dep$name, dep$version, sep = "@")
-      }))
-
       self$comm <- CommManager$new_comm("xeus-r.htmlwidget")
 
       self$comm$on_message(self$on_message)
@@ -41,7 +34,6 @@ HTMLWidget <- R6::R6Class(
       switch(data$method,
         init         = self$on_init(),
         dependencies = self$on_dependencies(),
-        dependency   = self$on_dependency(data),
         runtime      = self$on_runtime()
       )
     },
@@ -71,49 +63,29 @@ HTMLWidget <- R6::R6Class(
     },
 
     on_dependencies = function() {
+      private$dependencies <- dependencies <- htmltools::resolveDependencies(self$widget$dependencies)
+      
+      scripts <- list()
+      stylesheets <- list()
 
-      payload <- lapply(private$dependencies, function(dep) {
-        list(
-          name = dep$name,
-          version = dep$version
-        )
-      })
+      for (dep in dependencies) {
+        root <- dep$src$file
+        
+        for (path in dep$script) {
+          resource <- read_resource(dep$name, dep$version, root, path)
+          scripts <- append(scripts, list(resource))
+        }
 
-      self$comm$send(
-        data = list(
-          method = "dependencies",
-          payload = unname(payload)
-        )
-      )
-    },
-
-    on_dependency = function(data) {
-      key <- paste(data$name, data$version, sep = "@")
-
-      dep <- private$dependencies[[key]]
-
-      if (is.null(dep)) {
-        stop("Unknown dependency: ", key)
+        for (path in dep$stylesheet) {
+          resource <- read_resource(dep$name, dep$version, root, path)
+          stylesheets <- append(stylesheets, list(resource))
+        }
       }
 
-      root <- normalizePath(dep$src$file, mustWork = TRUE)
-      paths <- c(dep$stylesheet, dep$script)
-
-      files <- lapply(paths, \(path) {
-        file <- normalizePath(file.path(root, path), mustWork = TRUE)
-        content <- readBin(file, what = "raw", n = file.info(file)$size)
-
-        list(
-          path = path,
-          content = content
-        )
-      })
-
       self$comm$send(data = list(
-        method = "dependency",
-        name = dep$name,
-        version = dep$version,
-        files = files
+        method      = "dependencies",
+        scripts     = unname(scripts),
+        stylesheets = unname(stylesheets)
       ))
 
     }
@@ -141,4 +113,16 @@ mime_bundle.htmlwidget <- function(x, mimetypes = mime_types(x), ...) {
   }
 
   list(data = data, metadata = metadata)
+}
+
+read_resource <- function(name, version, src, path) {
+  file <- file.path(src, path)
+  list(
+    name    = name,
+    version = version,
+    path    = path,
+    content = jsonlite::base64_enc(
+      readBin(file, "raw", n = file.info(file)$size)
+    )
+  )
 }
