@@ -54,10 +54,14 @@ HTMLWidget <- R6::R6Class(
     },
 
     on_init = function() {
+
+      rendered <- htmltools::renderTags(
+        htmltools::as.tags(self$widget)
+      )
       self$comm$send(
         data = list(
           method = "init",
-          payload = repr::repr_html(self$widget)
+          payload = rendered$html
         )
       )
     },
