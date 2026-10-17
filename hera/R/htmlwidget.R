@@ -7,11 +7,13 @@ register_htmlwidget_handler <- function() {
   }
 }
 
+#' @export
 HTMLWidget <- R6::R6Class(
   "HTMLWidget",
 
   private = list(
-    dependencies = NULL
+    dependencies = NULL, 
+    input_callbacks = list()
   ),
 
   public = list(
@@ -35,13 +37,29 @@ HTMLWidget <- R6::R6Class(
         init         = self$on_init(),
         dependencies = self$on_dependencies(),
         runtime      = self$on_runtime(), 
-        input        = self$on_input(data)
+
+        input        = self$handle_input(data$value)
       )
     },
 
-    on_input = function(data) {
-      cat("Received:", data$name, "\n")
-      str(data$value)
+    handle_input = function(data) {
+      callbacks <- private$input_callbacks
+      for (cb in callbacks) {
+        cb(data)
+      }
+      invisible(NULL)
+    },
+
+    on_input = function(callback) {
+      if (is.null(callback)) {
+        # reset
+        private$input_callbacks <- list()
+      } else if (is.function(callback)) {
+        # add
+        private$input_callbacks[[length(private$input_callbacks) + 1L]] <- callback
+      }
+
+      invisible(self)
     },
 
     on_runtime = function() {
@@ -102,6 +120,18 @@ HTMLWidget <- R6::R6Class(
   )
 )
 
+get_htmlwidget_model <- function(widget) {
+  for (id in ls(env_widgets)) {
+    model <- env_widgets[[id]]
+
+    if (identical(model$widget, widget)) {
+      return(model)
+    }
+  }
+  
+  NULL
+}
+
 #' @export
 mime_types.htmlwidget <- function(x) {
   c("text/plain", "application/vnd.jupyter.r-htmlwidget+json")
@@ -118,7 +148,11 @@ mime_bundle.htmlwidget <- function(x, mimetypes = mime_types(x), ...) {
 
   mime <- "application/vnd.jupyter.r-htmlwidget+json"
   if (mime %in% mimetypes) {
-    model <- HTMLWidget$new(x)
+    model <- get_htmlwidget_model(x)
+    if (is.null(model)) {
+      model <- HTMLWidget$new(x)
+    }
+    
     data[[mime]] <- list(comm_id = model$comm$id)
   }
 
