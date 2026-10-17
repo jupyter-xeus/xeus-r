@@ -19,6 +19,7 @@ HTMLWidget <- R6::R6Class(
   public = list(
     widget = NULL,
     comm = NULL,
+    id = NULL,
 
     initialize = function(widget) {
       self$widget <- widget
@@ -31,15 +32,32 @@ HTMLWidget <- R6::R6Class(
       self$comm$open()
     },
 
+    send_custom_message = function(type, message) {
+      stopifnot(is.character(type), length(type) == 1L, !is.na(type))
+
+      self$comm$send(list(
+        method = "custom",
+        type = type,
+        message = message
+      ))
+
+      invisible(self)
+    },
+
     on_message = function(message) {
       data <- message$content$data
       switch(data$method,
         init         = self$on_init(),
         dependencies = self$on_dependencies(),
         runtime      = self$on_runtime(), 
+        initialized  = self$on_initialized(data),
 
         input        = self$handle_input(data$value)
       )
+    },
+
+    on_initialized = function(data) {
+      self$id <- data$id
     },
 
     handle_input = function(data) {
