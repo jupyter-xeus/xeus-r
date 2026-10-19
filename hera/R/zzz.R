@@ -92,8 +92,6 @@ the <- NULL
             get("lockBinding", envir = baseenv())("file", env)
         }
     }
-
-    register_htmlwidget_handler()
 }
 
 init_options <- function() {
