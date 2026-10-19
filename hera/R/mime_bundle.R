@@ -56,5 +56,19 @@ mime_bundle <- function(x, mimetypes = mime_types(x), ...) {
 #' @importFrom IRdisplay prepare_mimebundle
 #' @export
 mime_bundle.default <- function(x, mimetypes = mime_types(x), ...) {
+  
+  # done here instead of a method so that the 
+  # jupyter.htmlwidgets can register the method
+  if (inherits(x, "htmlwidget")) {
+    data <- list()
+    metadata <- list()
+
+    if ("text/plain" %in% mimetypes) {
+      data[["text/plain"]] <- "HTML widget requires the jupyter.htmlwidgets package."
+    }
+
+    return(list(data = data, metadata = metadata))
+  }
+  
   prepare_mimebundle(x, mimetypes = mimetypes, ...)
 }
