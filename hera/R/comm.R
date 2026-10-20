@@ -34,6 +34,9 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
     #' @param target_name name of the target
     #' @param description description of the comm
     new_comm = function(target_name, description = "") {
+        if (is.null(private$env_targets[[target_name]])) {
+          self$register_comm_target(target_name)
+        }
         hera_dot_call("CommManager__new_comm", target_name, description)
     },
 
