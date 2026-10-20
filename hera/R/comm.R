@@ -15,7 +15,6 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
       rlang::check_dots_empty(call = error_call)
 
       private$env_targets <- new.env()
-      private$env_comms <- new.env()
     },
 
     #' @param target_name name of the comm target, e.g. "jupyter.widgets"
@@ -40,26 +39,11 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
         hera_dot_call("CommManager__new_comm", target_name, description)
     },
 
-    #' @return the list of currently open comms
-    comms = function() {
-        as.list(private$env_comms)
-    },
-
     #' @param target_name name of the comm target
     #'
     #' @return the callback for that target name
     target_callback = function(target_name) {
         private$env_targets[[target_name]]
-    },
-
-    #' @param comm [Comm] instance to preserve
-    preserve = function(comm) {
-        assign(comm$id, comm, envir = private$env_comms)
-    },
-
-    #' @param comm [Comm] instance to release
-    release = function(comm) {
-        rm(list = comm$id, envir = private$env_comms)
     },
 
     #' @param target_name name of the target to get info about all comm opens. If NULL, info for comms for all targets are returned.
@@ -69,8 +53,7 @@ CommManagerClass <- R6::R6Class("CommManagerClass",
   ),
 
   private = list(
-    env_targets = NULL,
-    env_comms = NULL
+    env_targets = NULL
   )
 )
 
@@ -94,7 +77,6 @@ Comm <- R6::R6Class("Comm",
     initialize = function(xp, description = "") {
         private$xp <- xp
         private$description <- description
-        CommManager$preserve(self)
     },
 
     #' @param data data
@@ -132,10 +114,7 @@ Comm <- R6::R6Class("Comm",
 
     #' @param handler function to call when the comm is closed
     on_close = function(handler) {
-        private$close_handler <- function(request) {
-            handler(request)
-            self$finalize()
-        }
+        private$close_handler <-  handler
         invisible(hera_dot_call("Comm__on_close", private$xp, private$close_handler))
     },
 
@@ -177,7 +156,9 @@ Comm <- R6::R6Class("Comm",
     message_handler = NULL,
 
     finalize = function() {
-      CommManager$release(self)
+      private$xp <- NULL
+      private$close_handler <- NULL
+      private$message_handler <- NULL
     }
   )
 )
