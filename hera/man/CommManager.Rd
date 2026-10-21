@@ -6,7 +6,7 @@
 \alias{CommManager}
 \title{Comm Manager class}
 \format{
-An object of class \code{CommManagerClass} (inherits from \code{R6}) of length 11.
+An object of class \code{CommManagerClass} (inherits from \code{R6}) of length 8.
 }
 \usage{
 CommManager
@@ -22,10 +22,7 @@ Instance of the \link{CommManagerClass} class.
 \item \href{#method-CommManagerClass-register_comm_target}{\code{CommManagerClass$register_comm_target()}}
 \item \href{#method-CommManagerClass-unregister_comm_target}{\code{CommManagerClass$unregister_comm_target()}}
 \item \href{#method-CommManagerClass-new_comm}{\code{CommManagerClass$new_comm()}}
-\item \href{#method-CommManagerClass-comms}{\code{CommManagerClass$comms()}}
 \item \href{#method-CommManagerClass-target_callback}{\code{CommManagerClass$target_callback()}}
-\item \href{#method-CommManagerClass-preserve}{\code{CommManagerClass$preserve()}}
-\item \href{#method-CommManagerClass-release}{\code{CommManagerClass$release()}}
 \item \href{#method-CommManagerClass-get_comm_info}{\code{CommManagerClass$get_comm_info()}}
 \item \href{#method-CommManagerClass-clone}{\code{CommManagerClass$clone()}}
 }
@@ -105,18 +102,6 @@ Instance of the \link{CommManagerClass} class.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CommManagerClass-comms"></a>}}
-\if{latex}{\out{\hypertarget{method-CommManagerClass-comms}{}}}
-\subsection{Method \code{comms()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CommManagerClass$comms()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-the list of currently open comms
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CommManagerClass-target_callback"></a>}}
 \if{latex}{\out{\hypertarget{method-CommManagerClass-target_callback}{}}}
 \subsection{Method \code{target_callback()}}{
@@ -133,38 +118,6 @@ the list of currently open comms
 }
 \subsection{Returns}{
 the callback for that target name
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CommManagerClass-preserve"></a>}}
-\if{latex}{\out{\hypertarget{method-CommManagerClass-preserve}{}}}
-\subsection{Method \code{preserve()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CommManagerClass$preserve(comm)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{comm}}{\link{Comm} instance to preserve}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CommManagerClass-release"></a>}}
-\if{latex}{\out{\hypertarget{method-CommManagerClass-release}{}}}
-\subsection{Method \code{release()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CommManagerClass$release(comm)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{comm}}{\link{Comm} instance to release}
-}
-\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
