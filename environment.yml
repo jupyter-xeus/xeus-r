@@ -7,3 +7,4 @@ dependencies:
   - r-htmltools
   - r-ggplot2
   - r-plotly
+  - r-httpuv
