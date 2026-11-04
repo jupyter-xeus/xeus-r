@@ -23,6 +23,7 @@ Imports:
     repr,
     rlang,
     tools,
-    utils
+    utils, 
+    httpuv
 URL: https://github.com/jupyter-xeus/xeus-r
 BugReports: https://github.com/jupyter-xeus/xeus-r/issues
